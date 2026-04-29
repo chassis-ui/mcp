@@ -13,28 +13,34 @@ This file documents:
 
 ---
 
-## Application Template & Shell
+## Application Template — Standard Page Frame Scaffold
 
-Every Mundi web screen has the same outer structure:
+`Application Template` is the **standard way to create any new Mundi page frame**. It is a convenience component that ships with:
+
+- A `Sidebar` instance (with fixed position settings pre-configured)
+- A default `Page Template` instance (placeholder to swap with the step's actual Page Template)
+- Pre-defined `color/page/bg-body` background fill
+- Horizontal auto-layout with correct sizing
+
+**Workflow: Insert → Detach → Swap → Configure**
+
+1. Insert `Application Template` from the Mundi library.
+2. Detach immediately — the frame is now fully local with all correct shell settings.
+3. Swap the default Page Template instance with the step's actual Page Template (local master or published library component).
+4. Override Page Title and populate Main.
+
+This is the standard workflow for **every** new Mundi page frame — new flow, existing flow, first screen or tenth variant.
+
+Resulting structure:
 
 ```
 Page Frame (1512 × auto, typically 982)
-├── Sidebar          x=0,    256 × 982    [library instance]
-└── Page Template    x=256,  1256 × auto  [library instance OR local master]
+├── Sidebar          x=0,    256 × 982    [library instance, fixed position settings]
+└── Page Template    x=256,  1256 × auto  [step's library component or local master]
     ├── Page Title       [Asset-override]
     └── Page Content
         └── Main         [auto-layout, hugs height]
 ```
-
-### When to use `Application Template` vs. raw Sidebar + Page Template
-
-| Situation | Use |
-| --- | --- |
-| Brand-new product area without an existing Page Template | Detach `Application Template`, build the new Page Template inside it, then convert that Page Template into its own component |
-| Existing flow with a known Page Template (local master or library component) | Skip `Application Template`. Place a `Sidebar` instance + the flow's `Page Template` instance directly in the page frame. |
-| Throwaway exploration sketch | Either is fine |
-
-The observed `Transfers / Outbound` flow uses the **direct placement** pattern: every state page frame is `Sidebar instance + Outbound Transfer Page Template instance` placed side-by-side, no `Application Template` wrapper.
 
 ---
 
@@ -67,9 +73,9 @@ orthogonal/overlay states float to the side:
 
 ---
 
-## Master-and-State Propagation Pattern
+## Step-and-Variant Propagation Pattern
 
-Every state page frame contains an **instance** of the same Page Template. State differences are produced by:
+Each flow step has its own source Page Template. All variants of a step are page frames containing an instance of **that step's** Page Template. Variant differences are produced by:
 
 | Override mechanism | Use for |
 | --- | --- |
@@ -78,28 +84,37 @@ Every state page frame contains an **instance** of the same Page Template. State
 | **Asset-layer text override** | Recipient name, amount, account, status text |
 | **Slot-container item add/remove** | Recipient list rows, position list rows, activity feed rows |
 
-**Forbidden in a state frame:**
+**Forbidden in a variant frame:**
 
-- Adding a layer that doesn't exist on the source Page Template
+- Adding a layer that doesn't exist on that step's source Page Template
 - Removing a layer (only hide it via visibility toggle)
 - Resizing or repositioning structural children
 - Detaching the Page Template instance
 
-If a state needs something the source doesn't have → add it to the source first (`update-flow` mode), let it propagate, then hide it where unneeded.
+If a variant needs something the step's source doesn't have → add it to that step's source first (`update-flow` mode), let it propagate, then hide it where unneeded.
 
 ### Visualizing the propagation
 
 ```
-Source Page Template (master frame OR library component)
+Step-1 source Page Template (form layout)
       │
-      ▼  instance ──→  Step-1 page frame   (default toggles)
-      ▼  instance ──→  Step-1.1 page frame (validation toggles)
-      ▼  instance ──→  Step-1.2 page frame (suggested-list toggles)
-      ▼  instance ──→  Step-2 page frame   (review toggles)
-      ▼  instance ──→  Step-3 page frame   (confirmation toggles)
+      ▼  instance ──→  Step-1 page frame         (default: empty form)
+      ▼  instance ──→  Step-1.1 page frame       (validation errors shown)
+      ▼  instance ──→  Step-1.2 page frame       (suggested recipients shown)
+      ▼  instance ──→  Step-1.3 page frame       (balance warning shown)
+
+Step-2 source Page Template (review layout — structurally different)
+      │
+      ▼  instance ──→  Step-2 page frame         (default: review state)
+      ▼  instance ──→  Step-2.1 page frame       (conditional notification shown)
+
+Step-3 source Page Template (confirmation/receipt layout)
+      │
+      ▼  instance ──→  Step-3 page frame         (success receipt)
+      ▼  instance ──→  Step-3.1 page frame       (with follow-up action)
 ```
 
-Every arrow is a live link. Editing the source updates all instances.
+Editing Step-1's source updates all Step-1 variants. It does not affect Step-2 or Step-3.
 
 ---
 
@@ -186,8 +201,8 @@ See [content.md](./content.md) for the full vocabulary.
 | Anti-pattern | Symptom | Fix |
 | --- | --- | --- |
 | **Toggling a modal inside a Page Template** | Page Template has a hidden `Modal` layer that gets shown for the modal state | Move modal to a separate page frame with `Modal Screen` |
-| **Editing the state's structure** | Step-1.2 has an extra alert layer Step-1 doesn't have | Add the layer to the source Page Template; hide it where unneeded |
-| **Detached Page Template** | State frame's Page Template is no longer linked to the source | Re-instance from the source; re-apply state's toggles |
+| **Editing a variant's structure** | A variant frame has a layer its step's canonical frame doesn't have | Add the layer to the step's source Page Template; hide it where unneeded |
+| **Detached Page Template** | A variant frame's Page Template is no longer linked to the step's source | Re-instance from the step's source; re-apply variant's overrides |
 | **1440-wide page frame** | Sidebar overlaps content or there's empty space on the right | Resize page frame to `1512 × 982` |
 | **Sidebar with edited children** | Sidebar item label was directly text-edited | Revert; configure via Sidebar's component props/variants |
 | **Two solid buttons in Page Title actions** | Two visual primaries fighting for attention | One `button-solid` + one `button-smooth` (or `link`) |

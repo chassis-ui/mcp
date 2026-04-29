@@ -16,17 +16,17 @@ Phase-by-phase playbooks for the Mundi-specific modes. These overlay the canonic
 
 ### Phase 2: Plan the flow
 
-6. **List the steps.** A flow is a sequence of logical steps the user moves through (form → review → confirmation). Each step gets one **canonical** state.
-7. **List the variants per step.** For each step, enumerate the alternative states: validation error, suggested results shown, balance warning, loading, etc.
-8. **List orthogonal/overlay states.** Modals, alerts, confirmation dialogs, processing-delay screens. Each gets its own page frame using `Alert Screen` (or equivalent overlay-screen component) — not a toggle inside the Page Template.
-9. **Decide Page Template scope.** Will all steps share one Page Template (typical), or do structurally different steps need a second Page Template (e.g. receipt vs. form)? Default to one.
-10. **Decide initial Page Template stage.** New flow → start with a **local master frame**. Don't promote to a library component until the flow is stable.
+6. **List the steps.** A flow is a sequence of logical steps the user moves through (form → review → confirmation). Each step gets one **canonical** state and its own Page Template.
+7. **List the variants per step.** For each step, enumerate the alternative states: validation error, suggested results shown, balance warning, loading, etc. All variants of a step share that step's Page Template.
+8. **List orthogonal/overlay states.** Modals, alerts, confirmation dialogs, processing-delay screens. Each gets its own page frame using `Alert Screen` (or equivalent overlay-screen component) — not a toggle inside any Page Template.
+9. **Decide Page Template per step.** Each step that is structurally different (e.g. form vs. review with conditional notification panels vs. receipt) needs its own Page Template. Steps that are structurally identical can share one, but in practice most multi-step flows have at least two distinct templates.
+10. **Decide initial Page Template stage for each.** New step → start with a **local master frame**. Don't promote to a library component until the step's layout is stable.
 
-### Phase 3: Build the source Page Template
+### Phase 3: Build each step's source Page Template
 
-11. **Create a working section** in the file for the master frame. Name it descriptively (e.g. `Outbound Transfer — Master`).
-12. **Build the master state with all conditional layers present.** Set visibility/variants to the most-common state (typically Step 1, default). Every nested layer that any state needs must already exist in the master.
-13. **Bind all colors, spacing, sizing, typography to Chassis tokens** — see `chassis-create-design/references/tokens.md`. Use `color/context/default/...` for the page surface so theme switching works.
+11. **Create a working section** in the file for the step's master frame. Name it descriptively (e.g. `Outbound Transfer — Step 1: Form`, `Outbound Transfer — Step 2: Review`).
+12. **Build the master state with all conditional layers for that step present.** Set visibility/variants to the default/most-common state. Every nested layer that any variant of this step needs must already exist in this master.
+13. **Bind all colors, spacing, sizing, typography to Chassis tokens** — see `chassis-create-design/references/tokens.md`. Page Template has no fill — it inherits the page background.
 14. **Use Mundi-preferred Chassis variants** — see [components.md](./components.md):
     - Primary form → `form-floating`
     - Filters → `form-regular`
@@ -37,15 +37,16 @@ Phase-by-phase playbooks for the Mundi-specific modes. These overlay the canonic
 15. **Page Title:** Asset-override `Title Text Asset`, optionally `Subtitle Asset`. Place primary domain action(s) in the `Actions` slot. Do not reveal hidden sub-layers (Back Button, Title Badge, Subtitle Action) unless required.
 16. **Main:** auto-layout, hugs height. Use Chassis components per `chassis-create-design`.
 
-### Phase 4: Build the page frames (states)
+### Phase 4: Build the page frames (variants)
 
 17. **Create a Section** for the flow with a domain-language name (e.g. `Bankaya Aktar`). All flow page frames live inside it.
-18. **Create the canonical Step-1 page frame:** `1512 × 982` (or hugs height). Children:
-    - Sidebar instance at `x = 0` (`256 × 982`)
-    - Page Template instance at `x = 256` (`1256 × auto`)
-    - Name: `{Domain} / {Subdomain} - 1` (e.g. `Transfers / Outbound - 1`)
-19. **Duplicate the page frame for each subsequent step.** Lay out **horizontally** to the right (canvas convention: columns = steps). Override the Page Template instance to surface the step's state.
-20. **Duplicate again for each variant.** Lay out **vertically** below the canonical step (rows = variants). Name `1.1`, `1.2`, ...
+18. **Create the canonical Step-1 page frame** using `Application Template`:
+    - Insert `Application Template` from the Mundi library.
+    - Detach it immediately — the shell (Sidebar + default Page Template, pre-configured background + auto-layout) is now local.
+    - Swap the default Page Template instance with the **Step-1 source Page Template** instance.
+    - Name: `{Domain} / {Subdomain} - 1` (e.g. `Transfers / Outbound - 1`).
+19. **Duplicate the canonical Step-1 frame for each variant of Step 1.** Lay out **vertically** below it (rows = variants). Name `1.1`, `1.2`, ... In each duplicate, only toggle / swap / override — never restructure.
+20. **Repeat steps 18–19 for each subsequent step,** each time swapping in that step's own Page Template. Lay out **horizontally** to the right (columns = steps).
 21. **In each duplicate, only override.** Toggle nested-layer visibility, swap nested variants, override Asset text, insert/remove items in slot containers. Never restructure.
 
 ### Phase 5: Build overlay states
@@ -57,7 +58,7 @@ Phase-by-phase playbooks for the Mundi-specific modes. These overlay the canonic
 
 24. **`get_screenshot` per page frame.** Catch placeholder text, clipped Asset layers, divergent structure.
 25. **Theme sweep.** If both Light and Dark are in scope, screenshot both at the wrapper level. Bind theme overrides at the page-frame level, not section level.
-26. **Master propagation check.** Verify a structural change to the master Page Template lands in every state frame. If a state diverges, restore by re-instancing the master and re-applying its toggles only.
+26. **Step propagation check.** For each step, verify a structural change to that step's source Page Template lands in every variant frame of that step. If a variant diverges, restore by re-instancing the step's source and re-applying its overrides only.
 27. **Naming + grid check.** All frames follow `{Domain} / {Subdomain} - {Step}[.{Variant}]` and sit on the columns-as-steps / rows-as-variants grid.
 
 ### Phase 7: Report
@@ -68,16 +69,16 @@ Phase-by-phase playbooks for the Mundi-specific modes. These overlay the canonic
 
 ## Mode: `extend-flow` — Add a new step or variant
 
-1. **Locate the source Page Template.** Published library component (e.g. `Outbound Transfer Page Template`) → import an instance. Local master → place an instance.
-2. **For a new step (column):**
-   - Duplicate an existing canonical-step page frame to the right of the rightmost step.
-   - Override the Page Template instance to surface the new step's state.
+1. **For a new step (column):**
+   - Determine whether an existing Page Template fits the new step's structure. If it's structurally different, create a new local master frame for this step (Phase 3 above).
+   - Create a new page frame via `Application Template` insert → detach → swap in the new step's Page Template.
+   - Place it to the right of the rightmost step.
    - Name `{Domain} / {Subdomain} - {NextStep}`.
-3. **For a new variant (row):**
+2. **For a new variant (row):**
    - Duplicate the canonical state of the relevant step to the row below the last variant.
    - Override only what differs from the canonical state.
    - Name `{Step}.{NextVariant}`.
-4. **If the new state needs a layer that does not exist on the source Page Template** — STOP. The layer belongs on the source. Edit the source first (mode `update-flow`), then continue.
+3. **If the new variant needs a layer that does not exist on the step's source Page Template** — STOP. The layer belongs on the source. Edit the source first (mode `update-flow`), then continue.
 5. Validate per Phase 6 above.
 
 ---

@@ -107,9 +107,9 @@ Page frame (1512 × hugs content, typically 982 for full-viewport screens)
 | **Page Template** | Mundi library **or** local master | Holds Page Title + Page Content. See "Page Template lifecycle" below — this is the heart of the Mundi flow pattern. |
 | **Page Title** | Mundi library | Hug contents. Asset-override pattern (see below). |
 | **Main** | Inside Page Template | The actual screen content. Auto-layout, hugs height — that is why a step-1 page is 540 px tall while a step-3 receipt is 836 px tall. |
-| **Application Template** | Mundi library | Pre-assembled Sidebar + Page Template shell. Use this **only when scaffolding a brand-new product area** that does not yet have a Page Template. For existing flows, place Sidebar + Page Template directly. |
+| **Application Template** | Mundi library | Scaffold component for creating page frames quickly. Contains a pre-inserted Sidebar (with fixed position settings), a default Page Template instance. Has pre-defined background color, and auto-layout settings. **Insert → detach → page frame is ready.** Then swap the default Page Template instance with the step's actual Page Template and configure from there. |
 
-> **Build order for a new screen:** (1) place Sidebar instance, (2) place Page Template instance to its right, (3) override Page Title, (4) populate Main. Do not start from a blank frame and do not start by dropping forms — anchor on the Page Template first.
+> **Build order for a new page frame:** (1) insert `Application Template` from the library, (2) detach it — the shell (Sidebar + default Page Template) is now local, (3) swap the default Page Template instance with the step's actual Page Template (local master or published component), (4) override Page Title, (5) populate Main.
 
 ### Page Template lifecycle
 
@@ -123,25 +123,26 @@ Mundi Page Templates evolve through three stages — pick the right one for the 
 
 When you find a Page Template that is already a **library component instance**, treat it as immutable from inside the state frame — open the source component to make structural changes, never detach.
 
-## 🔑 Mundi Flow Pattern — Page Template as Master
+## 🔑 Mundi Flow Pattern — One Page Template per Step
 
-Mundi flows are **collections of page frames sharing one Page Template**. Every state (loading, empty, filled, error, success, confirmation) is its own page frame containing an instance of the same Page Template. States are produced **only** by:
+Mundi flows are **sequences of steps, each step backed by its own Page Template**. A step's Page Template is shared by all variants of that step (e.g. empty form, filled form, form with error). Different steps have structurally different layouts (form → review with conditional notifications → confirmation receipt), so they require separate Page Templates.
+
+**Within a step**, all variants are page frames containing an instance of the **same** step Page Template. Variants are produced **only** by:
 
 - toggling visibility of nested layers (show error banner, hide empty state)
-- swapping nested component variants (button `loading` → `default`, form field `default` → `error`)
+- swapping nested component variants (button `disabled` → `idle`, form field `default` → `error`)
 - overriding text via Asset layers
 - inserting/removing items in slot-style auto-layout containers (e.g. recipient list)
 
-A single edit to the source Page Template propagates to every state in the flow — change a form label, remove a field, swap an action button, all states update.
+A single edit to a step's source Page Template propagates to every variant of that step — change a form label, remove a field, swap an action button, all variants of that step update.
 
 ### Real-world reference
 
 The outbound transfer flow (`Transfers / Outbound`) is the canonical reference:
 
-- **One Page Template** (`Outbound Transfer Page Template`, published as a library component) drives the whole flow.
-- **Steps:** flow has discrete logical steps (`1`, `2`, `3`). Each step has a different Page Template **state** (form → review → confirmation), surfaced by overriding the same component instance.
-- **Variants per step:** within each step, alternative states (validation error, suggested recipients shown, balance warning, etc.) get their own page frame as `1.1`, `1.2`, `1.3`, ...
-- **Overlay states** (`Delay` modal) are **separate page frames** using a different overlay component (`Alert Screen`) with a darkened backdrop — not a toggle inside the Page Template.
+- **Three steps, each with its own Page Template.** Step 1 (form) and Step 2 (review) and Step 3 (confirmation) are structurally different — e.g. the review step includes conditional notification panels that the form step doesn't need. Each step has its own Page Template component.
+- **Variants per step:** within each step, alternative states (validation error, suggested recipients shown, balance warning, etc.) are page-frame duplicates sharing the **same step's** Page Template. Named `1.1`, `1.2`, `1.3`, ...
+- **Overlay states** (`Delay` modal) are **separate page frames** using a different overlay component (`Alert Screen`) with a darkened backdrop — not a toggle inside any Page Template.
 
 ### Canvas layout convention
 
@@ -172,24 +173,25 @@ The parent **Section** wraps the entire flow with a domain-language name (e.g. `
 
 ### Building a new flow
 
-1. **Decide on the Page Template source:**
-   - First-of-its-kind flow → start with a **local master frame** (build inside a working section).
-   - Existing flow being extended → **place an instance** of the published Page Template (or the existing local master).
-2. **Create the page frame:** `1512 × 982` (or hug height). Place a `Sidebar` instance at `x=0`, then the Page Template instance at `x=256`.
-3. **Build the master state first** (typically Step 1, default state). All conditional layers present, visibility set to the most-common state.
-4. **Duplicate the page frame** for each subsequent state and step. Lay them out per the canvas grid above. Name them per the naming convention.
-5. **In each duplicate, only toggle / swap / override** — never restructure.
-6. **Overlay states get their own page frame** using `Alert Screen` (or `Modal Screen`, `Dialog Screen` as applicable), not a toggle inside the Page Template.
-7. **Promote the master to a library component** when the flow stabilizes: convert the master frame to a component, publish it, then re-instance it across all state page frames so future updates flow through the library.
+1. **Enumerate the steps and their Page Templates.** List each logical step (form, review, confirmation…). For each step, decide whether a Page Template already exists (published library component or local master). A structurally different step always gets its own Page Template — do not try to stretch one Page Template across structurally incompatible steps.
+2. **For each step's Page Template:**
+   - Existing → locate the published library component or local master frame.
+   - New → create a **local master frame** in a working section. Build the full layout for that step (all conditional layers present, visibility set to the default/most-common state).
+3. **Create the Step-1 canonical page frame** using `Application Template`: insert → detach → swap the default Page Template instance with the Step-1 Page Template → override Page Title → populate Main.
+4. **Duplicate the page frame for each variant of Step 1.** Name `1.1`, `1.2`, etc. In each duplicate, only toggle / swap / override — never restructure.
+5. **Repeat steps 3–4 for each subsequent step,** each with its own Page Template. Lay out per the canvas grid: columns = steps, rows = variants.
+6. **Overlay states get their own page frame** using `Alert Screen` (or `Modal Screen`, `Dialog Screen` as applicable), not a toggle inside any Page Template.
+7. **Promote step Page Templates to library components** when the flow stabilizes: convert each master frame to a component, publish it, then re-instance across the step's variant page frames.
 
 > **Never edit a duplicated state's structure.** If you find yourself adding a layer to a single state, that layer belongs on the source Page Template.
 
 ### Updating a flow
 
-- Open the **source Page Template** (local master frame, or the published library component) — not a state page frame.
+- **Identify which step's Page Template** the change belongs to. Only that step's variant frames will be affected.
+- Open the **source Page Template for that step** (local master frame, or the published library component) — not a variant page frame.
 - Make the change there.
-- Verify a sample of state page frames picked up the change.
-- If a state diverges, restore it by re-instancing the master and re-applying only its toggles.
+- Verify a sample of that step's variant page frames picked up the change.
+- If a variant diverges, restore it by re-instancing the step's source Page Template and re-applying only its overrides.
 - For **library-published** Page Templates: if the change is structural, edit the source component file, republish, then have the team accept library updates in the consuming file.
 
 ## Workflow — Mundi Overlay on `chassis-create-design`
@@ -203,10 +205,10 @@ Apply these Mundi-specific overrides at each step of the `chassis-create-design`
 - For source = live URL, expect `app.getmundi.app/...`. Treat it like any web source — trigger the parallel `generate_figma_design` capture.
 
 ### Step 2 — Collect Components, Variables, Styles
-- **Look for an existing source Page Template first:**
-  - Check for a published library component matching the flow name (e.g. `Outbound Transfer Page Template`).
+- **For each step, look for an existing source Page Template:**
+  - Check for a published library component matching the step's name.
   - If none, search the file for a local master frame in a working section.
-  - Only fall back to `Application Template` when the flow has no Page Template at all.
+  - If neither exists, this step needs a new Page Template — plan to build one.
 - For the Mundi **Sidebar**, never rebuild — use the library instance directly.
 - Mundi-preferred Chassis variants (see [components.md](./references/components.md) for full list):
   - Forms: **floating** for primary flow forms; **regular** for filters/settings.
@@ -214,10 +216,9 @@ Apply these Mundi-specific overrides at each step of the `chassis-create-design`
   - Tables: **bordered** rows for data-heavy views; default for compact lists.
   - Cards: use `card-content` wrapper; reserve cards for grouping unrelated content blocks.
 ### Step 3 — Create the Wrapper Frame
-- **Width:** `1512 px` (Mundi root width — Chassis 1440 + 256 sidebar). Page Template width: `1256 px`.
+- **Use `Application Template`:** insert from the Mundi library → detach immediately. The detached frame has the correct `1512` width, horizontal auto-layout, Sidebar (256 px, fixed position), and a default Page Template instance — background and layout are pre-configured.
+- **Swap the default Page Template instance** with the step's actual Page Template (local master or published component).
 - **Height:** typically `982 px` for fixed-viewport reference frames; let the Page Template itself hug content.
-- **Background:** bind to `color/context/default/bg-main` so theme switching works.
-- **Layout:** horizontal auto-layout with two children — Sidebar (256 fixed) at `x=0` and Page Template (FILL) at `x=256`.
 - **Naming:** `{Domain} / {Subdomain} - {Step}[.{Variant}]`. Group all frames of one flow inside a Section named for the flow's user-facing label.
 
 ### Step 4 — Build Each Section
@@ -232,8 +233,8 @@ Apply these Mundi-specific overrides at each step of the `chassis-create-design`
 - For Mundi, also screenshot at `Theme = light` and `Theme = dark` if both are in scope — Mundi ships both.
 
 ### Step 6 — Updating an Existing View
-- For flow updates: edit the **master** Page Template, not the state page frames.
-- For shell updates (sidebar, app chrome): edit the Application Template instance once and let detachment cascade.
+- For flow updates: edit the **step's source** Page Template (local master or library component), not the variant page frames.
+- For shell updates (Sidebar variant, app chrome): swap the Sidebar instance inside each affected page frame to the current Mundi library variant.
 - Use `instance.swapComponent(newVariant)` to preserve overrides.
 
 Detailed Mundi procedures (new flow, update flow, reconnect) live in [workflow.md](./references/workflow.md).
@@ -271,23 +272,13 @@ Quick reference — full catalog with variants and Mundi rationale lives in [com
 | Detail panel / form drawer | `offcanvas` (right, 400 px) | full-page navigation |
 | Empty state | `card` with illustration + primary action | inline text-only message |
 
-## Mundi Theme & Mode
-
-Mundi inherits Chassis's Brand × Theme × App collections. Mundi-specific defaults:
-
-- **Brand:** `Mundi`
-- **Theme:** `Light` (default), `Dark` (supported on every screen).
-- **App:** `Mundi Web`.
-
-Apply theme overrides at the **Application Template** wrapper, not at section level — this lets the entire shell switch atomically. See [patterns.md → Mundi theme switching](./references/patterns.md#mundi-theme-switching).
-
 ## Mundi-Specific Critical Rules
 
 These extend the `chassis-create-design` critical rules — none of those are overridden.
 
-1. **Page frame = Sidebar + Page Template, side by side.** Never build the sidebar or page chrome from primitives. Use `Application Template` only when scaffolding a brand-new product area.
-2. **One Page Template per flow.** All steps and variants share the same Page Template (local master OR published library component). All states are page-frame duplicates with toggles only — no structural divergences.
-3. **Edit the source, not the state.** Updates to a flow happen on the source Page Template; state frames pick them up automatically.
+1. **Always start a new page frame from `Application Template`.** Insert → detach → swap the default Page Template → configure. Never assemble the shell from primitives.
+2. **One Page Template per step, not per flow.** All variants of a step share its Page Template. Structurally different steps (form vs. review vs. confirmation) each have their own Page Template.
+3. **Edit the step's source Page Template, not the variant frames.** Updates to a step happen on its source Page Template; variant frames pick them up automatically.
 4. **Follow the canvas grid:** columns = steps, rows = variants. Name frames `{Domain} / {Subdomain} - {Step}[.{Variant}]`.
 5. **Overlay states get their own page frame** using `Alert Screen` / modal-screen components — not a toggle inside the Page Template.
 6. **Page Title `Actions` slot is for primary domain actions only.** Filters and view controls belong in `Main`.
