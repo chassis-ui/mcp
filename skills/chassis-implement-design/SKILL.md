@@ -120,16 +120,19 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 
 ## Component Catalog → Chassis CSS Map
 
-Every documented Chassis component family has a canonical HTML/CSS pattern. The full catalog with output snippets is in [components.md](./references/components.md). Key families:
+Every documented Chassis component family has a canonical HTML/CSS pattern. The full catalog with output snippets is in [components.md](./references/components.md). Key families that appear in Chassis Figma views:
 
-- **Buttons** — `<button class="button {context} {style?} {size?}">…</button>` ; groups via `<div class="button-group">…</div>`
+- **Buttons** — `<button class="button {context} {style?} {size?}">…</button>` ; groups via `<div class="button-group">…</div>` ; floating, close, dropdown variants
 - **Forms** — `<form>` with `<div class="form-floating | form-outline | form-check">` blocks; pair real `<label>` with `<input class="form-control">` / `<select class="form-select">`
 - **Cards** — `<div class="card">` with `card-content`, `card-title`, `card-body`, `card-footer` (Bootstrap subpart names are flipped)
 - **Tables** — `<table class="table {variant?}">` with semantic `<thead>/<tbody>` and `<th scope="…">`
-- **Navigation** — `<nav class="navbar">`, `<ul class="nav">`, `<ul class="pagination">`, `<ol class="breadcrumb">`
-- **Surfaces** — Modal, Offcanvas, Popover, Tooltip — wired via `data-cx-toggle` / `data-cx-target`
-- **Feedback** — Alert, Toast, Notification, Progress, Skeleton, Spinner
-- **Communication** — Badge, Chip, Avatar, List
+- **Navigation** — `<nav class="navbar">`, `<ul class="nav">` (tabs), `<ul class="pagination">`, `<ol class="breadcrumb">`, mobile nav top/bottom
+- **Surfaces** — Modal, Accordion, Section, Page — wired via `data-cx-toggle` / `data-cx-target` where interactive
+- **Feedback** — Alert, Notification, Message, Tooltip, Progress
+- **Data** — Table, Chart, Carousel, Badge, Chip, Story, List
+- **Communication** — Comment
+
+For Chassis CSS classes that don't yet have a Figma component (e.g., toast, popover, offcanvas, skeleton, spinner, avatar), see [css-classes.md](./references/css-classes.md) — these may appear in hand-authored markup but won't typically come out of `get_design_context`.
 
 ## Token Translation
 

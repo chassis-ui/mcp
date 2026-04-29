@@ -138,9 +138,8 @@ If a context-size token controls a wrapper width, prefer mapping it to a layout 
 | Figma variable | Chassis class |
 | --- | --- |
 | `borderRadius/context/zero` | `rounded-0` |
+| `borderRadius/context/round` | `rounded-round` (pills, avatars, fully-rounded) |
 | `borderRadius/context/{ctx}` | `rounded-{ctx}` |
-| pill | `rounded-pill` |
-| circle | `rounded-circle` |
 
 ## Border width
 

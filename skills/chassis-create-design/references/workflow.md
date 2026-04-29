@@ -57,8 +57,8 @@ For each section in order:
     - Import via `componentKey`
     - Set explicit position if parent is **not** auto-layout (preserve `x`, `y`, `width`, `height`)
     - Set variants
-    - Set `has-*` boolean props
-    - Set `*-instance` swap props (icons, etc.)
+    - Inspect `componentProperties` for `has-*` / `is-*` / `show-*` keys — **all default to `true`**. Set the unwanted ones to `false` **before** Asset overrides, otherwise the instance arrives showing every decoration. See [Boolean Visibility Props](./patterns.md#boolean-visibility-props--default-true).
+    - Set `*-instance` swap props (icons, etc.) for the boolean props you keep `true`
 
 13. **Override Asset text.** For each text content:
     - Locate the nested `*Asset` layer ([Asset Override Pattern](./patterns.md#asset-override-pattern))
@@ -203,10 +203,11 @@ If you cannot complete an action after one attempt:
 ## Quality Checklist (run before declaring done)
 
 - [ ] Every text is set via an Asset layer, not a parent prop
+- [ ] Boolean visibility props (`has-*` / `is-*` / `show-*`) explicitly subtracted to match design intent (defaults are `true`)
 - [ ] Every color is a `color/context/*` token (or explicitly user-approved literal)
 - [ ] Every spacing is a `space/context/*` or `space/unit/*` token
 - [ ] Every typography is a `font/*` text style
-- [ ] No deprecated components (`Dropdown Button @ 0.2`)
+- [ ] No deprecated `… @ x.x`-named components in use
 - [ ] Button sizes are consistent within each action group
 - [ ] One form style throughout each form
 - [ ] Multi-theme combinations validated (if applicable)

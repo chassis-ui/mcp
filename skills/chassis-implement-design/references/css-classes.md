@@ -173,7 +173,7 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 - Border presence: `border`, `border-top`, `border-end`, `border-bottom`, `border-start`, `border-0`
 - Border color: `border-{role}` (`border-primary`, `border-success`, …)
 - Border width (semantic): `border-{size}` (where size is a semantic token from the borderWidth family)
-- Radius: `rounded`, `rounded-{ctx}` (semantic), `rounded-circle`, `rounded-pill`, `rounded-{side}`
+- Radius: `rounded`, `rounded-{ctx}` (semantic, where `ctx` includes `round` for pills/avatars), `rounded-{side}`
 
 ## Breakpoints
 

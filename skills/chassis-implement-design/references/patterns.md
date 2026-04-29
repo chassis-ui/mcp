@@ -6,37 +6,35 @@ Patterns and anti-patterns for translating Chassis Figma views into Chassis CSS 
 
 Chassis components in Figma expose **no top-level text properties**. Text content sits inside nested instances whose name ends in `Asset`.
 
-### Walking the tree
+### The rule
 
-When `get_design_context` returns a Chassis component instance, walk its children and look for:
+When `get_design_context` returns a Chassis component instance, walk its children. **Any layer whose name ends in `Asset` is a content slot** — its TEXT (or image / icon reference) is the real content; the wrapper itself is a Figma authoring convention with no DOM equivalent.
 
-- `Text Asset`
-- `Title Text Asset`, `Title Asset`
-- `Subtitle Asset`, `Subtitle Text Asset`
-- `Label Asset`
-- `Description Asset`, `Description Text Asset`
-- `Body Asset`, `Body Text Asset`
-- `Action Asset` (button labels)
-- `Helper Asset` (form helper text)
-- `Caption Asset`
-- `Badge Asset`, `Chip Asset`
-- `Icon Asset` (icon slot — resolve to icon slug; do not render Asset wrapper)
+Don't try to enumerate Asset names ahead of time; the library evolves. Instead:
 
-### Mapping Asset → semantic element
+1. List every child whose name matches `*Asset`.
+2. Read its content (TEXT for text assets, image hash for image assets, icon slug for `Icon Asset`).
+3. Pick the semantic HTML element from the **role implied by the asset's name and its parent component context** (a "Title"-style asset inside a card becomes `<h5 class="card-title">`; the same name inside a page header becomes `<h1>`).
+4. Inline the content into that element. **Do not emit the Asset wrapper as a DOM node.**
 
-| Asset role | Target element |
+### Mapping role → semantic element
+
+The asset's name suffix and its parent component's role together determine the target element. Common patterns (illustrative — confirm against the actual node tree, don't memorize):
+
+| Role suffix in asset name | Typical target element |
 | --- | --- |
-| `Title Text Asset` (page) | `<h1>` (or `<h2>` per page hierarchy) |
-| `Title Text Asset` (card) | `<h5 class="card-title">` |
-| `Subtitle Asset` (page) | `<p class="font-lead">` |
-| `Subtitle Asset` (card) | `<h6 class="card-subtitle fg-subtle">` |
-| `Label Asset` (form) | `<label class="form-label" for="…">` |
-| `Label Asset` (badge/chip) | inline content of `<span class="badge …">` |
-| `Description Asset` | `<p>` (sometimes `<p class="card-body">`) |
-| `Action Asset` | inline content of the wrapping `<button>` / `<a>` |
-| `Helper Asset` | `<small class="form-text">` |
-| `Caption Asset` | `<figcaption>` or `<small>` |
-| `Icon Asset` | `<svg class="icon">` with the resolved sprite reference |
+| Title / Heading | `<h1>`–`<h6>` per outline; `<h5 class="card-title">` inside a card |
+| Subtitle | `<h6 class="card-subtitle fg-subtle">` inside a card; `<p class="font-lead">` on a page header |
+| Label (form-adjacent) | `<label class="form-label" for="…">` |
+| Label (badge / chip / button) | inline content of the wrapping `<span>` / `<button>` |
+| Description / Body | `<p>` (sometimes `<p class="card-body">` inside a card) |
+| Action | inline content of the wrapping `<button>` / `<a>` |
+| Helper | `<small class="form-text">` |
+| Caption | `<figcaption>` or `<small>` |
+| Icon | `<svg class="icon">` with the resolved sprite reference |
+| Image | `<img>` with the transferred asset (or `<picture>` for theme-conditional) |
+
+If the asset's role isn't obvious from its name and parent, fall back to the screenshot and pick the element that matches the rendered semantics.
 
 ### Example
 

@@ -91,7 +91,7 @@ Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skil
 - **2b (variables):** Chassis variables follow strict namespaces — `color/context/...`, `space/context/...`, `font/...` etc. See [tokens.md](./references/tokens.md). **Never** conclude "no variables" from `getLocalVariableCollectionsAsync()` alone — `search_design_system` with `includeVariables: true` is the source of truth for library variables.
 
 ### Step 3 — Create the Wrapper Frame First
-- Standard Chassis widths: full page `1440`, modal `640`, drawer `360`, panel `400`. Adapt to the source.
+- Size the wrapper to a Chassis `grid/breakpoint/*` token rather than a pixel literal. Most common page widths: `2xlarge` (desktop), `large` (tablet), `xsmall` (mobile). Modals, drawers, and panels size off `size/context/*` or fixed component widths defined by the source. Adapt to the source.
 - Bind background/spacing to Chassis context tokens immediately so theme switching works for free.
 
 ### Step 4 — Build Each Section Inside the Wrapper
@@ -130,12 +130,12 @@ Detailed Chassis procedures, including the full Reconnect Mode playbook, are in 
 
 ## Component Catalog
 
-Chassis ships 43 documented component families covering Actions, Forms, Navigation, Surfaces, Feedback, Data, and Communication. See [components.md](./references/components.md) for the full catalog and [component-keys.md](./references/component-keys.md) for slug → `fileKey` lookups.
+Chassis ships documented component families covering Actions, Forms, Navigation, Surfaces, Feedback, Data, and Communication. See [components.md](./references/components.md) for the full catalog and [component-keys.md](./references/component-keys.md) for slug → `fileKey` lookups.
 
 Families with non-trivial composition rules:
 
 - **Buttons** (solid, smooth, outline, link, group) — see [patterns.md → Buttons](./references/patterns.md#buttons)
-- **Forms** (regular, floating, outline + form-check) — see [patterns.md → Forms](./references/patterns.md#forms)
+- **Forms** (regular, floating, outline, form-check — each ships a bare input + a wrapper field) — see [patterns.md → Forms](./references/patterns.md#forms)
 - **Tables** (cell → row → table compose-up) — see [patterns.md → Tables](./references/patterns.md#tables)
 
 ## Theme & Mode Awareness
@@ -156,7 +156,7 @@ See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 4. **Don't reveal hidden sub-layers** unless explicitly required.
 5. **Preserve `x`/`y`/`width`/`height`** when replacing inside non-auto-layout parents.
 6. **Don't convert frames to auto-layout** without explicit user request.
-7. **Never use deprecated `Dropdown Button @ 0.2`** — use `Dropdown Button` (`b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`).
+7. **Never use components named `… @ x.x`** — the `@ x.x` suffix marks a deprecated-but-still-published version. Use the same-named component without the suffix. See [components.md → Deprecated / Avoid](./references/components.md#deprecated--avoid).
 8. **One section per `use_figma` call.**
 9. **No raw colors / spacing / type** — always bind a Chassis variable; if none fits, ask the user before hardcoding.
 10. **Don't mix button sizes within an action group; don't mix form styles within a form.**
@@ -179,7 +179,7 @@ If everything is blocked, say so plainly with the specific failure reason.
 ## References
 
 - [tokens.md](./references/tokens.md) — Complete Chassis token system reference
-- [components.md](./references/components.md) — Full Chassis component catalog (43 families)
+- [components.md](./references/components.md) — Full Chassis component catalog
 - [component-keys.md](./references/component-keys.md) — Slug → Figma `fileKey` map and `componentKey` resolution procedure
 - [patterns.md](./references/patterns.md) — Asset overrides, buttons, forms, tables, themes, anti-patterns
 - [workflow.md](./references/workflow.md) — Detailed Chassis Build & Reconnect playbooks

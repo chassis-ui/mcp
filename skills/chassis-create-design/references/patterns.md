@@ -68,7 +68,7 @@ The two patterns visible in this one example:
 
 ### Why?
 
-Asset overrides decouple content from layout. The same Text Asset can be reused across button styles, sizes, and states without each component needing its own text prop. It also lets components hide/show text via boolean variants (`has-icon-only`, etc.) without breaking the API.
+Asset overrides decouple content from layout. The same Text Asset can be reused across button styles, sizes, and states without each component needing its own text prop. It also lets boolean visibility props gate optional decorations without breaking the API.
 
 ---
 
@@ -136,11 +136,11 @@ button.setProperties({
 
 ### Context variants
 
-All button styles accept the full set of color contexts: `default`, `alternate`, `primary`, `secondary`, `success`, `error`, `warning`, `info`, `black`, `white`. Choose by intent:
+All button styles accept the full set of color contexts: `default`, `alternate`, `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `black`, `white`. Choose by intent:
 
 - **Primary action** → `context: primary`
 - **Default secondary action** → `context: default`
-- **Destructive action** → `context: error`
+- **Destructive action** → `context: danger`
 - **Confirm success** → `context: success`
 
 ### Size variants
@@ -208,16 +208,12 @@ Use `form-check` for both checkboxes and radio buttons (see `Check Input` vs. `F
 - **State**: `idle`, `disabled`, `error`, `success`
 - **Checked**: `true` / `false`
 
-### Field composition
-
-Most form components compose: outer field wrapper + nested label + nested input + nested helper/error text. Override via the appropriate `*Asset` layers.
-
 ### Validation states
 
-Use `state` and/or `context` props to show validation:
+Use `state` prop to show validation:
 
-- **Error** → `context: error` + error message via `Helper Text Asset`
-- **Success** → `context: success` + confirmation via `Helper Text Asset`
+- **Error** → `state: error` + error message via `Helper Text Asset`
+- **Success** → `state: success` + confirmation via `Helper Text Asset`
 - **Disabled** → `state: disabled`
 
 ---
@@ -317,7 +313,7 @@ Reject these when working in Chassis:
 - ❌ **Revealing hidden sub-layers** — only the documented prop API is supported
 - ❌ **Mixing button sizes within an action group** — pick one size per group
 - ❌ **Mixing form styles within one form** — pick `regular`, `floating`, or `outline` and stick with it
-- ❌ **Using `Dropdown Button @ 0.2`** — deprecated, use `Dropdown Button`
+- ❌ **Using a `… @ x.x`-named component** — the `@ x.x` suffix marks deprecated versions; use the unversioned same-named component instead
 
 ### Layout & structure
 

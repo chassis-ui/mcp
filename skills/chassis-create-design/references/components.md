@@ -1,6 +1,6 @@
 # Chassis Component Catalog
 
-37 documented component families. Group by domain. Always import via `componentKey` (not name) and override text via the [Asset pattern](./patterns.md#asset-override-pattern).
+Chassis component families grouped by domain. Always import via `componentKey` (not name) and override text via the [Asset pattern](./patterns.md#asset-override-pattern).
 
 For per-component variants, props, and specs, see the live docs at https://chassis-ui.com/figma/docs/components/{slug}.
 
@@ -36,8 +36,13 @@ When you need a component:
 | `form-floating`  | Material-style fields with floating labels                           | [Forms pattern](./patterns.md#forms)    |
 | `form-outline`   | Material-style fields with prominent borders, no background          | [Forms pattern](./patterns.md#forms)    |
 | `form-check`     | Checkboxes and radio buttons                                         | [Forms pattern](./patterns.md#forms)    |
-| `dropdown`       | Dropdown menu / select-style picker                                  |                                         |
-| `date-picker`    | Date/range selection input                                           |                                         |
+
+### Selection menus
+
+| Slug          | Purpose                                                                       |
+| ------------- | ----------------------------------------------------------------------------- |
+| `dropdown`    | Selectable menu list — single/multi pick from a popover anchored to a trigger |
+| `date-picker` | Popover calendar — single date or date-range selection, anchored to a trigger |
 
 ### Navigation
 
@@ -120,14 +125,23 @@ Most Chassis components share these variant axes — confirm per component:
 | Variant       | Typical values                                                    |
 | ------------- | ----------------------------------------------------------------- |
 | `size`        | `small`, `medium` (default), `large`                              |
-| `context`     | `default`, `alternate`, `primary`, `secondary`, `success`, `error`, `warning`, `info`, `black`, `white` |
+| `context`     | `default`, `alternate`, `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `black`, `white` |
 | `state`       | `idle` (default), `hover`, `press`, `disabled`                    |
 | `has-*`       | Boolean toggles for optional sub-elements (icons, badges, etc.)   |
 | `*-instance`  | Instance-swap props for nested icons / sub-components             |
 
 ## Deprecated / Avoid
 
-- **`Dropdown Button @ 0.2`** — DO NOT USE. Replaced by `Dropdown Button` (componentKey `b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`).
+### Versioned-name convention
+
+Any component whose name ends with `@ x.x` (e.g. `Dropdown Button @ 0.2`) is **deprecated but not yet unpublished**. It still resolves via the API for backward compatibility but must not be used in new work. The replacement is the same-named component **without** the `@ x.x` suffix (e.g. `Dropdown Button`).
+
+- When `search_design_system` returns both, always pick the unversioned one.
+- When inheriting an existing screen that uses a `@ x.x` instance, treat it as a swap candidate (see [workflow.md → Reconnect Mode](./workflow.md#reconnect-mode--existing-screen-with-detached-layers)).
+
+### Known deprecations
+
+- **`Dropdown Button @ 0.2`** — use `Dropdown Button` (componentKey `b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`).
 
 ## When a Component Doesn't Exist
 

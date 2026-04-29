@@ -34,9 +34,6 @@ Canonical mapping between Chassis component slugs and the **Figma `fileKey`** th
 | `close-button`    | `yO0zpHJQGuWVqnHA9YhRNB` |
 | `floating-button` | `inAGhi76bgcUXchfDHa4Wg` |
 | `toggle-button`   | `LTDfhQG0vX9XGzSrDHMT65` |
-| `dropdown`        | `C2b4WDjevEFhFVc7WfVIsN` |
-
-> ⚠️ Use `dropdown` (above). The legacy `Dropdown Button @ 0.2` is deprecated. Replacement componentKey: `b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`.
 
 ### Forms
 
@@ -46,8 +43,13 @@ Canonical mapping between Chassis component slugs and the **Figma `fileKey`** th
 | `form-floating` | `vp376sNUX96hxaQMRfXegy` |
 | `form-outline`  | `nv1yV59dXHKXniJNkSGfGw` |
 | `form-check`    | `8ncAnmXmhL1aYegPduKB3N` |
-| `form-input`    | `DrLh8nepRyFEIintLil7LO` |
-| `date-picker`   | `aopn74YwQWPCEhYyoRo76n` |
+
+### Selection menus
+
+| Slug          | fileKey                  |
+| ------------- | ------------------------ |
+| `dropdown`    | `C2b4WDjevEFhFVc7WfVIsN` |
+| `date-picker` | `aopn74YwQWPCEhYyoRo76n` |
 
 ### Navigation
 

@@ -32,7 +32,7 @@ Color is built on a **context × role × emphasis** grid. Each context provides 
 | `primary`   | Primary actions and highlights                                         |
 | `secondary` | Secondary actions and highlights                                       |
 | `success`   | Success states and messages                                            |
-| `error`     | Error states and messages                                              |
+| `danger`    | Destructive states and messages                                        |
 | `warning`   | Warning states and messages                                            |
 | `info`      | Informational states and messages                                      |
 | `black`     | Black/near-black colors persistent across themes                       |
