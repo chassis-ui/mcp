@@ -4,26 +4,50 @@ Conventions and recipes that apply across the Chassis library. Read the relevant
 
 ## Asset Override Pattern
 
-Chassis components **do not** expose top-level text properties. All text content is set via nested instances whose layer name ends in `Asset`.
+Chassis components **do not** expose top-level text properties. All text content is set via nested instances whose layer name ends in `Asset`. Most Chassis components also gate optional sub-elements behind boolean props — see [Boolean Visibility Props](#boolean-visibility-props--default-true) below.
 
 ### How it works
 
+A representative Chassis component (Solid Button) has this structure. The same shape — frame-per-feature gated by a boolean, content slotted via an `Asset` instance — repeats across the library:
+
+**Layer tree**
+
 ```
-Solid Button (instance)
-└─ Text Asset (nested instance)        ← override TEXT property HERE
-   └─ "Click me" (text node, not directly editable as a top-level prop)
+Solid Button (component)
+├─ Icon Start Frame      [Auto-Layout frame]
+│  └─ Icon Start         [Placeholder Icon instance]
+├─ Label Frame           [Auto-Layout frame]
+│  └─ Label Asset        [Basic Text Asset instance]
+│     └─ Label Text      [Text node]
+├─ Badge Frame           [Auto-Layout frame]
+│  └─ Solid Badge        [Solid Badge instance]
+├─ Caret Frame           [Auto-Layout frame]
+│  └─ Caret Icon         [chevron-down icon instance]
+└─ Icon End Frame        [Auto-Layout frame]
+   └─ Icon End           [Placeholder Icon instance]
 ```
 
-### Common Asset names
+**Component properties on `Solid Button`**
 
-| Asset layer name      | Found in                                                   |
-| --------------------- | ---------------------------------------------------------- |
-| `Text Asset`          | Buttons, badges, chips, links                              |
-| `Label Asset`         | Form fields, switches, checkboxes                          |
-| `Title Text Asset`    | Cards, modals, sections, alerts                            |
-| `Subtitle Asset`      | Cards, list items                                          |
-| `Description Asset`   | Cards, alerts, notifications                               |
-| `Icon Placeholder`    | Any component with a swappable icon (use instance-swap)    |
+| Prop                  | Type           | Default            | Bound to                                                              |
+| --------------------- | -------------- | ------------------ | --------------------------------------------------------------------- |
+| `has-icon-start`      | Boolean        | `true`             | `Icon Start Frame` visibility                                         |
+| `icon-start-instance` | Instance Swap  | `Placeholder Icon` | `Icon Start` instance                                                 |
+| `has-badge`           | Boolean        | `true`             | `Badge Frame` visibility                                              |
+| `is-dropdown`         | Boolean        | `true`             | `Caret Frame` visibility                                              |
+| `has-icon-end`        | Boolean        | `true`             | `Icon End Frame` visibility                                           |
+| `icon-end-instance`   | Instance Swap  | `Placeholder Icon` | `Icon End` instance                                                   |
+
+**Component properties on the nested `Label Asset` (Basic Text Asset)**
+
+| Prop   | Type | Default  | Bound to                  |
+| ------ | ---- | -------- | ------------------------- |
+| `text` | Text | `Button` | `Label Text` `characters` |
+
+The two patterns visible in this one example:
+
+- **Boolean visibility props on the parent** gate optional decoration frames (`Icon Start Frame`, `Badge Frame`, `Caret Frame`, `Icon End Frame`). Default `true` — see [Boolean Visibility Props](#boolean-visibility-props--default-true).
+- **Text content lives on a nested `*Asset` instance** (`Label Asset`), not on the parent. To change the label, override the `text` prop **on `Label Asset`** — the parent `Solid Button` has no `text` prop.
 
 ### Procedure
 
@@ -45,6 +69,57 @@ Solid Button (instance)
 ### Why?
 
 Asset overrides decouple content from layout. The same Text Asset can be reused across button styles, sizes, and states without each component needing its own text prop. It also lets components hide/show text via boolean variants (`has-icon-only`, etc.) without breaking the API.
+
+---
+
+## Boolean Visibility Props — Default `true`
+
+**Almost every Chassis component defaults its boolean visibility props to `true`.** A freshly placed instance shows every optional decoration — leading icon, trailing icon, badge, dropdown caret, helper text, sub-labels, etc. — by default. To get a minimal/canonical instance you must explicitly turn the unwanted ones **off**.
+
+### Example: a label-only Solid Button
+
+A freshly placed `Solid Button` instance arrives with start icon + badge + dropdown caret + end icon all visible. To get a plain text-only button:
+
+```ts
+button.setProperties({
+  "has-icon-start": false,
+  "has-badge":      false,
+  "is-dropdown":    false,
+  "has-icon-end":   false,
+});
+// Then override the label via Asset Override:
+//   labelAsset.setProperties({ text: "Save" });
+```
+
+### Procedure for any Chassis component
+
+1. After placing an instance, inspect its `componentProperties` for keys matching `has-*` / `is-*` / `show-*`.
+2. Decide which sub-elements your design actually needs.
+3. Set the rest to `false` in a single `setProperties()` call.
+4. For any `has-*: true` you keep, also set the matching `*-instance` (Instance Swap) prop — e.g. `icon-start-instance` for `has-icon-start: true`.
+5. Then apply Asset Overrides for text content on the nested `*Asset` layers.
+
+### Why this matters
+
+- A button you intended as "Save" arrives showing icon + badge + caret + icon — looks visually wrong, throws off auto-layout sizing, and obscures intent in the file.
+- Forgetting to turn props off is the **most common cause** of Chassis instances looking heavier than the source design.
+- The default-`true` convention is intentional: it makes every prop discoverable from the Inspector. Authors are expected to subtract, not add.
+
+### Anti-pattern
+
+```
+❌ Placing the instance, overriding the label, leaving everything else default:
+   button.setProperties({ /* nothing */ });
+   labelAsset.characters = "Save";
+   // Result: "[▶] Save [99] [▾] [▶]" — not what you wanted.
+
+✅ Turn off unwanted decorations first, then override content:
+   button.setProperties({
+     "has-icon-start": false, "has-badge": false,
+     "is-dropdown": false,    "has-icon-end": false,
+   });
+   labelAsset.setProperties({ text: "Save" });
+```
 
 ---
 
@@ -80,12 +155,14 @@ Hierarchy via style is encouraged — e.g., a footer with `[Cancel: outline] [Sa
 
 ### Boolean props (common)
 
-| Prop              | Effect                                                |
-| ----------------- | ----------------------------------------------------- |
-| `has-icon-start`  | Show leading icon                                     |
-| `has-icon-end`    | Show trailing icon                                    |
-| `has-badge`       | Show inline badge after label                         |
-| `is-dropdown`     | Show dropdown caret indicator                         |
+| Prop              | Default | Effect                                                |
+| ----------------- | ------- | ----------------------------------------------------- |
+| `has-icon-start`  | `true`  | Show leading icon                                     |
+| `has-icon-end`    | `true`  | Show trailing icon                                    |
+| `has-badge`       | `true`  | Show inline badge after label                         |
+| `is-dropdown`     | `true`  | Show dropdown caret indicator                         |
+
+> **All four default to `true`.** A freshly placed Solid/Smooth/Outline/Link Button instance arrives showing every decoration. For a plain label-only button, set the unwanted props to `false` explicitly. See [Boolean Visibility Props — Default `true`](#boolean-visibility-props--default-true).
 
 When `has-icon-*: true`, also set `icon-*-instance` (instance-swap) to specify the icon component.
 

@@ -67,6 +67,14 @@ Chassis components expose **no top-level text properties**. Text content is set 
 
 This overrides the default `figma-generate-design` Step 4 pattern of calling `setProperties()` on the top-level instance. See [patterns.md → Asset Override Pattern](./references/patterns.md#asset-override-pattern) for examples.
 
+## 🔑 Core Chassis Rule — Boolean Visibility Props Default `true`
+
+Almost every Chassis component gates its optional sub-elements (leading icon, trailing icon, badge, dropdown caret, helper text, etc.) behind boolean props (`has-icon-start`, `has-icon-end`, `has-badge`, `is-dropdown`, ...) — and **all of them default to `true`**. A freshly placed instance shows every decoration; you must explicitly set the unwanted ones to `false` to get a minimal instance.
+
+> Forgetting this is the most common reason Chassis instances look heavier than the source design. Always inspect `componentProperties` after placement and subtract what your design doesn't need before applying Asset Overrides.
+
+See [patterns.md → Boolean Visibility Props](./references/patterns.md#boolean-visibility-props--default-true).
+
 ## Workflow — Chassis Overlay on `figma-generate-design`
 
 Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skill. Apply these **Chassis-specific overrides** at each step:
@@ -143,15 +151,16 @@ See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 ## Chassis-Specific Critical Rules
 
 1. **Asset Override Pattern for ALL text** — never assume top-level text props on Chassis components.
-2. **Prefer `componentKey` over name** when importing — resolve via `fileKey` from [component-keys.md](./references/component-keys.md).
-3. **Don't reveal hidden sub-layers** unless explicitly required.
-4. **Preserve `x`/`y`/`width`/`height`** when replacing inside non-auto-layout parents.
-5. **Don't convert frames to auto-layout** without explicit user request.
-6. **Never use deprecated `Dropdown Button @ 0.2`** — use `Dropdown Button` (`b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`).
-7. **One section per `use_figma` call.**
-8. **No raw colors / spacing / type** — always bind a Chassis variable; if none fits, ask the user before hardcoding.
-9. **Don't mix button sizes within an action group; don't mix form styles within a form.**
-10. **`generate_figma_design` is mandatory when the source contains images** — the Plugin API cannot fetch image URLs.
+2. **Boolean visibility props default to `true`** — explicitly set `has-*` / `is-*` props to `false` for sub-elements your design doesn't need; otherwise instances arrive with every decoration visible.
+3. **Prefer `componentKey` over name** when importing — resolve via `fileKey` from [component-keys.md](./references/component-keys.md).
+4. **Don't reveal hidden sub-layers** unless explicitly required.
+5. **Preserve `x`/`y`/`width`/`height`** when replacing inside non-auto-layout parents.
+6. **Don't convert frames to auto-layout** without explicit user request.
+7. **Never use deprecated `Dropdown Button @ 0.2`** — use `Dropdown Button` (`b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`).
+8. **One section per `use_figma` call.**
+9. **No raw colors / spacing / type** — always bind a Chassis variable; if none fits, ask the user before hardcoding.
+10. **Don't mix button sizes within an action group; don't mix form styles within a form.**
+11. **`generate_figma_design` is mandatory when the source contains images** — the Plugin API cannot fetch image URLs.
 
 These extend (do not replace) the rules in `figma-use` and `figma-generate-design`. Extended anti-patterns: [patterns.md → Anti-patterns](./references/patterns.md#anti-patterns).
 
