@@ -1,0 +1,52 @@
+# Site
+_site
+site/.astro
+site/dist
+site/public
+
+dist/
+
+# OS
+._*
+.DS_Store
+Thumbs.db
+
+# IDE
+# .vscode
+.idea
+.project
+.settings
+.tmproj
+
+# Test coverage
+coverage/
+
+# Node.js
+node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Zip files
+*.zip
+*.tar.gz
+*.tgz
+
+# dotenv environment variable files
+.env
+.env.*
+!.env.example
+
+# cache files
+.cache
+.eslintcache
+.stylelintcache
+
+# deploy
+.vercel
+.netlify
