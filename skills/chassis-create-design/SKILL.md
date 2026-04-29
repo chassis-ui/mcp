@@ -1,332 +1,178 @@
 ---
 name: chassis-create-design
-description: Use this skill on top of figma-use and figma-generate-design when the task involves creating a brand new design in Figma or translating an application page, view, or multi-section layout into Figma.This is the preferred workflow skill whenever the user wants to build or update a full page, modal, dialog, drawer, sidebar, panel, or any composed multi-section view in Figma from code or a description. Discovers design system components, variables, and styles from Code Connect files, existing screens, and library search, then imports them and assembles views incrementally section-by-section using design system tokens instead of hardcoded values.
+description: 'Build or update a Figma design (screen, page, view, modal, dialog, drawer, sidebar, panel, dashboard, landing page, or any multi-section layout) using the Chassis UI Figma library. Use when the user wants to create, compose, assemble, or reconnect a Figma view from code, a screenshot, a description, or an existing detached layout. Runs on top of the Figma MCP server skills (`figma-use`, `figma-generate-design`) and adds Chassis-specific component, token, asset-override, and theme-switching conventions. Do NOT use for: single-component fixes, generating code FROM Figma (use `chassis-implement-design`), or pure token/variable edits.'
 disable-model-invocation: false
 ---
 
-# Build / Update Screens and Views using Chassis UI Figma Library
+# Build / Update Screens and Views using the Chassis UI Figma Library
 
-Use this skill when building a new Figma screen or reconnecting an existing one to the Chassis UI library stack.
+This skill specializes the generic Figma screen-building workflow with **Chassis-specific** rules: the Asset Override Pattern, the Chassis token namespaces, the Chassis component catalog, and the Brand/Theme/App multi-mode system.
 
-This skill supports two entry modes:
+## ⛔ Required Figma MCP Skills
 
-- `build`: creating a new screen from scratch using Chassis system components
-- `reconnect`: replacing detached layers or local wrappers in an existing screen with proper library instances
+This skill is a **specialization layer** that runs on top of the Figma MCP server. The Figma MCP server provides the canonical screen-building skills — load them **before** doing any work in this skill:
 
-Load these capabilities before starting:
+| Order | Skill | Why |
+| ----- | ----- | --- |
+| 1 | `figma-use` | **MANDATORY before ANY `use_figma` call.** Plugin API rules: color ranges (0–1), font preloading, page context, `setBoundVariableForPaint` returning new paints, `layoutSizingHorizontal/Vertical = 'FILL'` ordering, returning IDs, error recovery. Skipping causes silent, hard-to-debug failures. |
+| 2 | `figma-generate-design` | **MANDATORY for screen/view work.** Provides the canonical 6-step workflow: Understand Deliverable → Collect Components/Variables/Styles → Create Wrapper Frame → Build Sections → Validate & Transfer Images → Update Existing Views. This skill **does not redefine that workflow** — it overlays Chassis-specific rules on top. |
+| 3 | `chassis-create-design` (this file) | Chassis specialization layer — read after the two above. |
 
-- Figma MCP read access (`get_metadata`, `get_screenshot`, `search_design_system`)
-- `figma-use` skill before any `use_figma` call, when your environment requires it
+**Logging:** Pass `skillNames: "figma-use,figma-generate-design,chassis-create-design"` on every `use_figma` call made under this skill. This is a logging parameter — does not affect execution.
 
-Do not use this skill for a single targeted component fix. For one narrow issue, keep the scope to only that component.
+If Figma MCP tools appear as deferred tools, batch-load their schemas in **one** `tool_search` call: e.g. `tool_search query="select:use_figma,get_screenshot,get_metadata,search_design_system,generate_figma_design"`.
 
-## Skill Boundaries
+## When to Use
 
-- Use this skill when the deliverable is a **composed Figma view** (new or updated) — full-page screens, modals, dialogs, drawers, sidebars, panels, or any multi-section container — built from design system component instances.
-- If the user wants to generate **code from a Figma design**, switch to [chassis-implement-design](../chassis-implement-design/SKILL.md).
+When the deliverable is a **composed Figma view** built from Chassis library components — full-page screens, modals, dialogs, drawers, sidebars, panels, dashboards, landing pages, or any multi-section container.
+
+| Mode | Use when |
+| --- | --- |
+| `build` | Creating a new screen from scratch, or from code / screenshot / description / live URL |
+| `reconnect` | Replacing detached layers or local wrappers in an existing view with proper Chassis library instances |
+
+## When NOT to Use
+
+- **Single targeted component fix** — work directly on the component
+- **Generating code FROM Figma** — switch to `chassis-implement-design`
+- **Pure variable/token edits** — use Figma directly or the `chassis-tokens` repo
+- **Asset/icon import only** — use `figma-use` directly
 
 ## Prerequisites
 
-- Figma MCP server must be connected
-- The target Figma file must have a published design system with components (or access to a team library)
-- User should provide either:
-  - A Figma file URL / file key to work in
-  - Or context about which file to target (the agent can discover pages)
-- Source code or description of the screen/view to build/update
+- Figma MCP server connected with: `use_figma`, `search_design_system`, `get_metadata`, `get_screenshot`, `get_design_context`, `generate_figma_design`
+- Target file URL/key (extract `fileKey` and optional `nodeId` from the URL — convert `-` to `:` in nodeId)
+- Chassis library available to the target file (published or linked)
+- Source: code path, screenshot URL, written description, **or live web URL**
 
-## Core Rule
+## ⚠️ Parallel Workflow with `generate_figma_design` (web sources)
 
-The Chassis UI Figma library uses an **"Asset layer override" pattern** for text and content. Many components — expose **no top-level text property**. Text content must be set by selecting nested instances whose name ends in `Asset` (e.g., `Text Asset`, `Label Asset`, `Title Text Asset`, `Subtitle Asset`) that expose their own TEXT properties.
+When the source is a **live web app / URL**, or when **the source contains images** (whether web or not), follow the parallel workflow defined in the Figma MCP `figma-generate-design` skill ("Parallel Workflow with generate_figma_design" section):
 
-Never assume a Chassis component has a `label`, `text`, or `title` property until you have verified it. If the property is absent, look for a child `*Asset` instance.
+1. **In parallel:**
+   - Start the Chassis component-instance build via `use_figma` (Steps 3–4 of `figma-generate-design`)
+   - Run `generate_figma_design` to capture a pixel-perfect screenshot of the running web app
+2. **After both complete:** refine the component-instance build to match the screenshot's spacing/sizing, and **transfer images** from the capture by copying `imageHash` values onto your target frames (see `figma-generate-design` Step 5).
+3. **Then delete the `generate_figma_design` capture frame.**
 
-## Color Variables
+> **`generate_figma_design` is MANDATORY when the source contains images.** The Plugin API cannot fetch external image URLs — it can only set `IMAGE` fills using `imageHash` values from nodes already in the file. Skipping the capture leaves image frames blank.
 
-Chassis uses a context based color palette system for common color needs of UI design. The palette is built on top of a set of primitive color variables that represent the brand identity. 
+For non-web sources without images (e.g., text-only descriptions, native mobile mocks, internal screenshots already in Figma), the standard `use_figma`-only workflow is fine.
 
-Color variables are named using the pattern `color/context/{context}/{role}-{emphasis}`. For example, `color/context/default/fg-main` or `color/context/primary/fg-subtle`. When building or updating screens, identify opportunities to use these color variables instead of hardcoding specific colors. This will ensure that your design remains flexible and can easily adapt to theme changes or different contexts without needing to manually update each instance of a color.
+## 🔑 Core Chassis Rule — Asset Layer Override Pattern
 
-### Contexts
+Chassis components expose **no top-level text properties**. Text content is set by overriding **nested instances whose name ends in `Asset`** — e.g., `Text Asset`, `Label Asset`, `Title Text Asset`, `Subtitle Asset`, `Description Asset`. These nested instances expose their own `TEXT` properties.
 
-- `default`: for general UI elements that do not fall into a specific context. This is the most commonly used context for standard UI components and elements. Default colors are inverted between light and dark mode, so they adapt to the theme automatically.
-- `alternate`: for elements that require an alternative color scheme, such as distinct sections or components that need to stand out from the default context. Alternate colors may not be inverted between light and dark mode, so they can provide a consistent appearance regardless of the theme.
-- `primary`: for primary actions and highlights
-- `secondary`: for secondary actions and highlights
-- `success`: for success states and messages
-- `error`: for error states and messages
-- `warning`: for warning states and messages
-- `info`: for informational states and messages
-- `black`: for black and near-black colors used in the design, persistent across themes
-- `white`: for white and near-white colors used in the design, persistent across themes
+> **Never assume a Chassis component has `label`, `text`, or `title` props.** Inspect first; if absent, drill into the child `*Asset` instance and call `setProperties()` on **that** instance.
 
-### Roles with Emphasis Levels
+This overrides the default `figma-generate-design` Step 4 pattern of calling `setProperties()` on the top-level instance. See [patterns.md → Asset Override Pattern](./references/patterns.md#asset-override-pattern) for examples.
 
-These roles represent common use cases for colors in UI design, and the emphasis levels indicate the intended visual prominence of the color
+## Workflow — Chassis Overlay on `figma-generate-design`
 
-#### Base Colors
+Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skill. Apply these **Chassis-specific overrides** at each step:
 
-Context base colors and their counterparts.
+### Step 1 — Understand the Deliverable
+- Identify whether the source contains images → trigger parallel `generate_figma_design` capture if yes
+- Identify which Chassis themes/modes the deliverable targets (Brand × Theme × App combinations)
 
-- `base-color`: the core color for the context, used for backgrounds, fills, and large areas of color
-- `contrast-color`: a color that provides sufficient contrast against the base color, used for text and elements that need to stand out against the base color
-- `transparent-color`: a fully transparent color that can be used for gradients, effects, overlays, or when a color variable is required but no visible color is desired
+### Step 2 — Collect Components, Variables, Styles
+- **2a-i (Code Connect):** check chassis-website / chassis-css for `*.figma.tsx` / `*.figma.ts` files first
+- **2a-ii (existing screens):** inspect any existing Chassis screens in the target file
+- **2a-iii (search_design_system):** search by Chassis family names — `button-solid`, `form-regular`, `navbar`, `card`, `modal`, `table`, etc. (full list in [components.md](./references/components.md))
+- **Component key resolution:** when you have a Chassis slug, look up the Figma `fileKey` in [component-keys.md](./references/component-keys.md), then resolve the `componentKey` at runtime via `get_metadata(fileKey)`
+- **2b (variables):** Chassis variables follow strict namespaces — `color/context/...`, `space/context/...`, `font/...` etc. See [tokens.md](./references/tokens.md). **Never** conclude "no variables" from `getLocalVariableCollectionsAsync()` alone — `search_design_system` with `includeVariables: true` is the source of truth for library variables.
 
-#### Foreground (`fg`) Colors
+### Step 3 — Create the Wrapper Frame First
+- Standard Chassis widths: full page `1440`, modal `640`, drawer `360`, panel `400`. Adapt to the source.
+- Bind background/spacing to Chassis context tokens immediately so theme switching works for free.
 
-Text colors named by priority or functionality. These colors are used for more than just text, adhering to abstraction principles. Utilized for the color property.
+### Step 4 — Build Each Section Inside the Wrapper
+- One section per `use_figma` call (mandatory).
+- **Asset overrides instead of top-level `setProperties` for text** — see core rule above.
+- Use Chassis context tokens for paddings/gaps via `setBoundVariable`, not pixel literals.
+- Use `setBoundVariableForPaint` with Chassis color tokens for fills/strokes — capture the returned paint and reassign.
+- Don't reveal hidden sub-layers (Back Button, Title Badge, Subtitle Action, Filters row, Aside, Empty states, etc.) unless explicitly required.
+- Don't mix button sizes within one action group; don't mix form styles within one form (regular vs floating vs outline).
 
-- `fg-main`: the primary color for texts, with the highest contrast against the background
-- `fg-subtle`: a secondary color for texts, with less contrast than `fg-main`, used for less prominent elements
-- `fg-slight`: a tertiary color for texts, with even less contrast than `fg-subtle`, used for the least prominent or disabled elements
-- `fg-inverse`: a color that is the inverse of the main foreground color, companion to `bg-inverse` for use on inverse backgrounds
-- `fg-solid`: a color that used for solid elements like button text, companion to `bg-solid` for use on solid backgrounds
-- `fg-highlight`: a color used for highlights, accents, or interactive elements that need to draw attention
+### Step 5 — Validate Each Section + Transfer Images
+- `get_screenshot` per section, not just the full view, to catch placeholder text and clipped Asset layers.
+- If `generate_figma_design` was used: transfer `imageHash` values into the corresponding Chassis frames, then delete the capture.
 
-#### Background (`bg`) Colors
+### Step 6 — Updating an Existing View / `reconnect` Mode
+- Inventory layers as `library-instance` / `detached` / `local-wrapper` / `raw-frame`.
+- Preserve `x`, `y`, `width`, `height` explicitly when replacing inside **non-auto-layout** parents.
+- Use `instance.swapComponent(newVariant)` rather than delete-and-recreate so prop overrides survive.
+- Do **not** convert frames to auto-layout unless the user explicitly asks for structural cleanup.
 
-Solid colors for backgrounds, named by priority and functionality. 
+Detailed Chassis procedures, including the full Reconnect Mode playbook, are in [workflow.md](./references/workflow.md).
 
-- `bg-main`: the primary background color for surfaces and large areas
-- `bg-even`: a background color for slightly shaded surfaces, used to create visual separation between sections or elements without strong contrast
-- `bg-evident`: a background color for highly evident surfaces, used to create strong visual separation or highlight important sections
-- `bg-inverse`: a color that is the inverse of the main background color, companion to `fg-inverse` for use with inverse foregrounds
-- `bg-solid`: a color that is used for solid elements like buttons, companion to `fg-solid` for use with solid foregrounds
-- `bg-highlight`: a color used for highlights, accents, or interactive elements that need to draw attention, companion to `fg-highlight` for use with highlight foregrounds
+## Design Tokens (Chassis namespaces)
 
-### Border Colors
+| Family | Pattern |
+| --- | --- |
+| Colors | `color/context/{context}/{role}-{emphasis}` |
+| Typography | `font/{family}/{size}/{weight}` |
+| Spacing | `space/context/{context}` or `space/unit/{unit}` |
+| Sizing | `size/context/{context}` or `size/unit/{unit}` |
+| Radius | `borderRadius/context/{context}` |
+| Border width | `borderWidth/context/{context}` |
+| Opacity | `opacity/context/{context}` or `opacity/level/{level}` |
 
-Colors for object borders and separator lines.
+**Always prefer `context` tokens over `unit`/`level` tokens** — context tokens swap correctly across themes/modes; unit tokens do not. Full reference: [tokens.md](./references/tokens.md).
 
-- `border-main`: the primary border color, used for prominent borders and separators, rarely used in UI and components
-- `border-subtle`: a secondary border color, used for less prominent borders and separators, commonly used in UI and components
+## Component Catalog
 
-### Icon Colors
+Chassis ships 43 documented component families covering Actions, Forms, Navigation, Surfaces, Feedback, Data, and Communication. See [components.md](./references/components.md) for the full catalog and [component-keys.md](./references/component-keys.md) for slug → `fileKey` lookups.
 
-Colors for symbolic elements, such as icons, list bullets and detail arrows.
+Families with non-trivial composition rules:
 
-- `icon-main`: the primary icon color, used for icons that need to stand out and be easily recognizable
-- `icon-subtle`: a secondary icon color, used for icons that are less prominent or need to blend more with the text and background
-- `icon-slight`: a tertiary icon color, used for icons that are the least prominent or need to be very subtle in the design, such as disabled elements
+- **Buttons** (solid, smooth, outline, link, group) — see [patterns.md → Buttons](./references/patterns.md#buttons)
+- **Forms** (regular, floating, outline + form-check) — see [patterns.md → Forms](./references/patterns.md#forms)
+- **Tables** (cell → row → table compose-up) — see [patterns.md → Tables](./references/patterns.md#tables)
 
-### Cue Colors
+## Theme & Mode Awareness
 
-Colors for activity or selection indicators.
+Chassis supports multi-theme designs via three Figma variable collections — **Brand**, **Theme**, **App**. To switch a section across themes/modes:
 
-- `cue-main`: the primary cue color, used for active states, selection indicators, or elements that need to draw attention to indicate interactivity or status
-- `cue-subtle`: a secondary cue color, used for less prominent or disabled active states, selection indicators, or elements that need to draw less attention
+- Use **context** tokens, not raw color values — they invert/swap automatically.
+- Set theme overrides at the **wrapper frame** level for whole-screen theme switching: `frame.setExplicitVariableModeForCollection(themeCollection, modeId)`.
+- Use Chassis **switch variables** (`figma/switch/theme/mode-1`, etc.) to toggle layer visibility for theme-conditional content (logos, illustrations).
 
-### Dim Colors
+See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 
-Background colors with variable opacity for use in overlays, modals, and other layered elements.
-
-- `dim-main`: a color used for dimming the background, typically for modal backdrops or overlays.
-- `dim-subtle`: a lighter color used for dimming the background, typically use with background blur effects to create a softer dimming effect.
-- `dim-slight`: a very light color used for dimming the background, for blending with the background and creating a subtle difference without a strong overlay effect.
-
-### Link Colors
-
-Colors for anchor elements, including all possible states.
-
-- `link-main`: the primary link color, used for standard links in their default state
-- `link-hover`: the link color used when a user hovers over a link, providing visual feedback for interactivity
-- `link-active`: the link color used when a link is active or being clicked, providing visual feedback for the active state
-- `link-visited`: the link color used for links that have been visited, providing a visual distinction between visited and unvisited links
-
-## Text Styles
-
-Chassis uses a set of predefined text styles for consistent typography across the design. When building or updating screens, identify opportunities to use these text styles instead of hardcoding font properties. This will ensure that your design remains consistent and can easily adapt to changes in typography without needing to manually update each instance.
-
-Text styles are named using the pattern `font/{family}/{size}/{weight}`. For example, `font/text/medium/normal` or `font/display/large/strong`. When applying text styles, make sure to choose the appropriate style that matches the intended use case and hierarchy of the text in your design.
-
-### Font Families
-
-- `text`: a versatile font family used for body text, labels, and general-purpose typography
-- `display`: a font family used for headings, titles, and other prominent text elements that need to stand out
-- `html`: a font family used for simulating HTML content, such as Headings, blockquotes, lists, and other structured text elements (rarely used in UI, more for documentation or content design)
-- `code`: a monospaced font family used for code snippets, technical text, or any content that benefits from a fixed-width typeface
-
-### Font Sizes
-
-- `2xsmall`: a double extra-small font size used for very fine print, disclaimers, or extremely secondary information (rarely used in UI, more for legal or regulatory text)
-- `xsmall`: an extra-small font size used for fine print, disclaimers, or very secondary information
-- `small`: a smaller font size used for secondary text, captions, or less prominent information
-- `medium`: a medium font size used for standard body text, labels, and general-purpose typography (standard size for most UI text elements)
-- `large`: a larger font size used text that needs to stand out
-- `xlarge`: an extra-large font size used for text that needs to stand out slightly more than the standard large size, such as subheadings or important labels
-- `2xlarge`: a double extra-large font size used for text that needs to be very prominent, such as section heading, or any text that needs to draw significant attention
-- `3xlarge`: a triple extra-large font size used for text that needs to be very prominent, such as main headings, hero sections, or any text that needs to draw significant attention
-- `4xlarge`: a quadruple extra-large font size used for dashboards, hero sections, or any text that needs to be extremely prominent
-- `5xlarge`: a quintuple extra-large font size used for dashboards, hero sections, or any text that needs to be extremely prominent
-
-** Why so much larger sizes than typical? **
-
-Chassis is designed to be adaptable to a wide range of design needs, including dashboards, hero sections, and other use cases that may require very large text sizes. By providing a range of larger font sizes, we can accommodate designs that need to make a strong visual impact or convey a sense of importance and hierarchy. These larger sizes allow designers to create bold and attention-grabbing typography that can effectively communicate the intended message and enhance the overall user experience.
-
-### Font Weights
-
-- `normal`: a normal font weight used for standard text elements, providing a balanced and readable appearance
-- `strong`: a strong font weight used for text that needs to stand out slightly more than normal
-- `mass`: a heavy font weight used for text that needs to be very prominent, such as headings or important labels
-- `elegant`: an elegant font weight used for text that needs to be very prominent and convey a sense of sophistication, such as main headings or hero sections
-
-** Why non-standard weight names? **
-
-Chassis is designed to be themeable and adaptable to different brand identities. By using descriptive weight names like `strong`, `mass`, and `elegant`, we can provide more meaningful options for designers to choose from that go beyond the traditional numeric weight values. While a brand may use 700 for `strong` and 900 for `mass`, another brand may use 500 for `strong` and 700 for `mass`. The descriptive names allow for flexibility in mapping to different font weight values while still conveying the intended visual hierarchy and emphasis without confusing designers with specific numeric values that may not be consistent across different fonts or brands.
-
-## Spacing Variables
-
-Chassis uses 2 set of spacing variables: `space/context/{context}` for standardized spacing values based on common use cases, and `space/unit/{unit}` for a more granular scale of spacing values that can be used for any purpose.
-
-### Context-Based Spacing
-
-- `zero`: a zero spacing value used for no space between elements (e.g., 0px)
-- `4xsmall`: a quadruple extra-small spacing value used for extremely tight spacing, such as between closely related elements or in compact components (e.g., 1px)
-- `3xsmall`: a triple extra-small spacing value used for extremely tight spacing, such as between closely related elements or in compact components (e.g., 2px)
-- `2xsmall`: a double extra-small spacing value used for very tight spacing, such as between closely related elements or in compact components (e.g., 4px)
-- `xsmall`: an extra-small spacing value used for tight spacing, such as between related elements or in compact components (e.g., 8px)
-- `small`: a small spacing value used for standard spacing between elements, such as between form fields, buttons, or list items (e.g., 12px)
-- `medium`: a medium spacing value used for slightly larger spacing between elements, such as between sections, groups of components, or in more spacious layouts (e.g., 16px)
-- `large`: a large spacing value used for significant spacing between elements, such as between major sections, or in very spacious layouts (e.g., 20px)
-- `xlarge`: an extra-large spacing value used for very significant spacing between elements, such as between major sections in a dashboard or hero layout (e.g., 24px)
-- `2xlarge`: a double extra-large spacing value used for extremely significant spacing between elements, such as between major sections in a dashboard or hero layout (e.g., 28px)
-- `3xlarge`: a triple extra-large spacing value used for extremely significant spacing between elements, such as between major sections in a dashboard or hero layout (e.g., 32px)
-- `4xlarge`: a quadruple extra-large spacing value used for extremely significant spacing between elements, such as between major sections in a dashboard or hero layout (e.g., 36px)
-- `5xlarge`: a quintuple extra-large spacing value used for extremely significant spacing between elements, such as between major sections in a dashboard or hero layout (e.g., 40px)
-- `6xlarge`: a sextuple extra-large spacing value used for extremely significant spacing between elements, such as between major sections in a dashboard or hero layout (e.g., 48px)
-
-Prefer to use context-based spacing values when the spacing serves a common use case that can be standardized across the design. This will help maintain consistency and make it easier to adjust spacing across the design by simply updating the variable values. Use unit-based spacing for more specific or unique spacing needs that do not fit into the standardized context categories, allowing for greater flexibility in design while still adhering to a consistent scale of spacing values.
-
-### Unit-Based Spacing
-
-Unit based spacing variables start 0 and increase in increments of 2px (increments of 4px and 8px depending on the value of previous spacing in higher ranges), providing a granular scale of spacing values that can be used for any purpose.
-
-Prefer to the unit-based spacing variables when you need a specific spacing value that may not fit into the standardized context categories, or when you want to maintain a consistent scale of spacing values across your design. The unit-based spacing variables allow for greater flexibility in design while still adhering to a consistent scale of spacing values, making it easier to create custom layouts and designs that require specific spacing needs.
-
-## Sizing Variables
-
-Chassis uses 2 set of sizing variables: `size/context/{context}` for standardized sizing values based on common use cases, and `size/unit/{unit}` for a more granular scale of sizing values that can be used for any purpose.
-
-### Context-Based Sizing
-
-- `2xsmall`: a double extra-small size value used for very small components or elements, such as icons, buttons, or form fields (e.g., 16px)
-- `xsmall`: an extra-small size value used for very small components or elements, such as icons, buttons, or form fields (e.g., 24px)
-- `small`: a small size value used for small components or elements, such as icons, buttons, or form fields (e.g., 32px)
-- `medium`: a medium size value used for standard components or elements, such as buttons, or form fields (e.g., 40)
-- `large`: a large size value used for larger components or elements, such as icons, buttons, or form fields (e.g., 48px)
-- `xlarge`: an extra-large size value used for very large components or elements, such as icons, buttons, or form fields (e.g., 56px)
-- `2xlarge`: a double extra-large size value used for extremely large components or elements, such as icons, buttons, or form fields (e.g., 64px)
-
-### Unit-Based Sizing
-
-Unit based sizing variables start 0 and increase in increments of 4px (increments of 4px and 8px depending on the value of previous spacing in higher ranges), providing a granular scale of sizing values that can be used for any purpose.
-
-## Border Radius Variables
-
-Chassis uses a set of border radius variables for consistent corner rounding across the design. Naming follows the pattern `borderRadius/context/{context}`.
-
-- `zero`: a border radius value of 0 used for sharp corners (e.g., 0px)
-- `2xsmall`: a double extra-small border radius value used for slightly rounded corners, such as on buttons or cards (e.g., 2px)
-- `xsmall`: an extra-small border radius value used for slightly rounded corners, such as on buttons or cards (e.g., 2px)
-- `small`: a small border radius value used for moderately rounded corners, such as on buttons, cards, or form fields (e.g., 4px)
-- `medium`: a medium border radius value used for more rounded corners, such as on buttons, cards, or form fields (e.g., 8px)
-- `large`: a large border radius value used for very rounded corners, such as on buttons, cards, or form fields (e.g., 12px)
-- `xlarge`: an extra-large border radius value used for extremely rounded corners, such as on buttons, cards, or form fields (e.g., 16px)
-- `2xlarge`: a double extra-large border radius value used for extremely rounded corners, such as on buttons, cards, or form fields (e.g., 20px)
-- `3xlarge`: a triple extra-large border radius value used for extremely rounded corners, such as on buttons, cards, or form fields (e.g., 24px)
-- `round`: a border radius value used for fully rounded corners, such as on circular buttons, avatars, or pills (e.g., 9999px)
-
-## Border Width Variables
-
-Chassis uses a set of border width variables for consistent border thickness across the design. Naming follows the pattern `borderWidth/context/{context}`.
-
-- `zero`: a border width value of 0 used for no borders (e.g., 0px)
-- `small`: a small border width value used for thin borders, such as on cards, form fields, or dividers (e.g., 0.5px)
-- `medium`: a medium border width value used for standard borders, such as on cards, form fields, or dividers (e.g., 1px)
-- `large`: a large border width value used for thick borders, such as on cards, form fields, or dividers (e.g., 1.5px)
-- `xlarge`: an extra-large border width value used for very thick borders, such as on cards, form fields, or dividers (e.g., 2px)
-- `2xlarge`: a double extra-large border width value used for extremely thick borders, such as on cards, form fields, or dividers (e.g., 4px)
-
-## Opacity Variables
-
-Chassis uses 2 set of opacity variables: `opacity/context/{context}` for standardized opacity values based on common use cases, and `opacity/level/{level}` for a more granular scale of opacity values that can be used for any purpose.
-
-### Context-Based Opacity
-
-- `fg-subtle`: an opacity value used for subtle foreground elements, such as secondary text.
-- `fg-slight`: an opacity value used for slight foreground elements, such as disabled text.
-- `border-main`: an opacity value used for borders, such as on form fields and outlined elements.
-- `border-subtle`: an opacity value used for slight borders, such as cards and dividers.
-- `icon-subtle`: an opacity value used for subtle icons, such as secondary icons.
-- `icon-slight`: an opacity value used for slight icons, such as disabled icons.
-- `cue-subtle`: an opacity value used for subtle cues, such as disabled active states or selection indicators.
-- `dim-main`: an opacity value used for dimming the background, typically for modal backdrops or overlays.
-- `dim-subtle`: an opacity value used for dimming the background, typically for modal backdrops or overlays with background blur effects to create a softer dimming effect.
-- `dim-slight`: an opacity value used for dimming the background, typically for modal backdrops or overlays with background blur effects to create a subtle dimming effect.
-
-### Level-Based Opacity
-- `transparent`: an opacity value of 0 used for fully transparent elements (e.g., 0%)
-- `05`: an opacity value of 0.05 used for very subtle elements, such as light backgrounds or faint borders (e.g., 5%)
-- `10`: an opacity value of 0.1 used for subtle elements, such as light backgrounds or faint borders (e.g., 10%)
-- `20`: an opacity value of 0.2 used for slightly more visible elements, such as backgrounds or borders that need to be
-- `90`: an opacity value of 0.9 used for nearly opaque elements, such as dark backgrounds or strong overlays (e.g., 90%)
-- `95`: an opacity value of 0.95 used for nearly opaque elements, such as dark backgrounds or strong overlays (e.g., 95%)
-- `solid`: an opacity value of 1 used for fully opaque elements (e.g., 100%)
-
-Opacity variables scales between 10 and 90 in increments of 10, with additional values for very subtle (5%), fully transparent (0%), and fully opaque (100%) elements. Prefer to use context-based opacity values when the opacity serves a common use case that can be standardized across the design. This will help maintain consistency and make it easier to adjust opacity across the design by simply updating the variable values. Use level-based opacity for more specific or unique opacity needs that do not fit into the standardized context categories, allowing for greater flexibility in design while still adhering to a consistent scale of opacity values.
-
-## Using Buttons
-
-Chassis have multiple component sets for buttons, each with different use cases and levels of flexibility. When building or updating screens, identify which button component set is most appropriate for the intended use case and design needs.
-
-- Solid Buttton: use for standard buttons with a solid background, such as primary actions. These buttons typically have a `bg-solid` background color and `fg-solid` text color.
-- Smooth Button: use for buttons with a subtle background, such as secondary actions. These buttons typically have a `bg-highlight` background color and `fg-highlight` text color.
-- Outline Button: use for buttons with prominent border and no background, such as tertiary actions. These buttons typically have a `border-main` border color and `fg-main` text color.
-- Link Button: use for buttons that need to look like links, such as inline actions. These buttons typically have a `transparent` background and `link-main` text color.
-
-All button components have content (see context colors) and size variants, so choose the appropriate variant based on the intended use case and design needs. Default use case is using primary variant for primary actions and default variant for secondary actions. You can mix button types to create a clear visual hierarchy of actions in your design. Never mix size variants within the same action group or section, to maintain visual consistency.
-
-
-## Using Forms
-
-### Form Inputs and Form Fields
-
-Chassis has 3 set of form components for common form fields. When building or updating screens, identify which form component set is most appropriate for the intended use case and design needs.
-
-- Regular Forms: standard form fields, such as text inputs, dropdowns, and checkboxes.
-- Floating Forms: material design-inspired form fields with floating labels, such as text inputs and dropdowns.
-- Outlined Forms: material design-inspired form fields with prominent borders and no background, such as text inputs and dropdowns.
-
-### Form Checkboxes and Radio Buttons
-
-Use Form Check component for checkboxes and radio buttons. These components have variants for different states (default, hover, active, disabled) and types (checkbox, radio). Choose the appropriate variant based on the intended use case and design needs.
-
-
-## Using Tables
-
-Chassis has "Table Data Cell" and "Table Head Cell" components for building tables. These components have variants for content types (text, form, button, icon, badge, etc.). Use these components to build table-row component first. Then, use the table-row component to build the full table. This will ensure that your table design remains consistent and adheres to the design system standards.
-
-Table row components must have at least 2 variants
-
-
-## Writing Rules
-
-- Use the **Asset layer override pattern** for all text content — never assume a top-level text property exists.
-- Prefer `componentKey` over component name when importing.
-- Do not reveal hidden sub-layers unless the use case explicitly requires them.
-- Preserve `x`, `y`, width, and height explicitly when replacing inside non-auto-layout parents.
-- Do not convert frames to auto-layout unless the user requests structural cleanup.
-- Do not use the deprecated `Dropdown Button @ 0.2` — use `Dropdown Button` (`b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`) instead.
-- Work one section at a time. Never rewrite an entire screen in a single script.
-
+## Chassis-Specific Critical Rules
+
+1. **Asset Override Pattern for ALL text** — never assume top-level text props on Chassis components.
+2. **Prefer `componentKey` over name** when importing — resolve via `fileKey` from [component-keys.md](./references/component-keys.md).
+3. **Don't reveal hidden sub-layers** unless explicitly required.
+4. **Preserve `x`/`y`/`width`/`height`** when replacing inside non-auto-layout parents.
+5. **Don't convert frames to auto-layout** without explicit user request.
+6. **Never use deprecated `Dropdown Button @ 0.2`** — use `Dropdown Button` (`b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`).
+7. **One section per `use_figma` call.**
+8. **No raw colors / spacing / type** — always bind a Chassis variable; if none fits, ask the user before hardcoding.
+9. **Don't mix button sizes within an action group; don't mix form styles within a form.**
+10. **`generate_figma_design` is mandatory when the source contains images** — the Plugin API cannot fetch image URLs.
+
+These extend (do not replace) the rules in `figma-use` and `figma-generate-design`. Extended anti-patterns: [patterns.md → Anti-patterns](./references/patterns.md#anti-patterns).
 
 ## Deliverable Format
 
-When closing the task, report:
+| Bucket | Meaning |
+| --- | --- |
+| **Built** | New sections/screens created using Chassis library components |
+| **Swapped** | Existing instances swapped to the correct Chassis variant |
+| **Composed** | Sections rebuilt from Chassis primitives (no single component fits) |
+| **Already connected** | Sections already on valid Chassis library instances |
+| **Blocked** | Sections that could not be connected — include the exact failure mode |
 
-- **Built**: new sections or screens created using library components
-- **Swapped**: sections replaced directly with library instances
-- **Composed**: sections rebuilt from library primitives
-- **Already connected**: sections that were already valid library instances
-- **Blocked**: sections that could not be connected — include the exact failure mode
+If everything is blocked, say so plainly with the specific failure reason.
 
-If everything is blocked, state that plainly with the specific failure reason.
+## References
+
+- [tokens.md](./references/tokens.md) — Complete Chassis token system reference
+- [components.md](./references/components.md) — Full Chassis component catalog (43 families)
+- [component-keys.md](./references/component-keys.md) — Slug → Figma `fileKey` map and `componentKey` resolution procedure
+- [patterns.md](./references/patterns.md) — Asset overrides, buttons, forms, tables, themes, anti-patterns
+- [workflow.md](./references/workflow.md) — Detailed Chassis Build & Reconnect playbooks
+
+**Required Figma MCP skills (loaded from the Figma MCP server):** `figma-use`, `figma-generate-design`.
