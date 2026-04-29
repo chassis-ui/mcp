@@ -180,13 +180,33 @@ Pick **one** form style and apply it consistently across the screen — never mi
 | `form-floating` | Material-inspired — floating labels animate from placeholder to label      |
 | `form-outline`  | Material-inspired — prominent border, no background                        |
 
+### Two components per form file: Input vs. Field
+
+Every form-style file (`form-regular`, `form-floating`, `form-outline`, **`form-check`**) ships **two** components — a bare input and a wrapper field. Pick the right one for the context:
+
+| File             | Bare control     | Wrapper                                                  |
+| ---------------- | ---------------- | -------------------------------------------------------- |
+| `form-regular`   | **Form Input**   | **Form Field** (label + nested Form Input + helper)      |
+| `form-floating`  | **Form Input**   | **Form Field** (label + nested Form Input + helper)      |
+| `form-outline`   | **Form Input**   | **Form Field** (label + nested Form Input + helper)      |
+| `form-check`     | **Check Input**  | **Form Check** (label + nested Check Input + helper)     |
+
+| Component           | What it is                                                            | Use when                                                                                       |
+| ------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Bare input**      | The bare control only (text input, select, textarea, checkbox, radio) | Inline filters, table cells, toolbars, compound controls — anywhere label and feedback are handled externally or not needed |
+| **Wrapper (Field)** | A wrapper with **a nested bare input** + label + helper/feedback      | Standard forms — the default choice when you need a labeled control with validation messaging  |
+
+> **Default to the wrapper** (`Form Field` / `Form Check`) for standard form layouts. Reach for the bare input (`Form Input` / `Check Input`) only when you explicitly do not want the label / helper-text scaffolding (e.g., a search input in a navbar, an editable cell in a table, a tightly-packed checkbox column).
+
+When using a wrapper, override the nested input's props (placeholder, value, state, selected) through the wrapper's surfaced properties or by drilling into the nested instance — not by replacing the input.
+
 ### Form Check (checkboxes / radios)
 
-Use `form-check` for both checkboxes and radio buttons. Available variants:
+Use `form-check` for both checkboxes and radio buttons (see `Check Input` vs. `Form Check` above for which sub-component to pick). Available variants:
 
-- **Type**: `checkbox` / `radio`
-- **State**: `default`, `hover`, `active`, `disabled`
-- **Selected**: `true` / `false`
+- **Type**: `checkbox` / `radio` / `indeterminate`
+- **State**: `idle`, `disabled`, `error`, `success`
+- **Checked**: `true` / `false`
 
 ### Field composition
 
