@@ -86,8 +86,7 @@ Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skil
 ### Step 2 — Collect Components, Variables, Styles
 - **2a-i (Code Connect):** check chassis-website / chassis-css for `*.figma.tsx` / `*.figma.ts` files first
 - **2a-ii (existing screens):** inspect any existing Chassis screens in the target file
-- **2a-iii (search_design_system):** search by Chassis family names — `button-solid`, `form-regular`, `navbar`, `card`, `modal`, `table`, etc. (full list in [components.md](./references/components.md))
-- **Component key resolution:** when you have a Chassis slug, look up the Figma `fileKey` in [component-keys.md](./references/component-keys.md), then resolve the `componentKey` at runtime via `get_metadata(fileKey)`
+- **2a-iii (search_design_system):** search by Chassis family names — `button-solid`, `form-regular`, `navbar`, `card`, `modal`, `table`, etc. (full list in [components.md](./references/components.md)). The result includes the `componentKey` — use it directly for `import_components` / `use_figma`. **Never import by component name** (names can collide and change).
 - **2b (variables):** Chassis variables follow strict namespaces — `color/context/...`, `space/context/...`, `font/...` etc. See [tokens.md](./references/tokens.md). **Never** conclude "no variables" from `getLocalVariableCollectionsAsync()` alone — `search_design_system` with `includeVariables: true` is the source of truth for library variables.
 
 ### Step 3 — Create the Wrapper Frame First
@@ -130,7 +129,7 @@ Detailed Chassis procedures, including the full Reconnect Mode playbook, are in 
 
 ## Component Catalog
 
-Chassis ships documented component families covering Actions, Forms, Navigation, Surfaces, Feedback, Data, and Communication. See [components.md](./references/components.md) for the full catalog and [component-keys.md](./references/component-keys.md) for slug → `fileKey` lookups.
+Chassis ships documented component families covering Actions, Forms, Navigation, Surfaces, Feedback, Data, and Communication. See [components.md](./references/components.md) for the full catalog. Resolve `componentKey`s at runtime via `search_design_system`.
 
 Families with non-trivial composition rules:
 
@@ -152,7 +151,7 @@ See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 
 1. **Asset Override Pattern for ALL text** — never assume top-level text props on Chassis components.
 2. **Boolean visibility props default to `true`** — explicitly set `has-*` / `is-*` props to `false` for sub-elements your design doesn't need; otherwise instances arrive with every decoration visible.
-3. **Prefer `componentKey` over name** when importing — resolve via `fileKey` from [component-keys.md](./references/component-keys.md).
+3. **Prefer `componentKey` over name** when importing — resolve at runtime via `search_design_system`. Names can collide and change.
 4. **Don't reveal hidden sub-layers** unless explicitly required.
 5. **Preserve `x`/`y`/`width`/`height`** when replacing inside non-auto-layout parents.
 6. **Don't convert frames to auto-layout** without explicit user request.
@@ -180,7 +179,6 @@ If everything is blocked, say so plainly with the specific failure reason.
 
 - [tokens.md](./references/tokens.md) — Complete Chassis token system reference
 - [components.md](./references/components.md) — Full Chassis component catalog
-- [component-keys.md](./references/component-keys.md) — Slug → Figma `fileKey` map and `componentKey` resolution procedure
 - [patterns.md](./references/patterns.md) — Asset overrides, buttons, forms, tables, themes, anti-patterns
 - [workflow.md](./references/workflow.md) — Detailed Chassis Build & Reconnect playbooks
 
