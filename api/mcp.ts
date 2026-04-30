@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { z } from 'zod'
 import { CONTENT } from './_content.generated.js'
 
 const RESOURCES = [
@@ -87,7 +88,7 @@ function stripFrontmatter(content: string): string {
 function createServer(): McpServer {
   const server = new McpServer({
     name: 'chassis-ui',
-    version: '1.0.0'
+    version: '0.1.0'
   })
 
   for (const resource of RESOURCES) {
@@ -108,6 +109,51 @@ function createServer(): McpServer {
     async () => ({
       messages: [{ role: 'user', content: { type: 'text', text: promptContent } }]
     })
+  )
+
+  // Tools — surfaced in Claude.ai connector UI
+  server.tool(
+    'chassis_create_design',
+    'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the full skill instructions and all reference files.',
+    {},
+    async () => {
+      const parts = RESOURCES.filter((r) => r.name.startsWith('chassis-create-design')).map(
+        (r) => `\n\n---\n## ${r.name}\n\n${stripFrontmatter(CONTENT[r.path] ?? '')}`
+      )
+      return { content: [{ type: 'text', text: parts.join('') }] }
+    }
+  )
+
+  server.tool(
+    'chassis_implement_design',
+    'Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the full skill instructions and all reference files.',
+    {},
+    async () => {
+      const parts = RESOURCES.filter((r) => r.name.startsWith('chassis-implement-design')).map(
+        (r) => `\n\n---\n## ${r.name}\n\n${stripFrontmatter(CONTENT[r.path] ?? '')}`
+      )
+      return { content: [{ type: 'text', text: parts.join('') }] }
+    }
+  )
+
+  const referenceNames = RESOURCES.filter((r) => r.name.includes('/references/')).map(
+    (r) => r.name
+  ) as [string, ...string[]]
+
+  server.tool(
+    'chassis_get_reference',
+    'Fetch a specific Chassis UI reference file by name.',
+    { name: z.enum(referenceNames).describe('Reference file to fetch') },
+    async ({ name }) => {
+      const resource = RESOURCES.find((r) => r.name === name)
+      if (!resource) {
+        return {
+          content: [{ type: 'text', text: `Unknown reference: ${name}` }],
+          isError: true
+        }
+      }
+      return { content: [{ type: 'text', text: stripFrontmatter(CONTENT[resource.path] ?? '') }] }
+    }
   )
 
   return server
