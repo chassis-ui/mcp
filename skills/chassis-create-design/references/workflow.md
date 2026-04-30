@@ -94,12 +94,12 @@ For each section in order:
 
 1. **Walk the existing frame.** For each visible top-level layer, classify:
 
-| Tag                | Meaning                                                          |
-| ------------------ | ---------------------------------------------------------------- |
-| `library-instance` | Already a valid Chassis component instance — leave alone         |
-| `detached`         | Was a Chassis instance, since detached                           |
-| `local-wrapper`    | Locally-defined component wrapping a Chassis primitive           |
-| `raw-frame`        | Hand-built frame, not derived from any component                 |
+| Tag                | Meaning                                                  |
+| ------------------ | -------------------------------------------------------- |
+| `library-instance` | Already a valid Chassis component instance — leave alone |
+| `detached`         | Was a Chassis instance, since detached                   |
+| `local-wrapper`    | Locally-defined component wrapping a Chassis primitive   |
+| `raw-frame`        | Hand-built frame, not derived from any component         |
 
 2. **For each non-library layer, hypothesize the matching Chassis component.** Match by visual + structural intent, not by exact appearance.
 
@@ -111,12 +111,12 @@ For each section in order:
 
 5. **For each replacement, decide the strategy.**
 
-| Strategy   | When                                                             |
-| ---------- | ---------------------------------------------------------------- |
-| **Swap**   | A library component matches 1:1 → replace and re-apply props/text |
-| **Compose** | No single component fits, but multiple primitives compose to it  |
-| **Skip**   | Already a valid library instance                                 |
-| **Block**  | No mapping possible → report                                     |
+| Strategy    | When                                                              |
+| ----------- | ----------------------------------------------------------------- |
+| **Swap**    | A library component matches 1:1 → replace and re-apply props/text |
+| **Compose** | No single component fits, but multiple primitives compose to it   |
+| **Skip**    | Already a valid library instance                                  |
+| **Block**   | No mapping possible → report                                      |
 
 6. **For each Swap / Compose**, capture:
    - Original `x`, `y`, `width`, `height` (only matters in non-auto-layout parents)

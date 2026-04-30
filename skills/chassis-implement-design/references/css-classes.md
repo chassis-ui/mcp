@@ -8,15 +8,15 @@ Complete class reference for translating Chassis Figma views into Chassis CSS co
 
 ### Headings & display
 
-| Role | Class |
-| --- | --- |
-| H1–H6 (semantic) | `font-h1` … `font-h6` |
+| Role                         | Class                                                   |
+| ---------------------------- | ------------------------------------------------------- |
+| H1–H6 (semantic)             | `font-h1` … `font-h6`                                   |
 | Display (largest → smallest) | `font-display font-5xlarge` … `font-display font-large` |
-| Lead paragraph | `font-lead` |
-| Small text | `font-small` |
-| Code / mono | `font-code` |
-| Body family | `font-text` |
-| HTML semantic family | `font-html` |
+| Lead paragraph               | `font-lead`                                             |
+| Small text                   | `font-small`                                            |
+| Code / mono                  | `font-code`                                             |
+| Body family                  | `font-text`                                             |
+| HTML semantic family         | `font-html`                                             |
 
 Heading utility equivalents on non-`<h*>` elements: pair `font-{size}` (`font-2xlarge`, `font-xlarge`, …, `font-large`) with optional `font-display` for the display family.
 
@@ -26,12 +26,12 @@ Heading utility equivalents on non-`<h*>` elements: pair `font-{size}` (`font-2x
 
 ### Weights
 
-| Bootstrap | Chassis |
-| --- | --- |
-| `fw-light` | `font-elegant` |
-| `fw-normal` | `font-normal` |
-| `fw-bold` | `font-strong` |
-| `fw-bolder` | `font-mass` |
+| Bootstrap   | Chassis        |
+| ----------- | -------------- |
+| `fw-light`  | `font-elegant` |
+| `fw-normal` | `font-normal`  |
+| `fw-bold`   | `font-strong`  |
+| `fw-bolder` | `font-mass`    |
 
 ### Alignment / transform
 
@@ -43,31 +43,29 @@ Heading utility equivalents on non-`<h*>` elements: pair `font-{size}` (`font-2x
 
 **Default-context emphases** (no prefix — these inherit the page's neutral context and invert in dark mode):
 
-| Role | Class |
-| --- | --- |
-| Main (strongest body text) | `fg-main` |
-| Subtle (muted body text) | `fg-subtle` |
-| Slight (lightest readable) | `fg-slight` |
-| Highlight | `fg-highlight` |
-| Solid | `fg-solid` |
-| Inverse | `fg-inverse` |
+| Role                       | Class          |
+| -------------------------- | -------------- |
+| Main (strongest body text) | `fg-main`      |
+| Subtle (muted body text)   | `fg-subtle`    |
+| Slight (lightest readable) | `fg-slight`    |
+| Highlight                  | `fg-highlight` |
+| Solid                      | `fg-solid`     |
+| Inverse                    | `fg-inverse`   |
 
 **Per-context shortcut utilities** (each resolves to the context's `main` emphasis):
 
-| Context | Class |
-| --- | --- |
-| Primary | `fg-primary` |
+| Context   | Class          |
+| --------- | -------------- |
+| Primary   | `fg-primary`   |
 | Secondary | `fg-secondary` |
-| Neutral | `fg-neutral` |
-| Success | `fg-success` |
-| Danger | `fg-danger` |
-| Warning | `fg-warning` |
-| Info | `fg-info` |
+| Neutral   | `fg-neutral`   |
+| Success   | `fg-success`   |
+| Danger    | `fg-danger`    |
+| Warning   | `fg-warning`   |
+| Info      | `fg-info`      |
 | Alternate | `fg-alternate` |
-| Black | `fg-black` |
-| White | `fg-white` |
-
-
+| Black     | `fg-black`     |
+| White     | `fg-white`     |
 
 For non-`main` emphases on a non-default context, use the canonical prefixed form below: `primary-fg-subtle`, `success-fg-slight`, etc.
 
@@ -109,14 +107,14 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 
 ### Bootstrap → Chassis color migration
 
-| Bootstrap | Chassis |
-| --- | --- |
-| `text-muted` | `fg-subtle` |
-| `text-light` | `fg-slight` |
-| `text-dark` | `fg-main` |
-| `text-{role}` | `fg-{role}` |
-| `bg-light` | `bg-main` |
-| `bg-dark` | `bg-inverse` |
+| Bootstrap               | Chassis           |
+| ----------------------- | ----------------- |
+| `text-muted`            | `fg-subtle`       |
+| `text-light`            | `fg-slight`       |
+| `text-dark`             | `fg-main`         |
+| `text-{role}`           | `fg-{role}`       |
+| `bg-light`              | `bg-main`         |
+| `bg-dark`               | `bg-inverse`      |
 | `text-primary-emphasis` | `primary-fg-main` |
 
 ## Spacing
@@ -133,14 +131,14 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 
 ### Bootstrap → Chassis spacing migration
 
-| Bootstrap | Chassis |
-| --- | --- |
-| `*-0` | `*-zero` |
-| `*-1` | `*-4xsmall` |
-| `*-2` | `*-xsmall` (or `*-small` per design intent) |
-| `*-3` | `*-medium` |
-| `*-4` | `*-large` |
-| `*-5` | `*-2xlarge` (or `*-xlarge`) |
+| Bootstrap | Chassis                                     |
+| --------- | ------------------------------------------- |
+| `*-0`     | `*-zero`                                    |
+| `*-1`     | `*-4xsmall`                                 |
+| `*-2`     | `*-xsmall` (or `*-small` per design intent) |
+| `*-3`     | `*-medium`                                  |
+| `*-4`     | `*-large`                                   |
+| `*-5`     | `*-2xlarge` (or `*-xlarge`)                 |
 
 > Always pick the **named scale step that matches the bound Figma `space/context/{ctx}` token**, not a numeric guess.
 
@@ -177,13 +175,13 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 
 ## Breakpoints
 
-| Bootstrap | Chassis | ≥ |
-| --- | --- | --- |
-| `sm` | `small` | 576px |
-| `md` | `medium` | 768px |
-| `lg` | `large` | 992px |
-| `xl` | `xlarge` | 1200px |
-| `xxl` | `2xlarge` | 1400px |
+| Bootstrap | Chassis   | ≥      |
+| --------- | --------- | ------ |
+| `sm`      | `small`   | 576px  |
+| `md`      | `medium`  | 768px  |
+| `lg`      | `large`   | 992px  |
+| `xl`      | `xlarge`  | 1200px |
+| `xxl`     | `2xlarge` | 1400px |
 
 Apply to: `col-{bp}-*`, `d-{bp}-*`, `flex-{bp}-*`, `text-{bp}-*`, spacing `m{side}-{bp}-{size}` etc.
 
@@ -191,76 +189,76 @@ Apply to: `col-{bp}-*`, `d-{bp}-*`, `flex-{bp}-*`, `text-{bp}-*`, spacing `m{sid
 
 Full HTML patterns are in [components.md](./components.md). Class signatures only:
 
-| Component | Base + modifiers |
-| --- | --- |
-| Button | `button {context} {style?} {size?} {state?}` (style: `outline`/`smooth`/`link`; size: `small`/`large`) |
-| Button group | `button-group` (wrap multiple `.button`) |
-| Form control | `form-control`, `form-select`, `form-check-input`, `form-range`, `form-control-color` |
-| Form blocks | `form-floating`, `form-outline`, `form-check`, `form-switch`, `form-text` |
-| Card | `card`, `card-content`, `card-title`, `card-subtitle`, `card-body`, `card-footer`, `card-img`, `card-img-overlay`, `card-header` |
-| Alert | `alert {context}` |
-| Badge | `badge {context}` |
-| Chip | `chip {context}` |
-| Avatar | `avatar {size?}` |
-| Modal | `modal`, `modal-dialog`, `modal-content`, `modal-header`, `modal-body`, `modal-footer`, `modal-title` |
-| Offcanvas | `offcanvas`, `offcanvas-{start|end|top|bottom}`, `offcanvas-header`, `offcanvas-body` |
-| Popover | `popover`, `popover-header`, `popover-body` |
-| Tooltip | `tooltip`, `tooltip-inner`, `tooltip-arrow` |
-| Toast | `toast`, `toast-header`, `toast-body` |
-| Notification | `notification {context}` |
-| Progress | `progress`, `progress-bar` |
-| Skeleton | `skeleton`, `skeleton-{shape}` |
-| Spinner | `spinner-{border|grow}` |
-| Navbar | `navbar`, `navbar-brand`, `navbar-toggler`, `navbar-collapse`, `navbar-nav` |
-| Nav | `nav`, `nav-tabs`, `nav-pills`, `nav-link`, `nav-item` |
-| Breadcrumb | `breadcrumb`, `breadcrumb-item` |
-| Pagination | `pagination`, `page-item`, `page-link` |
-| Dropdown | `dropdown`, `dropdown-toggle`, `dropdown-menu`, `dropdown-item`, `dropdown-divider` |
-| Accordion | `accordion`, `accordion-item`, `accordion-header`, `accordion-button`, `accordion-collapse`, `accordion-body` |
-| Carousel | `carousel`, `carousel-inner`, `carousel-item`, `carousel-control-{prev|next}`, `carousel-indicators`, `carousel-caption` |
-| Table | `table {variant?}` (variants: `table-striped`, `table-bordered`, `table-hover`, `table-sm`) |
-| List | `list-group`, `list-group-item` |
-| Close button | `close-button` |
-| Icon | `icon` (often inside `<svg class="icon">`) |
-| Tooltip target | element with `data-cx-toggle="tooltip"` |
+| Component      | Base + modifiers                                                                                                                 |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | --- | ---------------------------------------------- |
+| Button         | `button {context} {style?} {size?} {state?}` (style: `outline`/`smooth`/`link`; size: `small`/`large`)                           |
+| Button group   | `button-group` (wrap multiple `.button`)                                                                                         |
+| Form control   | `form-control`, `form-select`, `form-check-input`, `form-range`, `form-control-color`                                            |
+| Form blocks    | `form-floating`, `form-outline`, `form-check`, `form-switch`, `form-text`                                                        |
+| Card           | `card`, `card-content`, `card-title`, `card-subtitle`, `card-body`, `card-footer`, `card-img`, `card-img-overlay`, `card-header` |
+| Alert          | `alert {context}`                                                                                                                |
+| Badge          | `badge {context}`                                                                                                                |
+| Chip           | `chip {context}`                                                                                                                 |
+| Avatar         | `avatar {size?}`                                                                                                                 |
+| Modal          | `modal`, `modal-dialog`, `modal-content`, `modal-header`, `modal-body`, `modal-footer`, `modal-title`                            |
+| Offcanvas      | `offcanvas`, `offcanvas-{start                                                                                                   | end                                               | top | bottom}`, `offcanvas-header`, `offcanvas-body` |
+| Popover        | `popover`, `popover-header`, `popover-body`                                                                                      |
+| Tooltip        | `tooltip`, `tooltip-inner`, `tooltip-arrow`                                                                                      |
+| Toast          | `toast`, `toast-header`, `toast-body`                                                                                            |
+| Notification   | `notification {context}`                                                                                                         |
+| Progress       | `progress`, `progress-bar`                                                                                                       |
+| Skeleton       | `skeleton`, `skeleton-{shape}`                                                                                                   |
+| Spinner        | `spinner-{border                                                                                                                 | grow}`                                            |
+| Navbar         | `navbar`, `navbar-brand`, `navbar-toggler`, `navbar-collapse`, `navbar-nav`                                                      |
+| Nav            | `nav`, `nav-tabs`, `nav-pills`, `nav-link`, `nav-item`                                                                           |
+| Breadcrumb     | `breadcrumb`, `breadcrumb-item`                                                                                                  |
+| Pagination     | `pagination`, `page-item`, `page-link`                                                                                           |
+| Dropdown       | `dropdown`, `dropdown-toggle`, `dropdown-menu`, `dropdown-item`, `dropdown-divider`                                              |
+| Accordion      | `accordion`, `accordion-item`, `accordion-header`, `accordion-button`, `accordion-collapse`, `accordion-body`                    |
+| Carousel       | `carousel`, `carousel-inner`, `carousel-item`, `carousel-control-{prev                                                           | next}`, `carousel-indicators`, `carousel-caption` |
+| Table          | `table {variant?}` (variants: `table-striped`, `table-bordered`, `table-hover`, `table-sm`)                                      |
+| List           | `list-group`, `list-group-item`                                                                                                  |
+| Close button   | `close-button`                                                                                                                   |
+| Icon           | `icon` (often inside `<svg class="icon">`)                                                                                       |
+| Tooltip target | element with `data-cx-toggle="tooltip"`                                                                                          |
 
 ## Data attributes (behaviors)
 
 Replace **all** `data-bs-*` with `data-cx-*`:
 
-| Behavior | Attribute |
-| --- | --- |
-| Toggle a component | `data-cx-toggle="modal|offcanvas|dropdown|tooltip|popover|tab|collapse|button"` |
-| Target selector | `data-cx-target="#id"` |
-| Dismiss component | `data-cx-dismiss="modal|alert|offcanvas|toast"` |
-| Scrollspy | `data-cx-spy="scroll"` + `data-cx-target="#nav"` |
-| Carousel auto | `data-cx-ride="carousel"` |
-| Theme attribute (document) | `data-cx-theme="dark|light"` (or brand-specific) |
-| Slide-to (carousel) | `data-cx-slide-to="0"` |
-| Backdrop | `data-cx-backdrop="static|true|false"` |
-| Keyboard | `data-cx-keyboard="true|false"` |
+| Behavior                   | Attribute                                        |
+| -------------------------- | ------------------------------------------------ | --------------------------- | --------- | ------- | ------- | --- | -------- | -------- |
+| Toggle a component         | `data-cx-toggle="modal                           | offcanvas                   | dropdown  | tooltip | popover | tab | collapse | button"` |
+| Target selector            | `data-cx-target="#id"`                           |
+| Dismiss component          | `data-cx-dismiss="modal                          | alert                       | offcanvas | toast"` |
+| Scrollspy                  | `data-cx-spy="scroll"` + `data-cx-target="#nav"` |
+| Carousel auto              | `data-cx-ride="carousel"`                        |
+| Theme attribute (document) | `data-cx-theme="dark                             | light"` (or brand-specific) |
+| Slide-to (carousel)        | `data-cx-slide-to="0"`                           |
+| Backdrop                   | `data-cx-backdrop="static                        | true                        | false"`   |
+| Keyboard                   | `data-cx-keyboard="true                          | false"`                     |
 
 ## Bootstrap → Chassis quick lookup
 
-| Bootstrap pattern | Chassis pattern |
-| --- | --- |
-| `btn btn-primary btn-lg` | `button primary large` |
-| `btn btn-outline-secondary btn-sm` | `button secondary outline small` |
-| `btn-link` | `button link` |
-| `card-body` (wrapper) | `card-content` |
-| `card-text` | `card-body` |
-| `badge bg-success` / `text-bg-success` | `badge success` |
-| `alert alert-danger` | `alert danger` |
-| `display-4` | `font-display font-2xlarge` |
-| `lead` | `font-lead` |
-| `text-muted` | `fg-subtle` |
-| `font-monospace` | `font-code` |
-| `fw-bold` | `font-strong` |
-| `p-3 mb-4` | `p-medium mb-large` |
-| `col-md-6` | `col-medium-6` |
-| `d-md-flex` | `d-medium-flex` |
-| `me-2 ms-auto` | `me-xsmall ms-auto` |
-| `data-bs-toggle="modal"` | `data-cx-toggle="modal"` |
+| Bootstrap pattern                      | Chassis pattern                  |
+| -------------------------------------- | -------------------------------- |
+| `btn btn-primary btn-lg`               | `button primary large`           |
+| `btn btn-outline-secondary btn-sm`     | `button secondary outline small` |
+| `btn-link`                             | `button link`                    |
+| `card-body` (wrapper)                  | `card-content`                   |
+| `card-text`                            | `card-body`                      |
+| `badge bg-success` / `text-bg-success` | `badge success`                  |
+| `alert alert-danger`                   | `alert danger`                   |
+| `display-4`                            | `font-display font-2xlarge`      |
+| `lead`                                 | `font-lead`                      |
+| `text-muted`                           | `fg-subtle`                      |
+| `font-monospace`                       | `font-code`                      |
+| `fw-bold`                              | `font-strong`                    |
+| `p-3 mb-4`                             | `p-medium mb-large`              |
+| `col-md-6`                             | `col-medium-6`                   |
+| `d-md-flex`                            | `d-medium-flex`                  |
+| `me-2 ms-auto`                         | `me-xsmall ms-auto`              |
+| `data-bs-toggle="modal"`               | `data-cx-toggle="modal"`         |
 
 ## Anti-patterns (HARD STOPS)
 

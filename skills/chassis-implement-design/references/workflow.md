@@ -149,13 +149,13 @@ Same as Screen Mode Phase 2 → Phase 5, scoped to the single section node. Skip
 
 ## Failure Modes & Fallbacks
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| Empty text in output | Looked at top-level instance, missed `*Asset` child | Re-walk node tree for `*Asset` layers; lift their TEXT property |
-| Tailwind classes leaked into output | Used MCP output verbatim | Discard MCP output's class layer; rewrite from scratch using Chassis classes |
-| Hyphenated modifier (e.g. `button-primary`) | Treated Chassis like Bootstrap | Use space-separated modifiers: `button primary` |
-| Card content displays wrong | Used Bootstrap's `card-body` for content | Chassis content wrapper is `card-content`; `card-body` is the text paragraph |
-| Theme switch breaks colors | Used raw hex or unit color tokens | Replace with `fg-*` / `bg-*` / context-prefix variants |
-| `get_design_context` truncated | Section too large | Use `get_metadata` first, then per-subsection `get_design_context` |
-| No variables returned | Used `getLocalVariableCollectionsAsync` only | Use `get_variable_defs` — that's the source of truth for library variables |
-| Icon renders blank | Icon SVG fetch failed | Resolve via `@chassis-ui/icons` slug instead; see [components.md → Icons](./components.md#icons) |
+| Symptom                                     | Likely cause                                        | Fix                                                                                              |
+| ------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Empty text in output                        | Looked at top-level instance, missed `*Asset` child | Re-walk node tree for `*Asset` layers; lift their TEXT property                                  |
+| Tailwind classes leaked into output         | Used MCP output verbatim                            | Discard MCP output's class layer; rewrite from scratch using Chassis classes                     |
+| Hyphenated modifier (e.g. `button-primary`) | Treated Chassis like Bootstrap                      | Use space-separated modifiers: `button primary`                                                  |
+| Card content displays wrong                 | Used Bootstrap's `card-body` for content            | Chassis content wrapper is `card-content`; `card-body` is the text paragraph                     |
+| Theme switch breaks colors                  | Used raw hex or unit color tokens                   | Replace with `fg-*` / `bg-*` / context-prefix variants                                           |
+| `get_design_context` truncated              | Section too large                                   | Use `get_metadata` first, then per-subsection `get_design_context`                               |
+| No variables returned                       | Used `getLocalVariableCollectionsAsync` only        | Use `get_variable_defs` — that's the source of truth for library variables                       |
+| Icon renders blank                          | Icon SVG fetch failed                               | Resolve via `@chassis-ui/icons` slug instead; see [components.md → Icons](./components.md#icons) |

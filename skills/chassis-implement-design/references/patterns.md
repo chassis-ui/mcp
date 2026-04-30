@@ -21,18 +21,18 @@ Don't try to enumerate Asset names ahead of time; the library evolves. Instead:
 
 The asset's name suffix and its parent component's role together determine the target element. Common patterns (illustrative — confirm against the actual node tree, don't memorize):
 
-| Role suffix in asset name | Typical target element |
-| --- | --- |
-| Title / Heading | `<h1>`–`<h6>` per outline; `<h5 class="card-title">` inside a card |
-| Subtitle | `<h6 class="card-subtitle fg-subtle">` inside a card; `<p class="font-lead">` on a page header |
-| Label (form-adjacent) | `<label class="form-label" for="…">` |
-| Label (badge / chip / button) | inline content of the wrapping `<span>` / `<button>` |
-| Description / Body | `<p>` (sometimes `<p class="card-body">` inside a card) |
-| Action | inline content of the wrapping `<button>` / `<a>` |
-| Helper | `<small class="form-text">` |
-| Caption | `<figcaption>` or `<small>` |
-| Icon | `<svg class="icon">` with the resolved sprite reference |
-| Image | `<img>` with the transferred asset (or `<picture>` for theme-conditional) |
+| Role suffix in asset name     | Typical target element                                                                         |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- |
+| Title / Heading               | `<h1>`–`<h6>` per outline; `<h5 class="card-title">` inside a card                             |
+| Subtitle                      | `<h6 class="card-subtitle fg-subtle">` inside a card; `<p class="font-lead">` on a page header |
+| Label (form-adjacent)         | `<label class="form-label" for="…">`                                                           |
+| Label (badge / chip / button) | inline content of the wrapping `<span>` / `<button>`                                           |
+| Description / Body            | `<p>` (sometimes `<p class="card-body">` inside a card)                                        |
+| Action                        | inline content of the wrapping `<button>` / `<a>`                                              |
+| Helper                        | `<small class="form-text">`                                                                    |
+| Caption                       | `<figcaption>` or `<small>`                                                                    |
+| Icon                          | `<svg class="icon">` with the resolved sprite reference                                        |
+| Image                         | `<img>` with the transferred asset (or `<picture>` for theme-conditional)                      |
 
 If the asset's role isn't obvious from its name and parent, fall back to the screenshot and pick the element that matches the rendered semantics.
 
@@ -60,7 +60,9 @@ Card / Vertical / Default (instance of @chassis Card)
     <p class="card-body">What shipped this quarter…</p>
     <a href="#" class="button primary small">
       Read more
-      <svg class="icon" aria-hidden="true"><use href="/icons/sprite.svg#icon-arrow-right"></use></svg>
+      <svg class="icon" aria-hidden="true">
+        <use href="/icons/sprite.svg#icon-arrow-right"></use>
+      </svg>
     </a>
   </div>
 </div>
@@ -83,18 +85,18 @@ Note: every `*Asset` wrapper has been **lifted** — no `<div class="text-asset"
 
 Always pick the correct semantic element for the role; class names are styling, not semantics.
 
-| Role | Element |
-| --- | --- |
-| Action that runs JS | `<button type="button">` |
-| Action that navigates | `<a href="…">` |
-| Form input | `<input>` / `<textarea>` / `<select>` with paired `<label for>` |
-| Heading | `<h1>`–`<h6>` per outline |
-| Navigation region | `<nav>` |
-| List | `<ul>` / `<ol>` / `<li>` |
-| Tabular data | `<table>` with `<thead>` / `<tbody>` / `<th scope>` |
-| Aside / sidebar | `<aside>` |
-| Article / card-as-content | `<article>` |
-| Dialog / modal | `<dialog>` (or `<div role="dialog">`) |
+| Role                      | Element                                                         |
+| ------------------------- | --------------------------------------------------------------- |
+| Action that runs JS       | `<button type="button">`                                        |
+| Action that navigates     | `<a href="…">`                                                  |
+| Form input                | `<input>` / `<textarea>` / `<select>` with paired `<label for>` |
+| Heading                   | `<h1>`–`<h6>` per outline                                       |
+| Navigation region         | `<nav>`                                                         |
+| List                      | `<ul>` / `<ol>` / `<li>`                                        |
+| Tabular data              | `<table>` with `<thead>` / `<tbody>` / `<th scope>`             |
+| Aside / sidebar           | `<aside>`                                                       |
+| Article / card-as-content | `<article>`                                                     |
+| Dialog / modal            | `<dialog>` (or `<div role="dialog">`)                           |
 
 ## Themes & Modes
 
@@ -104,7 +106,7 @@ Chassis supports multi-theme designs via Brand × Theme × App. In code:
 
 ```html
 <html lang="en" data-cx-theme="dark">
-…
+  …
 </html>
 ```
 
@@ -128,12 +130,21 @@ Layers gated by a Figma switch variable (`figma/switch/theme/mode-1`) — typica
 ```html
 <!-- Twin elements, gated by theme attribute -->
 <img class="logo logo-light" src="/logo-light.svg" alt="Brand" />
-<img class="logo logo-dark"  src="/logo-dark.svg"  alt="Brand" aria-hidden="true" />
+<img
+  class="logo logo-dark"
+  src="/logo-dark.svg"
+  alt="Brand"
+  aria-hidden="true"
+/>
 ```
 
 ```css
-[data-cx-theme="light"] .logo-dark { display: none; }
-[data-cx-theme="dark"]  .logo-light { display: none; }
+[data-cx-theme="light"] .logo-dark {
+  display: none;
+}
+[data-cx-theme="dark"] .logo-light {
+  display: none;
+}
 ```
 
 …or use `<picture>` with `prefers-color-scheme`:
@@ -150,7 +161,9 @@ Layers gated by a Figma switch variable (`figma/switch/theme/mode-1`) — typica
 Brand-level overrides typically scope to a class on the document or a top-level wrapper:
 
 ```html
-<body class="brand-acme">…</body>
+<body class="brand-acme">
+  …
+</body>
 ```
 
 Confirm the project's actual brand-toggle mechanism before emitting.
@@ -165,15 +178,15 @@ Figma component variants map to **space-separated modifiers** on the base class,
 
 Examples:
 
-| Figma variants | Chassis class |
-| --- | --- |
-| `Button / context=primary` | `button primary` |
-| `Button / context=primary, style=outline` | `button primary outline` |
-| `Button / context=primary, style=outline, size=small` | `button primary outline small` |
-| `Button / context=primary, state=disabled` | `button primary` + `disabled` attribute on element |
-| `Badge / context=success` | `badge success` |
-| `Alert / context=danger` | `alert danger` |
-| `Card / variant=horizontal` | `card horizontal` (if defined) |
+| Figma variants                                        | Chassis class                                      |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| `Button / context=primary`                            | `button primary`                                   |
+| `Button / context=primary, style=outline`             | `button primary outline`                           |
+| `Button / context=primary, style=outline, size=small` | `button primary outline small`                     |
+| `Button / context=primary, state=disabled`            | `button primary` + `disabled` attribute on element |
+| `Badge / context=success`                             | `badge success`                                    |
+| `Alert / context=danger`                              | `alert danger`                                     |
+| `Card / variant=horizontal`                           | `card horizontal` (if defined)                     |
 
 > **State variants** (`disabled`, `loading`, `active`) are typically expressed via element attributes (`disabled`, `aria-busy="true"`, `aria-current="true"`), not class modifiers — confirm per component.
 
@@ -187,15 +200,15 @@ Figma components often expose `has-icon`, `has-title`, `has-subtitle`, `has-acti
 
 Figma auto-layout maps to flex utilities:
 
-| Figma direction | Chassis classes |
-| --- | --- |
-| Horizontal | `d-flex flex-row` (or just `d-flex`) |
-| Vertical | `d-flex flex-column` |
-| Wrap | add `flex-wrap` |
-| Spacing between | `gap-{semantic}` (resolved from the Figma `space/context/*` token) |
-| Padding | `p-{semantic}` / `px-` / `py-` / individual sides |
-| Alignment (main axis) | `justify-content-{start|center|end|between|around|evenly}` |
-| Alignment (cross axis) | `align-items-{start|center|end|baseline|stretch}` |
+| Figma direction        | Chassis classes                                                    |
+| ---------------------- | ------------------------------------------------------------------ | ------ | --- | -------- | --------- | -------- |
+| Horizontal             | `d-flex flex-row` (or just `d-flex`)                               |
+| Vertical               | `d-flex flex-column`                                               |
+| Wrap                   | add `flex-wrap`                                                    |
+| Spacing between        | `gap-{semantic}` (resolved from the Figma `space/context/*` token) |
+| Padding                | `p-{semantic}` / `px-` / `py-` / individual sides                  |
+| Alignment (main axis)  | `justify-content-{start                                            | center | end | between  | around    | evenly}` |
+| Alignment (cross axis) | `align-items-{start                                                | center | end | baseline | stretch}` |
 
 ### Constraints → responsive grid
 
@@ -231,7 +244,9 @@ After implementation:
 <!-- ❌ -->
 <button class="btn btn-primary btn-lg">Save</button>
 <p class="text-muted small">Hint</p>
-<div class="card"><div class="card-body"><p class="card-text">…</p></div></div>
+<div class="card">
+  <div class="card-body"><p class="card-text">…</p></div>
+</div>
 <div class="col-md-6"></div>
 <button data-bs-toggle="modal" data-bs-target="#m">Open</button>
 <div class="p-3 mb-4">…</div>
@@ -239,7 +254,9 @@ After implementation:
 <!-- ✅ -->
 <button class="button primary large">Save</button>
 <p class="fg-subtle font-small">Hint</p>
-<div class="card"><div class="card-content"><p class="card-body">…</p></div></div>
+<div class="card">
+  <div class="card-content"><p class="card-body">…</p></div>
+</div>
 <div class="col-medium-6"></div>
 <button data-cx-toggle="modal" data-cx-target="#m">Open</button>
 <div class="p-medium mb-large">…</div>

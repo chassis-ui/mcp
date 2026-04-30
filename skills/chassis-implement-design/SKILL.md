@@ -1,6 +1,6 @@
 ---
 name: chassis-implement-design
-description: 'Implement a Figma design (made with the Chassis UI Figma library) as production HTML/CSS using Chassis CSS (`@chassis-ui/css`). Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, sidebar, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-implement-design` and adds Chassis-specific class mapping, token translation, Asset Override extraction, component composition, and Brand/Theme/App theming conventions. Do NOT use for: writing INTO Figma (use `chassis-create-design`), pure token/SCSS edits, or non-Chassis design systems.'
+description: "Implement a Figma design (made with the Chassis UI Figma library) as production HTML/CSS using Chassis CSS (`@chassis-ui/css`). Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, sidebar, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-implement-design` and adds Chassis-specific class mapping, token translation, Asset Override extraction, component composition, and Brand/Theme/App theming conventions. Do NOT use for: writing INTO Figma (use `chassis-create-design`), pure token/SCSS edits, or non-Chassis design systems."
 disable-model-invocation: false
 ---
 
@@ -12,10 +12,10 @@ This skill specializes the generic Figma-to-code workflow for the **Chassis UI e
 
 This skill is a **specialization layer** that runs on top of the Figma MCP server. Load the canonical implementation skill **before** doing any work here:
 
-| Order | Skill | Why |
-| ----- | ----- | --- |
-| 1 | `figma-implement-design` | **MANDATORY before ANY code generation.** Provides the canonical 7-step workflow: Get Node ID → `get_design_context` → `get_screenshot` → Download Assets → Translate → 1:1 Parity → Validate. This skill **does not redefine that workflow** — it overlays Chassis-specific rules on top. |
-| 2 | `chassis-implement-design` (this file) | Chassis specialization layer — read after the above. |
+| Order | Skill                                  | Why                                                                                                                                                                                                                                                                                        |
+| ----- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | `figma-implement-design`               | **MANDATORY before ANY code generation.** Provides the canonical 7-step workflow: Get Node ID → `get_design_context` → `get_screenshot` → Download Assets → Translate → 1:1 Parity → Validate. This skill **does not redefine that workflow** — it overlays Chassis-specific rules on top. |
+| 2     | `chassis-implement-design` (this file) | Chassis specialization layer — read after the above.                                                                                                                                                                                                                                       |
 
 If the user wants to write back to Figma (not code), stop and switch to `chassis-create-design` instead.
 
@@ -25,11 +25,11 @@ If Figma MCP tools appear as deferred tools, batch-load their schemas in **one**
 
 When the deliverable is **Chassis CSS code** (HTML + Chassis CSS classes; optionally JS for `data-cx-*` behaviors) implementing a Figma view that was authored with the Chassis UI Figma library.
 
-| Mode | Use when |
-| --- | --- |
-| `screen` | Full page, view, modal, drawer, dashboard, landing page from Figma |
+| Mode        | Use when                                                                            |
+| ----------- | ----------------------------------------------------------------------------------- |
+| `screen`    | Full page, view, modal, drawer, dashboard, landing page from Figma                  |
 | `component` | Single component instance (button, card, form, table, etc.) into a reusable snippet |
-| `section` | A subsection of an existing page (header, hero, feature block, footer) |
+| `section`   | A subsection of an existing page (header, hero, feature block, footer)              |
 
 ## When NOT to Use
 
@@ -49,16 +49,16 @@ When the deliverable is **Chassis CSS code** (HTML + Chassis CSS classes; option
 
 Chassis CSS is **not Bootstrap with renames.** The default Figma MCP output is React + Tailwind; treat it as a **structural / visual reference only**, then rewrite to Chassis conventions:
 
-| Concept | Chassis CSS rule |
-| --- | --- |
-| Modifiers | **Space-separated** on a single class (`button primary outline large`), never hyphenated (`btn-primary-outline-lg`) |
-| Colors (text) | `fg-{role}` — `fg-primary`, `fg-subtle`, `fg-main` (never `text-primary`, `text-muted`) |
-| Colors (bg) | `bg-{role}` plus context-prefix variants (`primary-bg-evident`) |
-| Typography | `font-{role|size}` — `font-h1`, `font-display font-2xlarge`, `font-lead`, `font-strong` |
-| Spacing | **Semantic scale** — `zero`, `4xsmall`, `xsmall`, `small`, `medium`, `large`, `xlarge`, `2xlarge` … `6xlarge`. Never numeric (`p-3`). |
-| Breakpoints | `small`, `medium`, `large`, `xlarge`, `2xlarge` (never `sm`/`md`/`lg`/`xl`/`xxl`) |
-| Behavior data | `data-cx-*` (never `data-bs-*`) |
-| Card subparts | `card-content` (Bootstrap's `card-body`), `card-body` (Bootstrap's `card-text`) — these flipped |
+| Concept       | Chassis CSS rule                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Modifiers     | **Space-separated** on a single class (`button primary outline large`), never hyphenated (`btn-primary-outline-lg`)                   |
+| Colors (text) | `fg-{role}` — `fg-primary`, `fg-subtle`, `fg-main` (never `text-primary`, `text-muted`)                                               |
+| Colors (bg)   | `bg-{role}` plus context-prefix variants (`primary-bg-evident`)                                                                       |
+| Typography    | `font-{role                                                                                                                           | size}`—`font-h1`, `font-display font-2xlarge`, `font-lead`, `font-strong` |
+| Spacing       | **Semantic scale** — `zero`, `4xsmall`, `xsmall`, `small`, `medium`, `large`, `xlarge`, `2xlarge` … `6xlarge`. Never numeric (`p-3`). |
+| Breakpoints   | `small`, `medium`, `large`, `xlarge`, `2xlarge` (never `sm`/`md`/`lg`/`xl`/`xxl`)                                                     |
+| Behavior data | `data-cx-*` (never `data-bs-*`)                                                                                                       |
+| Card subparts | `card-content` (Bootstrap's `card-body`), `card-body` (Bootstrap's `card-text`) — these flipped                                       |
 
 If you find yourself emitting `btn-`, `text-muted`, `bg-light`, `p-3`, `col-md-*`, `data-bs-*`, or a hyphenated modifier — **stop**, you're producing Bootstrap. See the full Bootstrap → Chassis class map in [css-classes.md](./references/css-classes.md).
 
@@ -78,23 +78,28 @@ If text appears in the screenshot but no `*Asset` child exists in `get_design_co
 Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Chassis-specific overrides** at each step:
 
 ### Step 1 — Get Node ID
+
 - Standard URL parse, no Chassis-specific changes.
 
 ### Step 2 — Fetch Design Context
+
 - Run `get_design_context` first.
 - **Also run `get_variable_defs`** for the node — it returns Chassis token names (`color/context/primary/fg-main`, `space/context/medium`, `font/html/h1`) used in the design. These map directly to Chassis CSS classes via [tokens.md](./references/tokens.md).
 - **Run `get_code_connect_map`** for the node before generating code — Chassis components may have Code Connect snippets that already pin the correct Chassis CSS class names. If a mapping exists, use it verbatim.
 - For large screens, use `get_metadata` first to identify section nodes, then fetch each section's context separately.
 
 ### Step 3 — Capture Visual Reference
+
 - `get_screenshot` per section as well as the full view — use sections to validate Asset extraction and theme correctness.
 
 ### Step 4 — Download Required Assets
+
 - Use Figma MCP `localhost` URLs verbatim per the parent skill.
 - **Icons**: Chassis ships an icon system (`@chassis-ui/icons`). If the Figma layer is a Chassis icon instance (look for `Icon Asset` or `*-icon` child names), use the `<svg class="icon">` Chassis pattern with the matching icon slug **instead of** the localhost SVG. Resolve via [components.md → Icons](./references/components.md#icons).
 - **Brand/theme-conditional images** (logos, illustrations gated by Chassis switch variables) require dual sources — see [patterns.md → Theme-Conditional Assets](./references/patterns.md#theme-conditional-assets).
 
 ### Step 5 — Translate to Chassis CSS Conventions
+
 - **Discard** the Tailwind utility classes from the MCP output entirely.
 - **Map every Figma variable** returned by `get_variable_defs` to its Chassis CSS class using [tokens.md](./references/tokens.md). Token-bound colors → `fg-*` / `bg-*` / context-prefix variants. Token-bound spacing → semantic spacing utilities. Token-bound type → `font-*` classes.
 - **Identify each Figma component instance** and emit its canonical Chassis CSS HTML pattern from [components.md](./references/components.md). Variants in Figma map to space-separated modifiers (`button primary outline large`).
@@ -103,6 +108,7 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 - **Behaviors** (toggles, modals, dropdowns, tabs, scrollspy) use `data-cx-*` attributes — see [css-classes.md → Data Attributes](./references/css-classes.md#data-attributes).
 
 ### Step 6 — Achieve 1:1 Visual Parity
+
 - **Never hardcode** colors, spacing, typography, radius, border-width — they must resolve to a Chassis class.
 - **Prefer context tokens** (`bg-main`, `fg-subtle`, `space-medium`) over unit/level tokens — context tokens swap correctly across themes/modes; unit tokens do not.
 - **Don't fabricate classes.** If a needed style has no Chassis class, raise it explicitly rather than emitting raw CSS or Tailwind. Custom one-off CSS is allowed only as an inline `style="…"` for non-token values that genuinely don't exist in the system (e.g., a precise pixel offset for an illustration), and must be flagged in the deliverable summary.
@@ -110,6 +116,7 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 - **Constraints in Figma → responsive col classes**: `col-12 col-medium-6 col-large-4`.
 
 ### Step 7 — Validate Against Figma
+
 - Apply the parent skill's checklist.
 - **Add Chassis-specific checks:**
   - All classes are Chassis (no `btn-`, `text-muted`, `bg-light`, `p-3`, `col-md-*`, `data-bs-*`)
@@ -138,18 +145,18 @@ For Chassis CSS classes that don't yet have a Figma component (e.g., toast, popo
 
 Chassis Figma variables follow strict namespaces. Translation to Chassis CSS classes:
 
-| Figma namespace | Chassis CSS class family |
-| --- | --- |
-| `color/context/default/{fg\|bg}-{emphasis}` | `{fg\|bg}-{emphasis}` (default context drops the prefix) |
-| `color/context/{context}/{fg\|bg}-{emphasis}` | `{context}-{fg\|bg}-{emphasis}` (canonical, prefixed) |
-| `space/context/{step}` | `p-{step}` / `m-{step}` / `gap-{step}` |
-| `space/unit/{n}` | Avoid; use a context spacing instead |
-| `font/html/{role}` | `font-{role}` (`font-h1`, `font-lead`, `font-code`) |
-| `font/text/{size}/normal` | `font-{size}` (text family is the default) |
-| `font/{family}/{size}/{weight}` | `font-{family}` + `font-{size}` + `font-{weight}` |
-| `borderRadius/context/{step}` | `rounded-{step}` |
-| `borderWidth/context/{step}` | `border-{step}` |
-| `opacity/context/{step}` | `opacity-{step}` |
+| Figma namespace                               | Chassis CSS class family                                 |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `color/context/default/{fg\|bg}-{emphasis}`   | `{fg\|bg}-{emphasis}` (default context drops the prefix) |
+| `color/context/{context}/{fg\|bg}-{emphasis}` | `{context}-{fg\|bg}-{emphasis}` (canonical, prefixed)    |
+| `space/context/{step}`                        | `p-{step}` / `m-{step}` / `gap-{step}`                   |
+| `space/unit/{n}`                              | Avoid; use a context spacing instead                     |
+| `font/html/{role}`                            | `font-{role}` (`font-h1`, `font-lead`, `font-code`)      |
+| `font/text/{size}/normal`                     | `font-{size}` (text family is the default)               |
+| `font/{family}/{size}/{weight}`               | `font-{family}` + `font-{size}` + `font-{weight}`        |
+| `borderRadius/context/{step}`                 | `rounded-{step}`                                         |
+| `borderWidth/context/{step}`                  | `border-{step}`                                          |
+| `opacity/context/{step}`                      | `opacity-{step}`                                         |
 
 **Contexts (11):** `default` (page-level neutral, inverts in dark mode), `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `alternate` (prominent content, may not invert), `neutral` (grayscale / non-semantic), `black` (persists in all modes), `white` (persists in all modes).
 
@@ -184,14 +191,14 @@ These extend (do not replace) the rules in `figma-implement-design`. Extended an
 
 ## Deliverable Format
 
-| Bucket | Meaning |
-| --- | --- |
-| **Implemented** | Sections/components emitted as Chassis CSS HTML |
-| **Reused** | Project-existing Chassis components/snippets reused verbatim |
-| **Composed** | Sections built from Chassis primitives (no single component fits) |
-| **Iconified** | Localhost SVGs replaced with `@chassis-ui/icons` references |
-| **Flagged** | Styles that required raw inline CSS — list each with reason |
-| **Blocked** | Sections that could not be implemented — include exact failure mode |
+| Bucket          | Meaning                                                             |
+| --------------- | ------------------------------------------------------------------- |
+| **Implemented** | Sections/components emitted as Chassis CSS HTML                     |
+| **Reused**      | Project-existing Chassis components/snippets reused verbatim        |
+| **Composed**    | Sections built from Chassis primitives (no single component fits)   |
+| **Iconified**   | Localhost SVGs replaced with `@chassis-ui/icons` references         |
+| **Flagged**     | Styles that required raw inline CSS — list each with reason         |
+| **Blocked**     | Sections that could not be implemented — include exact failure mode |
 
 If everything is blocked, say so plainly with the specific failure reason.
 

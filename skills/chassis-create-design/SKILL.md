@@ -1,6 +1,6 @@
 ---
 name: chassis-create-design
-description: 'Build or update a Figma design (screen, page, view, modal, dialog, drawer, sidebar, panel, dashboard, landing page, or any multi-section layout) using the Chassis UI Figma library. Use when the user wants to create, compose, assemble, or reconnect a Figma view from code, a screenshot, a description, or an existing detached layout. Runs on top of the Figma MCP server skills (`figma-use`, `figma-generate-design`) and adds Chassis-specific component, token, asset-override, and theme-switching conventions. Do NOT use for: single-component fixes, generating code FROM Figma (use `chassis-implement-design`), or pure token/variable edits.'
+description: "Build or update a Figma design (screen, page, view, modal, dialog, drawer, sidebar, panel, dashboard, landing page, or any multi-section layout) using the Chassis UI Figma library. Use when the user wants to create, compose, assemble, or reconnect a Figma view from code, a screenshot, a description, or an existing detached layout. Runs on top of the Figma MCP server skills (`figma-use`, `figma-generate-design`) and adds Chassis-specific component, token, asset-override, and theme-switching conventions. Do NOT use for: single-component fixes, generating code FROM Figma (use `chassis-implement-design`), or pure token/variable edits."
 disable-model-invocation: false
 ---
 
@@ -12,11 +12,11 @@ This skill specializes the generic Figma screen-building workflow with **Chassis
 
 This skill is a **specialization layer** that runs on top of the Figma MCP server. The Figma MCP server provides the canonical screen-building skills — load them **before** doing any work in this skill:
 
-| Order | Skill | Why |
-| ----- | ----- | --- |
-| 1 | `figma-use` | **MANDATORY before ANY `use_figma` call.** Plugin API rules: color ranges (0–1), font preloading, page context, `setBoundVariableForPaint` returning new paints, `layoutSizingHorizontal/Vertical = 'FILL'` ordering, returning IDs, error recovery. Skipping causes silent, hard-to-debug failures. |
-| 2 | `figma-generate-design` | **MANDATORY for screen/view work.** Provides the canonical 6-step workflow: Understand Deliverable → Collect Components/Variables/Styles → Create Wrapper Frame → Build Sections → Validate & Transfer Images → Update Existing Views. This skill **does not redefine that workflow** — it overlays Chassis-specific rules on top. |
-| 3 | `chassis-create-design` (this file) | Chassis specialization layer — read after the two above. |
+| Order | Skill                               | Why                                                                                                                                                                                                                                                                                                                                |
+| ----- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | `figma-use`                         | **MANDATORY before ANY `use_figma` call.** Plugin API rules: color ranges (0–1), font preloading, page context, `setBoundVariableForPaint` returning new paints, `layoutSizingHorizontal/Vertical = 'FILL'` ordering, returning IDs, error recovery. Skipping causes silent, hard-to-debug failures.                               |
+| 2     | `figma-generate-design`             | **MANDATORY for screen/view work.** Provides the canonical 6-step workflow: Understand Deliverable → Collect Components/Variables/Styles → Create Wrapper Frame → Build Sections → Validate & Transfer Images → Update Existing Views. This skill **does not redefine that workflow** — it overlays Chassis-specific rules on top. |
+| 3     | `chassis-create-design` (this file) | Chassis specialization layer — read after the two above.                                                                                                                                                                                                                                                                           |
 
 **Logging:** Pass `skillNames: "figma-use,figma-generate-design,chassis-create-design"` on every `use_figma` call made under this skill. This is a logging parameter — does not affect execution.
 
@@ -26,9 +26,9 @@ If Figma MCP tools appear as deferred tools, batch-load their schemas in **one**
 
 When the deliverable is a **composed Figma view** built from Chassis library components — full-page screens, modals, dialogs, drawers, sidebars, panels, dashboards, landing pages, or any multi-section container.
 
-| Mode | Use when |
-| --- | --- |
-| `build` | Creating a new screen from scratch, or from code / screenshot / description / live URL |
+| Mode        | Use when                                                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------- |
+| `build`     | Creating a new screen from scratch, or from code / screenshot / description / live URL                |
 | `reconnect` | Replacing detached layers or local wrappers in an existing view with proper Chassis library instances |
 
 ## When NOT to Use
@@ -80,20 +80,24 @@ See [patterns.md → Boolean Visibility Props](./references/patterns.md#boolean-
 Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skill. Apply these **Chassis-specific overrides** at each step:
 
 ### Step 1 — Understand the Deliverable
+
 - Identify whether the source contains images → trigger parallel `generate_figma_design` capture if yes
 - Identify which Chassis themes/modes the deliverable targets (Brand × Theme × App combinations)
 
 ### Step 2 — Collect Components, Variables, Styles
+
 - **2a-i (Code Connect):** check chassis-website / chassis-css for `*.figma.tsx` / `*.figma.ts` files first
 - **2a-ii (existing screens):** inspect any existing Chassis screens in the target file
 - **2a-iii (search_design_system):** search by Chassis family names — `button-solid`, `form-regular`, `navbar`, `card`, `modal`, `table`, etc. (full list in [components.md](./references/components.md)). The result includes the `componentKey` — use it directly for `import_components` / `use_figma`. **Never import by component name** (names can collide and change).
 - **2b (variables + text styles):** Chassis variables follow strict namespaces — `color/context/...`, `space/context/...`, `typography/...` etc. See [tokens.md](./references/tokens.md). **Typography is special:** `font/{family}/{size}/{weight}` (e.g. `font/text/medium/normal`) is a **Figma text style**, not a variable — the underlying `typography/*` variables compose into it. Apply the **text style**, not the individual typography variables. See [typography.md](./references/typography.md). **Never** conclude "no variables" or "no styles" from `getLocalVariableCollectionsAsync()` / `getLocalTextStylesAsync()` alone — `search_design_system` (with `includeVariables` / `includeStyles`) is the source of truth for library assets.
 
 ### Step 3 — Create the Wrapper Frame First
+
 - Size the wrapper to a Chassis `grid/breakpoint/*` token rather than a pixel literal. Most common page widths: `2xlarge` (desktop), `large` (tablet), `xsmall` (mobile). Modals, drawers, and panels size off `size/context/*` or fixed component widths defined by the source. Adapt to the source.
 - Bind background/spacing to Chassis context tokens immediately so theme switching works for free.
 
 ### Step 4 — Build Each Section Inside the Wrapper
+
 - One section per `use_figma` call (mandatory).
 - **Asset overrides instead of top-level `setProperties` for text** — see core rule above.
 - Use Chassis context tokens for paddings/gaps via `setBoundVariable`, not pixel literals.
@@ -103,10 +107,12 @@ Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skil
 - Don't mix button sizes within one action group; don't mix form styles within one form (regular vs floating vs outline).
 
 ### Step 5 — Validate Each Section + Transfer Images
+
 - `get_screenshot` per section, not just the full view, to catch placeholder text and clipped Asset layers.
 - If `generate_figma_design` was used: transfer `imageHash` values into the corresponding Chassis frames, then delete the capture.
 
 ### Step 6 — Updating an Existing View / `reconnect` Mode
+
 - Inventory layers as `library-instance` / `detached` / `local-wrapper` / `raw-frame`.
 - Preserve `x`, `y`, `width`, `height` explicitly when replacing inside **non-auto-layout** parents.
 - Use `instance.swapComponent(newVariant)` rather than delete-and-recreate so prop overrides survive.
@@ -116,16 +122,16 @@ Detailed Chassis procedures, including the full Reconnect Mode playbook, are in 
 
 ## Design Tokens (Chassis namespaces)
 
-| Family | Pattern | Kind |
-| --- | --- | --- |
-| Colors | `color/context/{context}/{role}-{emphasis}` | variable |
-| Typography (applied) | `font/{family}/{size}/{weight}` | **text style** (composed of `typography/*` variables) |
-| Typography (raw vars) | `typography/{property}/{...}` | variable — only used **inside** text styles |
-| Spacing | `space/context/{context}` or `space/unit/{unit}` | variable |
-| Sizing | `size/context/{context}` or `size/unit/{unit}` |
-| Radius | `borderRadius/context/{context}` |
-| Border width | `borderWidth/context/{context}` |
-| Opacity | `opacity/context/{context}` or `opacity/level/{level}` |
+| Family                | Pattern                                                | Kind                                                  |
+| --------------------- | ------------------------------------------------------ | ----------------------------------------------------- |
+| Colors                | `color/context/{context}/{role}-{emphasis}`            | variable                                              |
+| Typography (applied)  | `font/{family}/{size}/{weight}`                        | **text style** (composed of `typography/*` variables) |
+| Typography (raw vars) | `typography/{property}/{...}`                          | variable — only used **inside** text styles           |
+| Spacing               | `space/context/{context}` or `space/unit/{unit}`       | variable                                              |
+| Sizing                | `size/context/{context}` or `size/unit/{unit}`         |
+| Radius                | `borderRadius/context/{context}`                       |
+| Border width          | `borderWidth/context/{context}`                        |
+| Opacity               | `opacity/context/{context}` or `opacity/level/{level}` |
 
 **Always prefer `context` tokens over `unit`/`level` tokens** — context tokens swap correctly across themes/modes; unit tokens do not. Full reference: [tokens.md](./references/tokens.md). **For typography, always apply text styles** — see [typography.md](./references/typography.md).
 
@@ -167,13 +173,13 @@ These extend (do not replace) the rules in `figma-use` and `figma-generate-desig
 
 ## Deliverable Format
 
-| Bucket | Meaning |
-| --- | --- |
-| **Built** | New sections/screens created using Chassis library components |
-| **Swapped** | Existing instances swapped to the correct Chassis variant |
-| **Composed** | Sections rebuilt from Chassis primitives (no single component fits) |
-| **Already connected** | Sections already on valid Chassis library instances |
-| **Blocked** | Sections that could not be connected — include the exact failure mode |
+| Bucket                | Meaning                                                               |
+| --------------------- | --------------------------------------------------------------------- |
+| **Built**             | New sections/screens created using Chassis library components         |
+| **Swapped**           | Existing instances swapped to the correct Chassis variant             |
+| **Composed**          | Sections rebuilt from Chassis primitives (no single component fits)   |
+| **Already connected** | Sections already on valid Chassis library instances                   |
+| **Blocked**           | Sections that could not be connected — include the exact failure mode |
 
 If everything is blocked, say so plainly with the specific failure reason.
 
