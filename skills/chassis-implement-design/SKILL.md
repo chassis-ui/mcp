@@ -88,6 +88,10 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 - **Run `get_code_connect_map`** for the node before generating code — Chassis components may have Code Connect snippets that already pin the correct Chassis CSS class names. If a mapping exists, use it verbatim.
 - For large screens, use `get_metadata` first to identify section nodes, then fetch each section's context separately.
 
+> ⛔ **The `code` block inside `get_design_context` output is React + Tailwind. Discard it completely — do not adapt it.**
+> The resolved hex/rgba/px values in the style data are also off-limits for emitting CSS. They exist only as a visual cross-check.
+> **You may not emit any color, spacing, or typography style until you have a matching variable name from `get_variable_defs`.** Every style decision must trace back to a token name → Chassis class lookup via [tokens.md](./references/tokens.md). If no variable name covers a property, raise it — do not fall back to inline hex or hardcoded pixel values.
+
 ### Step 3 — Capture Visual Reference
 
 - `get_screenshot` per section as well as the full view — use sections to validate Asset extraction and theme correctness.
@@ -101,6 +105,7 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 ### Step 5 — Translate to Chassis CSS Conventions
 
 - **Discard** the Tailwind utility classes from the MCP output entirely.
+- **Gate on `get_variable_defs`**: before writing any color, spacing, or typography class for an element, confirm you have the variable name for it from `get_variable_defs`. No variable name = raise it to the user; never fall back to a hex value, a Tailwind class, or a numeric pixel value.
 - **Map every Figma variable** returned by `get_variable_defs` to its Chassis CSS class using [tokens.md](./references/tokens.md). Token-bound colors → `fg-*` / `bg-*` / context-prefix variants. Token-bound spacing → semantic spacing utilities. Token-bound type → `font-*` classes.
 - **Identify each Figma component instance** and emit its canonical Chassis CSS HTML pattern from [components.md](./references/components.md). Variants in Figma map to space-separated modifiers (`button primary outline large`).
 - **Lift Asset text** into the wrapping element per the rule above — never emit an `Asset` div as wrapper markup.
@@ -124,6 +129,7 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
   - All Asset wrappers were lifted (no leftover `<div class="text-asset">` shells)
   - Theme/mode switching works — render under each target Brand × Theme × App combination if applicable
   - `data-cx-*` behavior attributes present where the component requires JS
+  - **Zero hex colors** in class attributes, inline `style=""`, or a `<style>` block — any hex value that isn't a deliberate non-token art direction override (flagged in the deliverable summary) is a translation error; go back and find the correct Chassis class
 
 ## Component Catalog → Chassis CSS Map
 
@@ -186,6 +192,7 @@ See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 10. **Run `get_variable_defs`** — never guess token classes; the variable namespaces returned are the ground truth.
 11. **Don't expand hidden Figma sub-layers** — if a layer is hidden in the source, omit it from the markup.
 12. **Don't mix button sizes within an action group; don't mix form styles within a single form** (regular vs floating vs outline).
+13. **Always check border color against `border-main`** — a bare `border` or `border-top` resolves to `border-main` (the default context border color). If the design uses any other border color, pair a color class explicitly: `border border-subtle`, `border-top border-primary`, etc. Matching `border-main` in the design requires no extra class; any other color does.
 
 These extend (do not replace) the rules in `figma-implement-design`. Extended anti-patterns: [patterns.md → Anti-patterns](./references/patterns.md#anti-patterns).
 

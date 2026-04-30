@@ -169,9 +169,11 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 ### Borders & radius
 
 - Border presence: `border`, `border-top`, `border-end`, `border-bottom`, `border-start`, `border-0`
-- Border color: `border-{role}` (`border-primary`, `border-success`, …)
+- Border color: `border-{role}` (`border-primary`, `border-success`, …) · default-context emphases: `border-main`, `border-subtle`
 - Border width (semantic): `border-{size}` (where size is a semantic token from the borderWidth family)
 - Radius: `rounded`, `rounded-{ctx}` (semantic, where `ctx` includes `round` for pills/avatars), `rounded-{side}`
+
+> ⚠️ **`border` / `border-{side}` alone resolves to `border-main`** (the default context border color) — not the browser reset. If the design uses `border-main`, no color class is needed. If the design uses any other border color, add a color class explicitly: `border-top border-subtle`, `border border-primary`, etc. Omitting the color class when the design isn't `border-main` is a translation error.
 
 ## Breakpoints
 
