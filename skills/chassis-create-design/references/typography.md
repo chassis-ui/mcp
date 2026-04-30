@@ -35,13 +35,13 @@ Text styles are **library assets**, like components — they must be imported by
 ```ts
 // 1. Resolve the text style key — preferred path: search_design_system / get_metadata.
 //    Never hardcode keys.
-const style = await figma.importStyleByKeyAsync(textStyleKey);
+const style = await figma.importStyleByKeyAsync(textStyleKey)
 
 // 2. Preload the underlying font (Plugin API requirement).
-await figma.loadFontAsync(textNode.fontName as FontName);
+await figma.loadFontAsync(textNode.fontName as FontName)
 
 // 3. Apply.
-await textNode.setTextStyleIdAsync(style.id);
+await textNode.setTextStyleIdAsync(style.id)
 ```
 
 Notes:

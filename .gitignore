@@ -1,9 +1,3 @@
-# Site
-_site
-site/.astro
-site/dist
-site/public
-
 dist/
 
 # OS

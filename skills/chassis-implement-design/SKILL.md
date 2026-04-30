@@ -1,6 +1,6 @@
 ---
 name: chassis-implement-design
-description: "Implement a Figma design (made with the Chassis UI Figma library) as production HTML/CSS using Chassis CSS (`@chassis-ui/css`). Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, sidebar, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-implement-design` and adds Chassis-specific class mapping, token translation, Asset Override extraction, component composition, and Brand/Theme/App theming conventions. Do NOT use for: writing INTO Figma (use `chassis-create-design`), pure token/SCSS edits, or non-Chassis design systems."
+description: 'Implement a Figma design (made with the Chassis UI Figma library) as production HTML/CSS using Chassis CSS (`@chassis-ui/css`). Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, sidebar, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-implement-design` and adds Chassis-specific class mapping, token translation, Asset Override extraction, component composition, and Brand/Theme/App theming conventions. Do NOT use for: writing INTO Figma (use `chassis-create-design`), pure token/SCSS edits, or non-Chassis design systems.'
 disable-model-invocation: false
 ---
 

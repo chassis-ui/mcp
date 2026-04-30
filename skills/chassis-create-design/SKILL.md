@@ -1,6 +1,6 @@
 ---
 name: chassis-create-design
-description: "Build or update a Figma design (screen, page, view, modal, dialog, drawer, sidebar, panel, dashboard, landing page, or any multi-section layout) using the Chassis UI Figma library. Use when the user wants to create, compose, assemble, or reconnect a Figma view from code, a screenshot, a description, or an existing detached layout. Runs on top of the Figma MCP server skills (`figma-use`, `figma-generate-design`) and adds Chassis-specific component, token, asset-override, and theme-switching conventions. Do NOT use for: single-component fixes, generating code FROM Figma (use `chassis-implement-design`), or pure token/variable edits."
+description: 'Build or update a Figma design (screen, page, view, modal, dialog, drawer, sidebar, panel, dashboard, landing page, or any multi-section layout) using the Chassis UI Figma library. Use when the user wants to create, compose, assemble, or reconnect a Figma view from code, a screenshot, a description, or an existing detached layout. Runs on top of the Figma MCP server skills (`figma-use`, `figma-generate-design`) and adds Chassis-specific component, token, asset-override, and theme-switching conventions. Do NOT use for: single-component fixes, generating code FROM Figma (use `chassis-implement-design`), or pure token/variable edits.'
 disable-model-invocation: false
 ---
 

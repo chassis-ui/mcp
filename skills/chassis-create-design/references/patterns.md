@@ -82,11 +82,11 @@ A freshly placed `Solid Button` instance arrives with start icon + badge + dropd
 
 ```ts
 button.setProperties({
-  "has-icon-start": false,
-  "has-badge": false,
-  "is-dropdown": false,
-  "has-icon-end": false,
-});
+  'has-icon-start': false,
+  'has-badge': false,
+  'is-dropdown': false,
+  'has-icon-end': false
+})
 // Then override the label via Asset Override:
 //   labelAsset.setProperties({ text: "Save" });
 ```

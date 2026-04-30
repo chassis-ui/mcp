@@ -3,7 +3,7 @@ mode: agent
 description: One-shot Chassis Figma design build or reconnect. Wraps the chassis-create-design skill with a parameterized invocation for screens, modals, drawers, dashboards, and other multi-section views.
 ---
 
-# /chassis-design
+# /chassis-ui
 
 Build or reconnect a Figma view using the Chassis UI library.
 
@@ -55,10 +55,10 @@ Build or reconnect a Figma view using the Chassis UI library.
 ## Example invocations
 
 ```
-/chassis-design mode=build target=https://figma.com/design/<key>/Sandbox source="packages/website/src/pages/about.astro"
-/chassis-design mode=build target=<figma-url> source="settings page with Profile, Notifications, Billing sections"
-/chassis-design mode=reconnect target=<figma-url with nodeId of the frame to fix>
-/chassis-design mode=build target=<figma-url> source=https://staging.chassis-ui.com/about/ scope="hero, feature grid, footer"
+/chassis-ui mode=build target=https://figma.com/design/<key>/Sandbox source="packages/website/src/pages/about.astro"
+/chassis-ui mode=build target=<figma-url> source="settings page with Profile, Notifications, Billing sections"
+/chassis-ui mode=reconnect target=<figma-url with nodeId of the frame to fix>
+/chassis-ui mode=build target=<figma-url> source=https://staging.chassis-ui.com/about/ scope="hero, feature grid, footer"
 ```
 
 ## When NOT to use this prompt

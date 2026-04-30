@@ -139,10 +139,10 @@ Layers gated by a Figma switch variable (`figma/switch/theme/mode-1`) — typica
 ```
 
 ```css
-[data-cx-theme="light"] .logo-dark {
+[data-cx-theme='light'] .logo-dark {
   display: none;
 }
-[data-cx-theme="dark"] .logo-light {
+[data-cx-theme='dark'] .logo-light {
   display: none;
 }
 ```
