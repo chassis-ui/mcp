@@ -99,41 +99,62 @@ function createServer(): McpServer {
     }))
   }
 
+  // Top-level "one-shot" prompt
   const promptRaw = CONTENT['prompts/chassis-ui.prompt.md'] ?? ''
   const promptContent = stripFrontmatter(promptRaw)
 
-  server.prompt(
-    'chassis-ui',
-    'One-shot Chassis Figma design build or reconnect',
+  // Helper: build the full skill bundle (SKILL.md + all reference files)
+  const buildSkillBundle = (skillPrefix: string): string =>
+    RESOURCES.filter((r) => r.name === skillPrefix || r.name.startsWith(`${skillPrefix}/`))
+      .map((r) => `\n\n---\n## ${r.name}\n\n${stripFrontmatter(CONTENT[r.path] ?? '')}`)
+      .join('')
 
+  // Prompts — surfaced in slash-command autocomplete.
+  // Keep this list short: top-level entry + one per skill bundle.
+  server.prompt('chassis-ui', 'One-shot Chassis Figma design build or reconnect', async () => ({
+    messages: [{ role: 'user', content: { type: 'text', text: promptContent } }]
+  }))
+
+  server.prompt(
+    'chassis-create-design',
+    'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library.',
     async () => ({
-      messages: [{ role: 'user', content: { type: 'text', text: promptContent } }]
+      messages: [
+        { role: 'user', content: { type: 'text', text: buildSkillBundle('chassis-create-design') } }
+      ]
     })
   )
 
-  // Tools — surfaced in Claude.ai connector UI
+  server.prompt(
+    'chassis-implement-design',
+    'Load the chassis-implement-design skill: implement Figma designs into code using Chassis UI CSS.',
+    async () => ({
+      messages: [
+        {
+          role: 'user',
+          content: { type: 'text', text: buildSkillBundle('chassis-implement-design') }
+        }
+      ]
+    })
+  )
+
+  // Tools — surfaced in Claude.ai connector UI and other MCP clients
   server.tool(
     'chassis_create_design',
     'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the full skill instructions and all reference files.',
     {},
-    async () => {
-      const parts = RESOURCES.filter((r) => r.name.startsWith('chassis-create-design')).map(
-        (r) => `\n\n---\n## ${r.name}\n\n${stripFrontmatter(CONTENT[r.path] ?? '')}`
-      )
-      return { content: [{ type: 'text', text: parts.join('') }] }
-    }
+    async () => ({
+      content: [{ type: 'text', text: buildSkillBundle('chassis-create-design') }]
+    })
   )
 
   server.tool(
     'chassis_implement_design',
     'Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the full skill instructions and all reference files.',
     {},
-    async () => {
-      const parts = RESOURCES.filter((r) => r.name.startsWith('chassis-implement-design')).map(
-        (r) => `\n\n---\n## ${r.name}\n\n${stripFrontmatter(CONTENT[r.path] ?? '')}`
-      )
-      return { content: [{ type: 'text', text: parts.join('') }] }
-    }
+    async () => ({
+      content: [{ type: 'text', text: buildSkillBundle('chassis-implement-design') }]
+    })
   )
 
   const referenceNames = RESOURCES.filter((r) => r.name.includes('/references/')).map(
