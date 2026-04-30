@@ -1,11 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+import { CONTENT } from './_content.generated.js'
 
 const RESOURCES = [
   {
@@ -95,14 +91,14 @@ function createServer(): McpServer {
   })
 
   for (const resource of RESOURCES) {
-    const content = readFileSync(join(ROOT, resource.path), 'utf-8')
+    const content = CONTENT[resource.path] ?? ''
     const { uri, name, description } = resource
     server.resource(name, uri, { description, mimeType: 'text/markdown' }, async () => ({
       contents: [{ uri, text: content, mimeType: 'text/markdown' }]
     }))
   }
 
-  const promptRaw = readFileSync(join(ROOT, 'prompts/chassis-ui.prompt.md'), 'utf-8')
+  const promptRaw = CONTENT['prompts/chassis-ui.prompt.md'] ?? ''
   const promptContent = stripFrontmatter(promptRaw)
 
   server.prompt(

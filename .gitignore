@@ -1,5 +1,8 @@
 dist/
 
+# Generated
+api/_content.generated.ts
+
 # OS
 ._*
 .DS_Store
