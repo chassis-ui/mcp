@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "chassis-ui": {
+      "url": "https://mcp.chassis-ui.com/mcp"
+    }
+  }
+}

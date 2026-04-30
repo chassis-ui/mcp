@@ -7,12 +7,5 @@
     "url": "https://www.chassis-ui.com"
   },
   "homepage": "https://github.com/chassis-ui/mcp",
-  "keywords": [
-    "chassis-ui",
-    "chassis",
-    "figma",
-    "design",
-    "mcp",
-    "ui"
-  ]
+  "keywords": ["chassis-ui", "chassis", "figma", "design", "mcp", "ui"]
 }
