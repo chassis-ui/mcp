@@ -29,14 +29,14 @@ Solid Button (component)
 
 **Component properties on `Solid Button`**
 
-| Prop                  | Type           | Default            | Bound to                                                              |
-| --------------------- | -------------- | ------------------ | --------------------------------------------------------------------- |
-| `has-icon-start`      | Boolean        | `true`             | `Icon Start Frame` visibility                                         |
-| `icon-start-instance` | Instance Swap  | `Placeholder Icon` | `Icon Start` instance                                                 |
-| `has-badge`           | Boolean        | `true`             | `Badge Frame` visibility                                              |
-| `is-dropdown`         | Boolean        | `true`             | `Caret Frame` visibility                                              |
-| `has-icon-end`        | Boolean        | `true`             | `Icon End Frame` visibility                                           |
-| `icon-end-instance`   | Instance Swap  | `Placeholder Icon` | `Icon End` instance                                                   |
+| Prop                  | Type          | Default            | Bound to                      |
+| --------------------- | ------------- | ------------------ | ----------------------------- |
+| `has-icon-start`      | Boolean       | `true`             | `Icon Start Frame` visibility |
+| `icon-start-instance` | Instance Swap | `Placeholder Icon` | `Icon Start` instance         |
+| `has-badge`           | Boolean       | `true`             | `Badge Frame` visibility      |
+| `is-dropdown`         | Boolean       | `true`             | `Caret Frame` visibility      |
+| `has-icon-end`        | Boolean       | `true`             | `Icon End Frame` visibility   |
+| `icon-end-instance`   | Instance Swap | `Placeholder Icon` | `Icon End` instance           |
 
 **Component properties on the nested `Label Asset` (Basic Text Asset)**
 
@@ -83,9 +83,9 @@ A freshly placed `Solid Button` instance arrives with start icon + badge + dropd
 ```ts
 button.setProperties({
   "has-icon-start": false,
-  "has-badge":      false,
-  "is-dropdown":    false,
-  "has-icon-end":   false,
+  "has-badge": false,
+  "is-dropdown": false,
+  "has-icon-end": false,
 });
 // Then override the label via Asset Override:
 //   labelAsset.setProperties({ text: "Save" });
@@ -127,12 +127,12 @@ button.setProperties({
 
 ### Choosing a button style
 
-| Action level           | Component        | Visual treatment                                |
-| ---------------------- | ---------------- | ----------------------------------------------- |
-| Primary action         | `button-solid`   | `bg-solid` background, `fg-solid` text          |
-| Secondary action       | `button-smooth`  | `bg-highlight` background, `fg-highlight` text  |
-| Tertiary action        | `button-outline` | `border-main` border, `fg-main` text            |
-| Inline / link-style    | `button-link`    | Transparent background, `link-main` text        |
+| Action level        | Component        | Visual treatment                               |
+| ------------------- | ---------------- | ---------------------------------------------- |
+| Primary action      | `button-solid`   | `bg-solid` background, `fg-solid` text         |
+| Secondary action    | `button-smooth`  | `bg-highlight` background, `fg-highlight` text |
+| Tertiary action     | `button-outline` | `border-main` border, `fg-main` text           |
+| Inline / link-style | `button-link`    | Transparent background, `link-main` text       |
 
 ### Context variants
 
@@ -155,12 +155,12 @@ Hierarchy via style is encouraged — e.g., a footer with `[Cancel: outline] [Sa
 
 ### Boolean props (common)
 
-| Prop              | Default | Effect                                                |
-| ----------------- | ------- | ----------------------------------------------------- |
-| `has-icon-start`  | `true`  | Show leading icon                                     |
-| `has-icon-end`    | `true`  | Show trailing icon                                    |
-| `has-badge`       | `true`  | Show inline badge after label                         |
-| `is-dropdown`     | `true`  | Show dropdown caret indicator                         |
+| Prop             | Default | Effect                        |
+| ---------------- | ------- | ----------------------------- |
+| `has-icon-start` | `true`  | Show leading icon             |
+| `has-icon-end`   | `true`  | Show trailing icon            |
+| `has-badge`      | `true`  | Show inline badge after label |
+| `is-dropdown`    | `true`  | Show dropdown caret indicator |
 
 > **All four default to `true`.** A freshly placed Solid/Smooth/Outline/Link Button instance arrives showing every decoration. For a plain label-only button, set the unwanted props to `false` explicitly. See [Boolean Visibility Props — Default `true`](#boolean-visibility-props--default-true).
 
@@ -174,27 +174,27 @@ When `has-icon-*: true`, also set `icon-*-instance` (instance-swap) to specify t
 
 Pick **one** form style and apply it consistently across the screen — never mix `regular`, `floating`, and `outline` in the same form.
 
-| Style           | When to use                                                                |
-| --------------- | -------------------------------------------------------------------------- |
-| `form-regular`  | Standard forms — most common, label above field                            |
-| `form-floating` | Material-inspired — floating labels animate from placeholder to label      |
-| `form-outline`  | Material-inspired — prominent border, no background                        |
+| Style           | When to use                                                           |
+| --------------- | --------------------------------------------------------------------- |
+| `form-regular`  | Standard forms — most common, label above field                       |
+| `form-floating` | Material-inspired — floating labels animate from placeholder to label |
+| `form-outline`  | Material-inspired — prominent border, no background                   |
 
 ### Two components per form file: Input vs. Field
 
 Every form-style file (`form-regular`, `form-floating`, `form-outline`, **`form-check`**) ships **two** components — a bare input and a wrapper field. Pick the right one for the context:
 
-| File             | Bare control     | Wrapper                                                  |
-| ---------------- | ---------------- | -------------------------------------------------------- |
-| `form-regular`   | **Form Input**   | **Form Field** (label + nested Form Input + helper)      |
-| `form-floating`  | **Form Input**   | **Form Field** (label + nested Form Input + helper)      |
-| `form-outline`   | **Form Input**   | **Form Field** (label + nested Form Input + helper)      |
-| `form-check`     | **Check Input**  | **Form Check** (label + nested Check Input + helper)     |
+| File            | Bare control    | Wrapper                                              |
+| --------------- | --------------- | ---------------------------------------------------- |
+| `form-regular`  | **Form Input**  | **Form Field** (label + nested Form Input + helper)  |
+| `form-floating` | **Form Input**  | **Form Field** (label + nested Form Input + helper)  |
+| `form-outline`  | **Form Input**  | **Form Field** (label + nested Form Input + helper)  |
+| `form-check`    | **Check Input** | **Form Check** (label + nested Check Input + helper) |
 
-| Component           | What it is                                                            | Use when                                                                                       |
-| ------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Component           | What it is                                                            | Use when                                                                                                                    |
+| ------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **Bare input**      | The bare control only (text input, select, textarea, checkbox, radio) | Inline filters, table cells, toolbars, compound controls — anywhere label and feedback are handled externally or not needed |
-| **Wrapper (Field)** | A wrapper with **a nested bare input** + label + helper/feedback      | Standard forms — the default choice when you need a labeled control with validation messaging  |
+| **Wrapper (Field)** | A wrapper with **a nested bare input** + label + helper/feedback      | Standard forms — the default choice when you need a labeled control with validation messaging                               |
 
 > **Default to the wrapper** (`Form Field` / `Form Check`) for standard form layouts. Reach for the bare input (`Form Input` / `Check Input`) only when you explicitly do not want the label / helper-text scaffolding (e.g., a search input in a navbar, an editable cell in a table, a tightly-packed checkbox column).
 
@@ -238,12 +238,12 @@ Table Head Cell ─┘
 
 ### Header cell props
 
-| Prop          | Purpose                                                          |
-| ------------- | ---------------------------------------------------------------- |
-| `checkbox`    | Show selection checkbox in header (for selectable tables)        |
-| `filtering`   | Show filter UI (dropdown / search)                               |
-| `has-sorting` | Enable sort indicator (when `checkbox: false`)                   |
-| `has-input`   | Show inline input (when `checkbox \|\| filtering`)              |
+| Prop          | Purpose                                                   |
+| ------------- | --------------------------------------------------------- |
+| `checkbox`    | Show selection checkbox in header (for selectable tables) |
+| `filtering`   | Show filter UI (dropdown / search)                        |
+| `has-sorting` | Enable sort indicator (when `checkbox: false`)            |
+| `has-input`   | Show inline input (when `checkbox \|\| filtering`)        |
 
 ### Why composition?
 
@@ -259,19 +259,19 @@ Composing rows from cells (instead of one giant Table component) means you can:
 
 Chassis uses Figma's variable collections for multi-theme support:
 
-| Collection | Modes                                                  |
-| ---------- | ------------------------------------------------------ |
-| Brand      | Brand A, Brand B, ... (brand identity)                 |
-| Theme      | Light, Dark, High Contrast, ... (color modes)          |
-| App        | Web, iOS, Android, ... (platform variants)             |
+| Collection | Modes                                         |
+| ---------- | --------------------------------------------- |
+| Brand      | Brand A, Brand B, ... (brand identity)        |
+| Theme      | Light, Dark, High Contrast, ... (color modes) |
+| App        | Web, iOS, Android, ... (platform variants)    |
 
 ### Switching levels
 
-| Level     | When to use                                                      | How                                                |
-| --------- | ---------------------------------------------------------------- | -------------------------------------------------- |
-| Page      | Preview entire file in another theme                             | Deselect all → Page panel → Apply variable mode    |
-| Frame     | Design a section in a specific theme                             | Select frame → Appearance panel → Apply variable mode |
-| Component | Override theme for one instance (e.g., dark CTA on light page)   | Select instance → Appearance → Apply variable mode |
+| Level     | When to use                                                    | How                                                   |
+| --------- | -------------------------------------------------------------- | ----------------------------------------------------- |
+| Page      | Preview entire file in another theme                           | Deselect all → Page panel → Apply variable mode       |
+| Frame     | Design a section in a specific theme                           | Select frame → Appearance panel → Apply variable mode |
+| Component | Override theme for one instance (e.g., dark CTA on light page) | Select instance → Appearance → Apply variable mode    |
 
 ### Theme-conditional content (switch variables)
 

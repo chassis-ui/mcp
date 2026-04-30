@@ -20,11 +20,11 @@ font/text/medium/normal   ← the Figma text style (this is what you apply)
 
 The Figma UI confirms which surface you're looking at:
 
-| Typography panel shows | Meaning |
-| --- | --- |
-| `Ag font/text/medium/normal · 16/24` (single chip with the `Ag` style icon) | A **text style** is applied — correct. |
+| Typography panel shows                                                                                 | Meaning                                                                                   |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `Ag font/text/medium/normal · 16/24` (single chip with the `Ag` style icon)                            | A **text style** is applied — correct.                                                    |
 | Individual chips on family / size / weight rows (`typography/fontFamily/text`, `…/strong`, `18`, etc.) | Individual **typography variables** are bound — partial, almost always wrong for Chassis. |
-| Plain values (`Inter`, `Medium`, `16`, `24`, `0%`) with no chip | **Raw values** — wrong. Replace with the matching text style. |
+| Plain values (`Inter`, `Medium`, `16`, `24`, `0%`) with no chip                                        | **Raw values** — wrong. Replace with the matching text style.                             |
 
 If the panel doesn't show a single `font/*` chip at the top, the type is not properly styled.
 
@@ -75,12 +75,12 @@ Pattern: `font/{family}/{size}/{weight}`
 
 ### Family
 
-| Family    | Use for                                                                |
-| --------- | ---------------------------------------------------------------------- |
-| `text`    | Body text, labels, general-purpose typography                          |
-| `display` | Headings, titles, prominent text                                       |
-| `html`    | Documentation/content design — simulating HTML headings/lists/quotes   |
-| `code`    | Monospaced code snippets, technical text                               |
+| Family    | Use for                                                              |
+| --------- | -------------------------------------------------------------------- |
+| `text`    | Body text, labels, general-purpose typography                        |
+| `display` | Headings, titles, prominent text                                     |
+| `html`    | Documentation/content design — simulating HTML headings/lists/quotes |
+| `code`    | Monospaced code snippets, technical text                             |
 
 ### Size
 
@@ -88,12 +88,12 @@ Pattern: `font/{family}/{size}/{weight}`
 
 ### Weight
 
-| Weight    | Use for                                                                      |
-| --------- | ---------------------------------------------------------------------------- |
-| `normal`  | Standard text                                                                |
-| `strong`  | Slightly emphasized text                                                     |
-| `mass`    | Heavy weight for very prominent text                                         |
-| `elegant` | Sophisticated emphasis — main headings, hero sections                        |
+| Weight    | Use for                                               |
+| --------- | ----------------------------------------------------- |
+| `normal`  | Standard text                                         |
+| `strong`  | Slightly emphasized text                              |
+| `mass`    | Heavy weight for very prominent text                  |
+| `elegant` | Sophisticated emphasis — main headings, hero sections |
 
 > Weight names are **descriptive, not numeric**, on purpose — different brands map them to different numeric weights.
 

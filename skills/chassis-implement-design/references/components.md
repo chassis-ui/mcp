@@ -53,7 +53,12 @@ For each Chassis component family, the canonical Chassis CSS HTML pattern. Use t
 <form>
   <div class="mb-medium">
     <label for="email" class="form-label">Email</label>
-    <input type="email" id="email" class="form-control" placeholder="you@example.com" />
+    <input
+      type="email"
+      id="email"
+      class="form-control"
+      placeholder="you@example.com"
+    />
     <small class="form-text fg-subtle">We'll never share it.</small>
   </div>
 </form>
@@ -63,7 +68,12 @@ For each Chassis component family, the canonical Chassis CSS HTML pattern. Use t
 
 ```html
 <div class="form-floating mb-medium">
-  <input type="email" id="email" class="form-control" placeholder="you@example.com" />
+  <input
+    type="email"
+    id="email"
+    class="form-control"
+    placeholder="you@example.com"
+  />
   <label for="email">Email</label>
 </div>
 ```
@@ -159,8 +169,14 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
       <svg class="icon"><use href="#icon-logo"></use></svg>
       <span>Chassis</span>
     </a>
-    <button class="navbar-toggler" data-cx-toggle="collapse" data-cx-target="#nav-main"
-            aria-controls="nav-main" aria-expanded="false" aria-label="Toggle navigation">
+    <button
+      class="navbar-toggler"
+      data-cx-toggle="collapse"
+      data-cx-target="#nav-main"
+      aria-controls="nav-main"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="nav-main">
@@ -178,10 +194,18 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 ```html
 <ul class="nav nav-tabs" role="tablist">
   <li class="nav-item">
-    <button class="nav-link active" data-cx-toggle="tab" data-cx-target="#tab-1">Tab 1</button>
+    <button
+      class="nav-link active"
+      data-cx-toggle="tab"
+      data-cx-target="#tab-1"
+    >
+      Tab 1
+    </button>
   </li>
   <li class="nav-item">
-    <button class="nav-link" data-cx-toggle="tab" data-cx-target="#tab-2">Tab 2</button>
+    <button class="nav-link" data-cx-toggle="tab" data-cx-target="#tab-2">
+      Tab 2
+    </button>
   </li>
 </ul>
 ```
@@ -211,7 +235,11 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 
 ```html
 <div class="dropdown">
-  <button class="button primary dropdown-toggle" data-cx-toggle="dropdown" aria-expanded="false">
+  <button
+    class="button primary dropdown-toggle"
+    data-cx-toggle="dropdown"
+    aria-expanded="false"
+  >
     Menu
   </button>
   <ul class="dropdown-menu">
@@ -227,14 +255,26 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 ### Modal
 
 ```html
-<button class="button primary" data-cx-toggle="modal" data-cx-target="#confirm">Open</button>
+<button class="button primary" data-cx-toggle="modal" data-cx-target="#confirm">
+  Open
+</button>
 
-<div class="modal" id="confirm" tabindex="-1" aria-labelledby="confirm-title" aria-hidden="true">
+<div
+  class="modal"
+  id="confirm"
+  tabindex="-1"
+  aria-labelledby="confirm-title"
+  aria-hidden="true"
+>
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="confirm-title">Confirm</h5>
-        <button class="close-button" data-cx-dismiss="modal" aria-label="Close"></button>
+        <button
+          class="close-button"
+          data-cx-dismiss="modal"
+          aria-label="Close"
+        ></button>
       </div>
       <div class="modal-body">Are you sure?</div>
       <div class="modal-footer">
@@ -249,10 +289,19 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 ### Offcanvas (drawer)
 
 ```html
-<div class="offcanvas offcanvas-end" id="filters" tabindex="-1" aria-labelledby="filters-title">
+<div
+  class="offcanvas offcanvas-end"
+  id="filters"
+  tabindex="-1"
+  aria-labelledby="filters-title"
+>
   <div class="offcanvas-header">
     <h5 class="offcanvas-title" id="filters-title">Filters</h5>
-    <button class="close-button" data-cx-dismiss="offcanvas" aria-label="Close"></button>
+    <button
+      class="close-button"
+      data-cx-dismiss="offcanvas"
+      aria-label="Close"
+    ></button>
   </div>
   <div class="offcanvas-body">…</div>
 </div>
@@ -261,12 +310,23 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 ### Tooltip / popover
 
 ```html
-<button class="button primary" data-cx-toggle="tooltip" data-cx-placement="top" title="Hint">
+<button
+  class="button primary"
+  data-cx-toggle="tooltip"
+  data-cx-placement="top"
+  title="Hint"
+>
   Hover me
 </button>
 
-<button class="button primary" data-cx-toggle="popover" data-cx-content="Body text"
-        data-cx-title="Title">Popover</button>
+<button
+  class="button primary"
+  data-cx-toggle="popover"
+  data-cx-content="Body text"
+  data-cx-title="Title"
+>
+  Popover
+</button>
 ```
 
 ## Feedback
@@ -276,7 +336,11 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 ```html
 <div class="alert success" role="alert">
   Saved successfully.
-  <button class="close-button" data-cx-dismiss="alert" aria-label="Close"></button>
+  <button
+    class="close-button"
+    data-cx-dismiss="alert"
+    aria-label="Close"
+  ></button>
 </div>
 ```
 
@@ -286,7 +350,11 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 <div class="toast" role="status" aria-live="polite" aria-atomic="true">
   <div class="toast-header">
     <strong class="me-auto">Notice</strong>
-    <button class="close-button" data-cx-dismiss="toast" aria-label="Close"></button>
+    <button
+      class="close-button"
+      data-cx-dismiss="toast"
+      aria-label="Close"
+    ></button>
   </div>
   <div class="toast-body">Your changes were saved.</div>
 </div>
@@ -301,7 +369,13 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 ### Progress
 
 ```html
-<div class="progress" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+<div
+  class="progress"
+  role="progressbar"
+  aria-valuenow="60"
+  aria-valuemin="0"
+  aria-valuemax="100"
+>
   <div class="progress-bar primary" style="width: 60%"></div>
 </div>
 ```
@@ -325,7 +399,9 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 <span class="badge primary">New</span>
 <span class="badge success">Active</span>
 
-<span class="chip primary">Filter <button class="close-button" aria-label="Remove"></button></span>
+<span class="chip primary"
+  >Filter <button class="close-button" aria-label="Remove"></button
+></span>
 ```
 
 ### Avatar
@@ -355,10 +431,21 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 <div class="accordion" id="faq">
   <div class="accordion-item">
     <h2 class="accordion-header">
-      <button class="accordion-button" data-cx-toggle="collapse" data-cx-target="#faq-1"
-              aria-expanded="true" aria-controls="faq-1">Question one</button>
+      <button
+        class="accordion-button"
+        data-cx-toggle="collapse"
+        data-cx-target="#faq-1"
+        aria-expanded="true"
+        aria-controls="faq-1"
+      >
+        Question one
+      </button>
     </h2>
-    <div id="faq-1" class="accordion-collapse collapse show" data-cx-parent="#faq">
+    <div
+      id="faq-1"
+      class="accordion-collapse collapse show"
+      data-cx-parent="#faq"
+    >
       <div class="accordion-body">Answer.</div>
     </div>
   </div>
@@ -370,18 +457,39 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 ```html
 <div class="carousel slide" id="hero-carousel" data-cx-ride="carousel">
   <div class="carousel-indicators">
-    <button data-cx-target="#hero-carousel" data-cx-slide-to="0" class="active" aria-label="Slide 1"></button>
-    <button data-cx-target="#hero-carousel" data-cx-slide-to="1" aria-label="Slide 2"></button>
+    <button
+      data-cx-target="#hero-carousel"
+      data-cx-slide-to="0"
+      class="active"
+      aria-label="Slide 1"
+    ></button>
+    <button
+      data-cx-target="#hero-carousel"
+      data-cx-slide-to="1"
+      aria-label="Slide 2"
+    ></button>
   </div>
   <div class="carousel-inner">
-    <div class="carousel-item active"><img src="…" class="d-block w-100" alt="" /></div>
-    <div class="carousel-item"><img src="…" class="d-block w-100" alt="" /></div>
+    <div class="carousel-item active">
+      <img src="…" class="d-block w-100" alt="" />
+    </div>
+    <div class="carousel-item">
+      <img src="…" class="d-block w-100" alt="" />
+    </div>
   </div>
-  <button class="carousel-control-prev" data-cx-target="#hero-carousel" data-cx-slide="prev">
+  <button
+    class="carousel-control-prev"
+    data-cx-target="#hero-carousel"
+    data-cx-slide="prev"
+  >
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="visually-hidden">Previous</span>
   </button>
-  <button class="carousel-control-next" data-cx-target="#hero-carousel" data-cx-slide="next">
+  <button
+    class="carousel-control-next"
+    data-cx-target="#hero-carousel"
+    data-cx-slide="next"
+  >
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
     <span class="visually-hidden">Next</span>
   </button>
