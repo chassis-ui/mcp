@@ -206,7 +206,7 @@ If you cannot complete an action after one attempt:
 - [ ] Boolean visibility props (`has-*` / `is-*` / `show-*`) explicitly subtracted to match design intent (defaults are `true`)
 - [ ] Every color is a `color/context/*` token (or explicitly user-approved literal)
 - [ ] Every spacing is a `space/context/*` or `space/unit/*` token
-- [ ] Every typography is a `font/*` text style
+- [ ] Every text node has a `font/*` **text style** applied (single chip in the Typography panel) — not raw values, not loose `typography/*` variable bindings
 - [ ] No deprecated `… @ x.x`-named components in use
 - [ ] Button sizes are consistent within each action group
 - [ ] One form style throughout each form

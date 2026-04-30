@@ -302,7 +302,7 @@ Reject these when working in Chassis:
 
 - ❌ **Hardcoded hex/rgb colors** — use `color/context/*` tokens
 - ❌ **Hardcoded pixel spacing** — use `space/context/*` or `space/unit/*`
-- ❌ **Hardcoded font properties** — use `font/*` text styles
+- ❌ **Hardcoded font properties** — apply a `font/*` **text style** (via `setTextStyleIdAsync`); don't set raw family/size/weight, and don't bind individual `typography/*` variables on production text. See [typography.md](./typography.md).
 - ❌ **Custom border radii / widths** — use `borderRadius/context/*` or `borderWidth/context/*`
 - ❌ **Custom opacity values** — use `opacity/context/*` or `opacity/level/*`
 
