@@ -79,7 +79,7 @@ Phase-by-phase playbooks for the Mundi-specific modes. These overlay the canonic
    - Override only what differs from the canonical state.
    - Name `{Step}.{NextVariant}`.
 3. **If the new variant needs a layer that does not exist on the step's source Page Template** — STOP. The layer belongs on the source. Edit the source first (mode `update-flow`), then continue.
-5. Validate per Phase 6 above.
+4. Validate per Phase 6 above.
 
 ---
 
@@ -128,13 +128,51 @@ Run this when a flow has stabilized and the master Page Template should become a
 
 ## Failure Modes & Fallbacks
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| State frame doesn't pick up master change | State has been detached from the source Page Template | Re-instance the source; re-apply toggles |
-| State frame has structural differences | Someone edited the state directly instead of the source | Move the change to the source; re-instance the state |
-| Page Template won't fit in the page frame | Page Template is set to fixed width or fixed height | Set width to FILL (1256), height to HUG |
-| Sidebar overlaps content | Page frame is missing horizontal auto-layout | Wrap children in horizontal auto-layout, or set Page Template `x = 256` explicitly |
-| Theme switch breaks colors | Raw colors used instead of `color/context/...` tokens | Rebind every color via `setBoundVariableForPaint` |
-| Overlay state has no backdrop | Overlay-screen component used without its built-in backdrop variant | Use `Alert Screen` / `Modal Screen` directly — they include the backdrop |
-| Library component instance can't be edited structurally | This is by design | Edit the source component file → republish → accept updates |
-| `Application Template` detach produces a 1440-wide frame | Stale library version | Update library; current Mundi shell is 1512 wide |
+| Symptom                                                  | Likely cause                                                        | Fix                                                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| State frame doesn't pick up master change                | State has been detached from the source Page Template               | Re-instance the source; re-apply toggles                                           |
+| State frame has structural differences                   | Someone edited the state directly instead of the source             | Move the change to the source; re-instance the state                               |
+| Page Template won't fit in the page frame                | Page Template is set to fixed width or fixed height                 | Set width to FILL (1256), height to HUG                                            |
+| Sidebar overlaps content                                 | Page frame is missing horizontal auto-layout                        | Wrap children in horizontal auto-layout, or set Page Template `x = 256` explicitly |
+| Theme switch breaks colors                               | Raw colors used instead of `color/context/...` tokens               | Rebind every color via `setBoundVariableForPaint`                                  |
+| Overlay state has no backdrop                            | Overlay-screen component used without its built-in backdrop variant | Use `Alert Screen` / `Modal Screen` directly — they include the backdrop           |
+| Library component instance can't be edited structurally  | This is by design                                                   | Edit the source component file → republish → accept updates                        |
+| `Application Template` detach produces a 1440-wide frame | Stale library version                                               | Update library; current Mundi shell is 1512 wide                                   |
+
+---
+
+## Quality Checklist (Mundi additions — run after the `chassis-create-design` checklist)
+
+> The `chassis-create-design` checklist (Asset overrides, token bindings, text styles, boolean props, no deprecated components, etc.) always runs first. This checklist covers only items specific to the Mundi shell and flow pattern.
+
+### Shell & structure
+
+- [ ] Page frame started from `Application Template` (insert → detach → swap) — not assembled from primitives
+- [ ] Sidebar is a single, undetached library instance; variant/props changed through its prop API
+- [ ] Page Template instance is the correct one for this step (not reused from a structurally different step)
+- [ ] Page frame width is `1512 px`; Page Template width is `1256 px`
+- [ ] Page Template height hugs content — no forced fixed height
+
+### Flow & naming
+
+- [ ] Every step's content is inside a **Page Template** (local master or library component instance) — no step content built directly in a raw page frame
+- [ ] Each structurally distinct step has its own Page Template (form / review / confirmation are not sharing one)
+- [ ] Variants of a step share the **same** step Page Template — no per-variant structural edits on variant frames
+- [ ] Canvas laid out as columns = steps, rows = variants
+- [ ] Frames named `{Domain} / {Subdomain} - {Step}[.{Variant}]`; overlay states named `{Domain} / {Subdomain} - {OverlayName}`
+- [ ] Overlay states (modals, alerts, dialogs) are separate page frames using `Alert Screen` / modal-screen components — not toggles inside a Page Template
+
+### Page Title
+
+- [ ] `Title Text Asset` overridden with the page heading
+- [ ] `Subtitle Asset` visible only when context info (account name, period, status) is present
+- [ ] `Actions` slot contains primary domain actions only (`New transfer`, `Deposit`, `Buy funds`, …) — no filters or view controls
+- [ ] `Back Button` revealed only when the page has a clear navigation parent
+
+### Content & conventions
+
+- [ ] All copy uses Mundi domain vocabulary (`Yield`, `Position`, `Idle cash`, `Transfer`, etc.) — no invented synonyms
+- [ ] Primary flow forms use `form-floating`; filters/settings forms use `form-regular` — not mixed
+- [ ] `button-outline` used only for destructive actions; `button-smooth` for normal secondary
+- [ ] No theme modes mixed within a single page frame (light and dark = two separate state frames)
+- [ ] Deliverable summary uses Mundi buckets: Built / Master created / Master updated / State synced / Promoted / Swapped / Blocked

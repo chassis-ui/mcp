@@ -64,12 +64,12 @@ orthogonal/overlay states float to the side:
 
 ### Naming convention
 
-| Frame role | Pattern | Example |
-| --- | --- | --- |
-| Canonical state of a step | `{Domain} / {Subdomain} - {Step}` | `Transfers / Outbound - 1` |
-| Variant of a step | `{Domain} / {Subdomain} - {Step}.{Variant}` | `Transfers / Outbound - 1.2` |
-| Overlay state | `{Domain} / {Subdomain} - {OverlayName}` | `Transfers / Outbound - Delay` |
-| Section wrapping the flow | Domain-language flow name (`tr-TR` if Turkish-first) | `Bankaya Aktar` |
+| Frame role                | Pattern                                              | Example                        |
+| ------------------------- | ---------------------------------------------------- | ------------------------------ |
+| Canonical state of a step | `{Domain} / {Subdomain} - {Step}`                    | `Transfers / Outbound - 1`     |
+| Variant of a step         | `{Domain} / {Subdomain} - {Step}.{Variant}`          | `Transfers / Outbound - 1.2`   |
+| Overlay state             | `{Domain} / {Subdomain} - {OverlayName}`             | `Transfers / Outbound - Delay` |
+| Section wrapping the flow | Domain-language flow name (`tr-TR` if Turkish-first) | `Bankaya Aktar`                |
 
 ---
 
@@ -77,12 +77,12 @@ orthogonal/overlay states float to the side:
 
 Each flow step has its own source Page Template. All variants of a step are page frames containing an instance of **that step's** Page Template. Variant differences are produced by:
 
-| Override mechanism | Use for |
-| --- | --- |
-| Nested-layer **visibility toggle** | Show/hide error banner, empty state, suggested results, balance warning |
-| Nested-instance **variant swap** | Button `default → loading`, form field `default → error`, badge `pending → completed` |
-| **Asset-layer text override** | Recipient name, amount, account, status text |
-| **Slot-container item add/remove** | Recipient list rows, position list rows, activity feed rows |
+| Override mechanism                 | Use for                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| Nested-layer **visibility toggle** | Show/hide error banner, empty state, suggested results, balance warning               |
+| Nested-instance **variant swap**   | Button `default → loading`, form field `default → error`, badge `pending → completed` |
+| **Asset-layer text override**      | Recipient name, amount, account, status text                                          |
+| **Slot-container item add/remove** | Recipient list rows, position list rows, activity feed rows                           |
 
 **Forbidden in a variant frame:**
 
@@ -158,7 +158,7 @@ Inherits Chassis's Brand × Theme × App collection model. Mundi-specific defaul
 Set theme overrides at the **page frame** (the `1512 × 982` wrapper), not at section level:
 
 ```js
-pageFrame.setExplicitVariableModeForCollection(themeCollection, darkModeId)
+pageFrame.setExplicitVariableModeForCollection(themeCollection, darkModeId);
 ```
 
 This switches the entire screen — Sidebar, Page Title, Main, all state-controlled colors — atomically.
@@ -176,21 +176,21 @@ This switches the entire screen — Sidebar, Page Title, Main, all state-control
 
 Mundi UIs always lead with the **domain noun** the user is operating on:
 
-| Wrong | Right |
-| --- | --- |
-| `Submit` | `Transfer` |
-| `Confirm` | `Confirm transfer` |
-| `Save` | `Save recipient` |
-| `Continue` | `Review transfer` |
-| `OK` | `Got it` (rare) or domain-specific |
-| `Add` | `Add recipient` / `Add position` |
+| Wrong      | Right                              |
+| ---------- | ---------------------------------- |
+| `Submit`   | `Transfer`                         |
+| `Confirm`  | `Confirm transfer`                 |
+| `Save`     | `Save recipient`                   |
+| `Continue` | `Review transfer`                  |
+| `OK`       | `Got it` (rare) or domain-specific |
+| `Add`      | `Add recipient` / `Add position`   |
 
 Page Titles use the **flow's user-facing name**, not a generic action verb:
 
-| Wrong | Right |
-| --- | --- |
+| Wrong        | Right                                           |
+| ------------ | ----------------------------------------------- |
 | `Send Money` | `Outbound Transfer` (en) / `Bankaya Aktar` (tr) |
-| `Investment` | `My Positions` (en) / `Pozisyonlarım` (tr) |
+| `Investment` | `My Positions` (en) / `Pozisyonlarım` (tr)      |
 
 See [content.md](./content.md) for the full vocabulary.
 
@@ -198,17 +198,18 @@ See [content.md](./content.md) for the full vocabulary.
 
 ## Mundi Anti-Patterns Gallery
 
-| Anti-pattern | Symptom | Fix |
-| --- | --- | --- |
-| **Toggling a modal inside a Page Template** | Page Template has a hidden `Modal` layer that gets shown for the modal state | Move modal to a separate page frame with `Modal Screen` |
-| **Editing a variant's structure** | A variant frame has a layer its step's canonical frame doesn't have | Add the layer to the step's source Page Template; hide it where unneeded |
-| **Detached Page Template** | A variant frame's Page Template is no longer linked to the step's source | Re-instance from the step's source; re-apply variant's overrides |
-| **1440-wide page frame** | Sidebar overlaps content or there's empty space on the right | Resize page frame to `1512 × 982` |
-| **Sidebar with edited children** | Sidebar item label was directly text-edited | Revert; configure via Sidebar's component props/variants |
-| **Two solid buttons in Page Title actions** | Two visual primaries fighting for attention | One `button-solid` + one `button-smooth` (or `link`) |
-| **`form-regular` for a transfer flow** | Labels above fields, dense layout in a primary flow | Use `form-floating` for primary flows |
-| **Generic copy** (`Submit`, `Continue`, `OK`) | Loss of domain context | Use domain verbs: `Transfer`, `Confirm transfer`, `Got it` |
-| **Theme override at section level** | Some sections of a page switch theme but others don't | Move the override up to the page frame |
-| **Application Template detached every time** | Sidebar duplicated, Page Templates not shared | Use direct placement (Sidebar instance + Page Template instance) |
-| **Page Template fixed height** | All states are the same height even when content differs | Set height to HUG |
-| **Overlapping flow grid** | Variants laid out horizontally instead of vertically | Columns = steps, rows = variants |
+| Anti-pattern                                  | Symptom                                                                         | Fix                                                                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Raw frame instead of Page Template**        | Step content built directly in a page frame — no Page Template instance present | Create a local-master Page Template frame for the step; re-build content inside it; insert an instance into each state page frame |
+| **Toggling a modal inside a Page Template**   | Page Template has a hidden `Modal` layer that gets shown for the modal state    | Move modal to a separate page frame with `Modal Screen`                                                                           |
+| **Editing a variant's structure**             | A variant frame has a layer its step's canonical frame doesn't have             | Add the layer to the step's source Page Template; hide it where unneeded                                                          |
+| **Detached Page Template**                    | A variant frame's Page Template is no longer linked to the step's source        | Re-instance from the step's source; re-apply variant's overrides                                                                  |
+| **1440-wide page frame**                      | Sidebar overlaps content or there's empty space on the right                    | Resize page frame to `1512 × 982`                                                                                                 |
+| **Sidebar with edited children**              | Sidebar item label was directly text-edited                                     | Revert; configure via Sidebar's component props/variants                                                                          |
+| **Two solid buttons in Page Title actions**   | Two visual primaries fighting for attention                                     | One `button-solid` + one `button-smooth` (or `link`)                                                                              |
+| **`form-regular` for a transfer flow**        | Labels above fields, dense layout in a primary flow                             | Use `form-floating` for primary flows                                                                                             |
+| **Generic copy** (`Submit`, `Continue`, `OK`) | Loss of domain context                                                          | Use domain verbs: `Transfer`, `Confirm transfer`, `Got it`                                                                        |
+| **Theme override at section level**           | Some sections of a page switch theme but others don't                           | Move the override up to the page frame                                                                                            |
+| **Application Template detached every time**  | Sidebar duplicated, Page Templates not shared                                   | Use direct placement (Sidebar instance + Page Template instance)                                                                  |
+| **Page Template fixed height**                | All states are the same height even when content differs                        | Set height to HUG                                                                                                                 |
+| **Overlapping flow grid**                     | Variants laid out horizontally instead of vertically                            | Columns = steps, rows = variants                                                                                                  |
