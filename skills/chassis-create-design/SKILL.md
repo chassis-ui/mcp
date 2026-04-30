@@ -87,7 +87,7 @@ Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skil
 - **2a-i (Code Connect):** check chassis-website / chassis-css for `*.figma.tsx` / `*.figma.ts` files first
 - **2a-ii (existing screens):** inspect any existing Chassis screens in the target file
 - **2a-iii (search_design_system):** search by Chassis family names — `button-solid`, `form-regular`, `navbar`, `card`, `modal`, `table`, etc. (full list in [components.md](./references/components.md)). The result includes the `componentKey` — use it directly for `import_components` / `use_figma`. **Never import by component name** (names can collide and change).
-- **2b (variables):** Chassis variables follow strict namespaces — `color/context/...`, `space/context/...`, `font/...` etc. See [tokens.md](./references/tokens.md). **Never** conclude "no variables" from `getLocalVariableCollectionsAsync()` alone — `search_design_system` with `includeVariables: true` is the source of truth for library variables.
+- **2b (variables + text styles):** Chassis variables follow strict namespaces — `color/context/...`, `space/context/...`, `typography/...` etc. See [tokens.md](./references/tokens.md). **Typography is special:** `font/{family}/{size}/{weight}` (e.g. `font/text/medium/normal`) is a **Figma text style**, not a variable — the underlying `typography/*` variables compose into it. Apply the **text style**, not the individual typography variables. See [typography.md](./references/typography.md). **Never** conclude "no variables" or "no styles" from `getLocalVariableCollectionsAsync()` / `getLocalTextStylesAsync()` alone — `search_design_system` (with `includeVariables` / `includeStyles`) is the source of truth for library assets.
 
 ### Step 3 — Create the Wrapper Frame First
 - Size the wrapper to a Chassis `grid/breakpoint/*` token rather than a pixel literal. Most common page widths: `2xlarge` (desktop), `large` (tablet), `xsmall` (mobile). Modals, drawers, and panels size off `size/context/*` or fixed component widths defined by the source. Adapt to the source.
@@ -98,6 +98,7 @@ Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skil
 - **Asset overrides instead of top-level `setProperties` for text** — see core rule above.
 - Use Chassis context tokens for paddings/gaps via `setBoundVariable`, not pixel literals.
 - Use `setBoundVariableForPaint` with Chassis color tokens for fills/strokes — capture the returned paint and reassign.
+- **For typography, apply a `font/*` text style** via `importStyleByKeyAsync` + `setTextStyleIdAsync` (after `loadFontAsync`). Do **not** set raw font family/size/weight, and do **not** bind individual `typography/*` variables on production text. See [typography.md](./references/typography.md).
 - Don't reveal hidden sub-layers (Back Button, Title Badge, Subtitle Action, Filters row, Aside, Empty states, etc.) unless explicitly required.
 - Don't mix button sizes within one action group; don't mix form styles within one form (regular vs floating vs outline).
 
@@ -115,17 +116,18 @@ Detailed Chassis procedures, including the full Reconnect Mode playbook, are in 
 
 ## Design Tokens (Chassis namespaces)
 
-| Family | Pattern |
-| --- | --- |
-| Colors | `color/context/{context}/{role}-{emphasis}` |
-| Typography | `font/{family}/{size}/{weight}` |
-| Spacing | `space/context/{context}` or `space/unit/{unit}` |
+| Family | Pattern | Kind |
+| --- | --- | --- |
+| Colors | `color/context/{context}/{role}-{emphasis}` | variable |
+| Typography (applied) | `font/{family}/{size}/{weight}` | **text style** (composed of `typography/*` variables) |
+| Typography (raw vars) | `typography/{property}/{...}` | variable — only used **inside** text styles |
+| Spacing | `space/context/{context}` or `space/unit/{unit}` | variable |
 | Sizing | `size/context/{context}` or `size/unit/{unit}` |
 | Radius | `borderRadius/context/{context}` |
 | Border width | `borderWidth/context/{context}` |
 | Opacity | `opacity/context/{context}` or `opacity/level/{level}` |
 
-**Always prefer `context` tokens over `unit`/`level` tokens** — context tokens swap correctly across themes/modes; unit tokens do not. Full reference: [tokens.md](./references/tokens.md).
+**Always prefer `context` tokens over `unit`/`level` tokens** — context tokens swap correctly across themes/modes; unit tokens do not. Full reference: [tokens.md](./references/tokens.md). **For typography, always apply text styles** — see [typography.md](./references/typography.md).
 
 ## Component Catalog
 
@@ -157,7 +159,7 @@ See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 6. **Don't convert frames to auto-layout** without explicit user request.
 7. **Never use components named `… @ x.x`** — the `@ x.x` suffix marks a deprecated-but-still-published version. Use the same-named component without the suffix. See [components.md → Deprecated / Avoid](./references/components.md#deprecated--avoid).
 8. **One section per `use_figma` call.**
-9. **No raw colors / spacing / type** — always bind a Chassis variable; if none fits, ask the user before hardcoding.
+9. **No raw colors / spacing / type** — always bind a Chassis variable, or apply a `font/*` text style for typography (never raw font values, never individual `typography/*` variable bindings on production text). If none fits, ask the user before hardcoding.
 10. **Don't mix button sizes within an action group; don't mix form styles within a form.**
 11. **`generate_figma_design` is mandatory when the source contains images** — the Plugin API cannot fetch image URLs.
 
@@ -178,6 +180,7 @@ If everything is blocked, say so plainly with the specific failure reason.
 ## References
 
 - [tokens.md](./references/tokens.md) — Complete Chassis token system reference
+- [typography.md](./references/typography.md) — Text styles vs typography variables, and how to apply them
 - [components.md](./references/components.md) — Full Chassis component catalog
 - [patterns.md](./references/patterns.md) — Asset overrides, buttons, forms, tables, themes, anti-patterns
 - [workflow.md](./references/workflow.md) — Detailed Chassis Build & Reconnect playbooks

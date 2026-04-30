@@ -1,21 +1,24 @@
 # Chassis Design Tokens — Complete Reference
 
-All visual decisions in a Chassis design must use these variables. Never hardcode raw values for colors, typography, spacing, sizing, radius, borders, or opacity. If no token fits, ask the user before resorting to a literal value.
+All visual decisions in a Chassis design must use these tokens. Never hardcode raw values for colors, typography, spacing, sizing, radius, borders, or opacity. If no token fits, ask the user before resorting to a literal value.
+
+> **Variables vs text styles.** Most Chassis tokens are **Figma variables** — bind them with `setBoundVariable` / `setBoundVariableForPaint`. **Typography is the exception:** `font/{family}/{size}/{weight}` is a **Figma text style** that bundles several `typography/*` variables, and is applied with `setTextStyleIdAsync`. Do not bind the inner `typography/*` variables directly on production text. See [typography.md](./typography.md).
 
 ## Naming Pattern Quick Reference
 
-| Token domain      | Pattern                                                  | Example                                |
-| ----------------- | -------------------------------------------------------- | -------------------------------------- |
-| Colors            | `color/context/{context}/{role}-{emphasis}`              | `color/context/primary/fg-main`        |
-| Typography        | `font/{family}/{size}/{weight}`                          | `font/text/medium/normal`              |
-| Spacing (context) | `space/context/{context}`                                | `space/context/medium`                 |
-| Spacing (unit)    | `space/unit/{unit}`                                      | `space/unit/16`                        |
-| Sizing (context)  | `size/context/{context}`                                 | `size/context/medium`                  |
-| Sizing (unit)     | `size/unit/{unit}`                                       | `size/unit/40`                         |
-| Border radius     | `borderRadius/context/{context}`                         | `borderRadius/context/medium`          |
-| Border width      | `borderWidth/context/{context}`                          | `borderWidth/context/medium`           |
-| Opacity (context) | `opacity/context/{context}`                              | `opacity/context/fg-subtle`            |
-| Opacity (level)   | `opacity/level/{level}`                                  | `opacity/level/50`                     |
+| Token domain      | Pattern                                                  | Example                                | Kind |
+| ----------------- | -------------------------------------------------------- | -------------------------------------- | ---- |
+| Colors            | `color/context/{context}/{role}-{emphasis}`              | `color/context/primary/fg-main`        | variable |
+| Typography (applied) | `font/{family}/{size}/{weight}`                       | `font/text/medium/normal`              | **text style** |
+| Typography (raw)  | `typography/{property}/{...}`                            | `typography/fontSize/text/medium`      | variable (used inside text styles) |
+| Spacing (context) | `space/context/{context}`                                | `space/context/medium`                 | variable |
+| Spacing (unit)    | `space/unit/{unit}`                                      | `space/unit/16`                        | variable |
+| Sizing (context)  | `size/context/{context}`                                 | `size/context/medium`                  | variable |
+| Sizing (unit)     | `size/unit/{unit}`                                       | `size/unit/40`                         | variable |
+| Border radius     | `borderRadius/context/{context}`                         | `borderRadius/context/medium`          | variable |
+| Border width      | `borderWidth/context/{context}`                          | `borderWidth/context/medium`           | variable |
+| Opacity (context) | `opacity/context/{context}`                              | `opacity/context/fg-subtle`            | variable |
+| Opacity (level)   | `opacity/level/{level}`                                  | `opacity/level/50`                     | variable |
 
 ---
 
@@ -119,6 +122,8 @@ Color is built on a **context × role × emphasis** grid. Each context provides 
 ---
 
 ## Typography
+
+> **`font/*` is a Figma text style, not a variable.** It is composed of `typography/*` variables (fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, paragraphSpacing, textCase, textDecoration). **Apply the text style** — don't bind the inner variables directly on production text. Full guidance: [typography.md](./typography.md).
 
 Pattern: `font/{family}/{size}/{weight}` — example: `font/text/medium/normal`
 
