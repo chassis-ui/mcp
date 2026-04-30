@@ -46,7 +46,7 @@ For each section in order:
 
 9. **Verify variant coverage.** Read the component's variants table. Confirm the variants you need (`size`, `context`, `state`, `has-*`) exist.
 
-10. **Verify token coverage.** Every color, font, spacing, sizing, radius, and border decision in the section must map to a Chassis variable. Cross-reference [tokens.md](./tokens.md). If anything doesn't fit, ask the user before hardcoding.
+10. **Verify token coverage.** Every color, font, spacing, sizing, radius, border, shadow, and opacity decision in the section must map to a Chassis variable or style. Cross-reference [tokens.md](./tokens.md). If anything doesn't fit, ask the user before hardcoding.
 
 11. **Plan the section frame.**
     - Use auto-layout where appropriate for the section's flow
@@ -207,6 +207,7 @@ If you cannot complete an action after one attempt:
 - [ ] Every color is a `color/context/*` token (or explicitly user-approved literal)
 - [ ] Every spacing is a `space/context/*` or `space/unit/*` token
 - [ ] Every text node has a `font/*` **text style** applied (single chip in the Typography panel) — not raw values, not loose `typography/*` variable bindings
+- [ ] Every shadow is a `shadow/context/*` **effect style** — not a raw `effects` object
 - [ ] No deprecated `… @ x.x`-named components in use
 - [ ] Button sizes are consistent within each action group
 - [ ] One form style throughout each form

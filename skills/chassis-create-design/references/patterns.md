@@ -305,6 +305,7 @@ Reject these when working in Chassis:
 - ❌ **Hardcoded font properties** — apply a `font/*` **text style** (via `setTextStyleIdAsync`); don't set raw family/size/weight, and don't bind individual `typography/*` variables on production text. See [typography.md](./typography.md).
 - ❌ **Custom border radii / widths** — use `borderRadius/context/*` or `borderWidth/context/*`
 - ❌ **Custom opacity values** — use `opacity/context/*` or `opacity/level/*`
+- ❌ **Raw drop-shadow effects** — apply a `shadow/context/*` **effect style** (via `setEffectStyleIdAsync`); never set `node.effects` with a hand-crafted shadow object
 
 ### Component usage
 

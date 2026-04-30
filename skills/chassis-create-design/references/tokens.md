@@ -1,8 +1,11 @@
 # Chassis Design Tokens — Complete Reference
 
-All visual decisions in a Chassis design must use these tokens. Never hardcode raw values for colors, typography, spacing, sizing, radius, borders, or opacity. If no token fits, ask the user before resorting to a literal value.
+All visual decisions in a Chassis design must use these tokens. Never hardcode raw values for colors, typography, spacing, sizing, radius, borders, opacity, or shadows. If no token fits, ask the user before resorting to a literal value.
 
-> **Variables vs text styles.** Most Chassis tokens are **Figma variables** — bind them with `setBoundVariable` / `setBoundVariableForPaint`. **Typography is the exception:** `font/{family}/{size}/{weight}` is a **Figma text style** that bundles several `typography/*` variables, and is applied with `setTextStyleIdAsync`. Do not bind the inner `typography/*` variables directly on production text. See [typography.md](./typography.md).
+> **Variables vs styles.** Most Chassis tokens are **Figma variables** — bind them with `setBoundVariable` / `setBoundVariableForPaint`. Two domains are **Figma styles** instead:
+>
+> - **Typography:** `font/{family}/{size}/{weight}` is a text style applied with `setTextStyleIdAsync`. See [typography.md](./typography.md).
+> - **Shadows:** `shadow/context/{size}` is an effect style applied with `setEffectStyleIdAsync`. Never set raw drop-shadow effect values.
 
 ## Naming Pattern Quick Reference
 
@@ -19,6 +22,7 @@ All visual decisions in a Chassis design must use these tokens. Never hardcode r
 | Border width         | `borderWidth/context/{context}`             | `borderWidth/context/medium`      | variable                           |
 | Opacity (context)    | `opacity/context/{context}`                 | `opacity/context/fg-subtle`       | variable                           |
 | Opacity (level)      | `opacity/level/{level}`                     | `opacity/level/50`                | variable                           |
+| Shadow               | `shadow/context/{size}`                     | `shadow/context/medium`           | **effect style**                   |
 
 ---
 
@@ -287,6 +291,35 @@ Two scales:
 | `10`–`90`     | 10% – 90% | 10% increments                          |
 | `95`          | 95%       | Nearly opaque                           |
 | `solid`       | 100%      | Fully opaque                            |
+
+---
+
+## Shadows
+
+> **`shadow/context/*` is a Figma effect style, not a variable.** Apply it with `importStyleByKeyAsync` + `setEffectStyleIdAsync`. Never set raw drop-shadow effect objects directly on a node.
+
+Pattern: `shadow/context/{size}` — the four sizes for general design work:
+
+| Size     | Use for                                                |
+| -------- | ------------------------------------------------------ |
+| `small`  | Subtle elevation — cards, chips, floating inputs       |
+| `medium` | Standard elevation — dropdowns, popovers, date pickers |
+| `large`  | High elevation — modals, dialogs, command palettes     |
+| `inset`  | Inset / pressed state — active inputs, pressed buttons |
+
+### How to apply (Plugin API)
+
+```ts
+// 1. Resolve the effect style key via search_design_system or get_metadata.
+const style = await figma.importStyleByKeyAsync(effectStyleKey);
+
+// 2. Apply.
+node.effectStyleId = style.id;
+// or async form:
+await node.setEffectStyleIdAsync(style.id);
+```
+
+> After applying, **do not** manually set `node.effects` — that detaches the style link.
 
 > **Default to context.** Reach for level-based only when context-based doesn't fit.
 

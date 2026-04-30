@@ -128,10 +128,11 @@ Detailed Chassis procedures, including the full Reconnect Mode playbook, are in 
 | Typography (applied)  | `font/{family}/{size}/{weight}`                        | **text style** (composed of `typography/*` variables) |
 | Typography (raw vars) | `typography/{property}/{...}`                          | variable — only used **inside** text styles           |
 | Spacing               | `space/context/{context}` or `space/unit/{unit}`       | variable                                              |
-| Sizing                | `size/context/{context}` or `size/unit/{unit}`         |
-| Radius                | `borderRadius/context/{context}`                       |
-| Border width          | `borderWidth/context/{context}`                        |
-| Opacity               | `opacity/context/{context}` or `opacity/level/{level}` |
+| Sizing                | `size/context/{context}` or `size/unit/{unit}`         | variable                                              |
+| Radius                | `borderRadius/context/{context}`                       | variable                                              |
+| Border width          | `borderWidth/context/{context}`                        | variable                                              |
+| Opacity               | `opacity/context/{context}` or `opacity/level/{level}` | variable                                              |
+| Shadow                | `shadow/context/{size}`                                | **effect style** (composed of shadow variables)       |
 
 **Always prefer `context` tokens over `unit`/`level` tokens** — context tokens swap correctly across themes/modes; unit tokens do not. Full reference: [tokens.md](./references/tokens.md). **For typography, always apply text styles** — see [typography.md](./references/typography.md).
 
@@ -165,7 +166,7 @@ See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 6. **Don't convert frames to auto-layout** without explicit user request.
 7. **Never use components named `… @ x.x`** — the `@ x.x` suffix marks a deprecated-but-still-published version. Use the same-named component without the suffix. See [components.md → Deprecated / Avoid](./references/components.md#deprecated--avoid).
 8. **One section per `use_figma` call.**
-9. **No raw colors / spacing / type** — always bind a Chassis variable, or apply a `font/*` text style for typography (never raw font values, never individual `typography/*` variable bindings on production text). If none fits, ask the user before hardcoding.
+9. **No raw colors / spacing / type / shadows** — always bind a Chassis variable, apply a `font/*` text style for typography, or apply a `shadow/context/*` effect style for shadows (never raw box-shadow values). If none fits, ask the user before hardcoding.
 10. **Don't mix button sizes within an action group; don't mix form styles within a form.**
 11. **`generate_figma_design` is mandatory when the source contains images** — the Plugin API cannot fetch image URLs.
 
