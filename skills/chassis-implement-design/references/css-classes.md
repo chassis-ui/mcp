@@ -1,8 +1,8 @@
 # Chassis CSS Class Catalog
 
-Complete class reference for translating Chassis Figma views into Chassis CSS code. Source of truth: `@chassis-ui/css` and the Bootstrap → Chassis migration guide.
+Complete class reference for translating Chassis Figma views into Chassis CSS code. Source of truth: `@chassis-ui/css`.
 
-> **Golden rule:** Chassis CSS uses **space-separated modifiers** on a single base class, **semantic spacing/breakpoint names**, and **`fg-*`/`bg-*`** color families. If you find yourself writing `btn-primary`, `text-muted`, `p-3`, `col-md-6`, or `data-bs-toggle`, stop — that's Bootstrap.
+> **Golden rule:** Chassis CSS uses **space-separated modifiers** on a single base class, **semantic spacing/breakpoint names**, and **`fg-*`/`bg-*`** color families. The Figma MCP outputs React + Tailwind — **every class name it produces must be discarded and replaced**. If you find yourself emitting `className`, `text-blue-500`, `p-4`, `gap-3`, `rounded-lg`, or `md:flex`, stop — that's Tailwind. Bootstrap-style classes (`btn-primary`, `text-muted`, `col-md-6`) are equally invalid.
 
 ## Typography
 
@@ -26,16 +26,16 @@ Heading utility equivalents on non-`<h*>` elements: pair `font-{size}` (`font-2x
 
 ### Weights
 
-| Bootstrap   | Chassis        |
-| ----------- | -------------- |
-| `fw-light`  | `font-elegant` |
-| `fw-normal` | `font-normal`  |
-| `fw-bold`   | `font-strong`  |
-| `fw-bolder` | `font-mass`    |
+| Tailwind                       | Bootstrap   | Chassis        |
+| ------------------------------ | ----------- | -------------- |
+| `font-light`                   | `fw-light`  | `font-elegant` |
+| `font-normal`                  | `fw-normal` | `font-normal`  |
+| `font-semibold`, `font-bold`   | `fw-bold`   | `font-strong`  |
+| `font-extrabold`, `font-black` | `fw-bolder` | `font-mass`    |
 
 ### Alignment / transform
 
-`text-start`, `text-center`, `text-end`, `text-uppercase`, `text-lowercase`, `text-capitalize`, `text-wrap`, `text-nowrap`, `text-truncate`. (Compatible with Bootstrap names.)
+`text-start`, `text-center`, `text-end`, `text-uppercase`, `text-lowercase`, `text-capitalize`, `text-wrap`, `text-nowrap`, `text-truncate`.
 
 ## Colors
 
@@ -105,18 +105,6 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 
 `fg-opacity-{level}`, `bg-opacity-{level}` — levels: `main`, `subtle`, `slight`. Combine with a color: `fg-primary fg-opacity-subtle`.
 
-### Bootstrap → Chassis color migration
-
-| Bootstrap               | Chassis           |
-| ----------------------- | ----------------- |
-| `text-muted`            | `fg-subtle`       |
-| `text-light`            | `fg-slight`       |
-| `text-dark`             | `fg-main`         |
-| `text-{role}`           | `fg-{role}`       |
-| `bg-light`              | `bg-main`         |
-| `bg-dark`               | `bg-inverse`      |
-| `text-primary-emphasis` | `primary-fg-main` |
-
 ## Spacing
 
 ### Scale (semantic)
@@ -129,30 +117,19 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 - Margin: `m-{size}`, `mt-`, `me-`, `mb-`, `ms-`, `mx-`, `my-` (auto allowed: `mx-auto`, `ms-auto`, `me-auto`)
 - Gap (in flex/grid): `gap-{size}`, `row-gap-{size}`, `column-gap-{size}`
 
-### Bootstrap → Chassis spacing migration
-
-| Bootstrap | Chassis                                     |
-| --------- | ------------------------------------------- |
-| `*-0`     | `*-zero`                                    |
-| `*-1`     | `*-4xsmall`                                 |
-| `*-2`     | `*-xsmall` (or `*-small` per design intent) |
-| `*-3`     | `*-medium`                                  |
-| `*-4`     | `*-large`                                   |
-| `*-5`     | `*-2xlarge` (or `*-xlarge`)                 |
-
-> Always pick the **named scale step that matches the bound Figma `space/context/{ctx}` token**, not a numeric guess.
+> Always pick the **named scale step that matches the bound Figma `space/context/{ctx}` token**. Never guess a step from a numeric value (Tailwind's `p-4` or Bootstrap's `p-3`). The token is the only source of truth.
 
 ## Layout & Flex
 
 ### Containers / grid
 
-- `container`, `container-fluid`, `container-{breakpoint}`
-- `row`, `col`, `col-{n}`, `col-{breakpoint}-{n}`
+- `container`, `container fluid`, `container {breakpoint}`
+- `row`, `col`, `col-{n}`, `{breakpoint}:col-{n}`
 - `g-{size}`, `gx-{size}`, `gy-{size}` (grid gutters)
 
 ### Flex / display utilities
 
-`d-flex`, `d-inline-flex`, `d-grid`, `d-block`, `d-inline-block`, `d-inline`, `d-none`, plus responsive variants `d-{breakpoint}-{value}`.
+`d-flex`, `d-inline-flex`, `d-grid`, `d-block`, `d-inline-block`, `d-inline`, `d-none`, plus responsive variants `{breakpoint}:d--{value}`.
 
 `flex-row`, `flex-row-reverse`, `flex-column`, `flex-column-reverse`, `flex-wrap`, `flex-nowrap`, `flex-fill`, `flex-grow-{0|1}`, `flex-shrink-{0|1}`.
 
@@ -164,7 +141,7 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 
 `position-{static|relative|absolute|fixed|sticky}`, `top-0` … `top-100`, `start-0` … `start-100`, `end-0`, `bottom-0`, `translate-middle{-x|-y}`.
 
-`w-25`, `w-50`, `w-75`, `w-100`, `w-auto`, `mw-100`, `vw-100`, `min-vw-100`. (Compatible with Bootstrap.)
+`w-25`, `w-50`, `w-75`, `w-100`, `w-auto`, `mw-100`, `vw-100`, `min-vw-100`.
 
 ### Borders & radius
 
@@ -177,15 +154,15 @@ Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evide
 
 ## Breakpoints
 
-| Bootstrap | Chassis   | ≥      |
-| --------- | --------- | ------ |
-| `sm`      | `small`   | 576px  |
-| `md`      | `medium`  | 768px  |
-| `lg`      | `large`   | 992px  |
-| `xl`      | `xlarge`  | 1200px |
-| `xxl`     | `2xlarge` | 1400px |
+| Tailwind prefix | Bootstrap | Chassis   | ≥      |
+| --------------- | --------- | --------- | ------ |
+| `sm:`           | `sm`      | `small`   | 576px  |
+| `md:`           | `md`      | `medium`  | 768px  |
+| `lg:`           | `lg`      | `large`   | 992px  |
+| `xl:`           | `xl`      | `xlarge`  | 1200px |
+| `2xl:`          | `xxl`     | `2xlarge` | 1400px |
 
-Apply to: `col-{bp}-*`, `d-{bp}-*`, `flex-{bp}-*`, `text-{bp}-*`, spacing `m{side}-{bp}-{size}` etc.
+Apply to: `{bp}:col-*`, `{bp}:d-*`, `{bp}:flex-*`, `{bp}:text-*`, spacing `{bp}:m{side}-{size}` etc.
 
 ## Components — class shortlist
 
@@ -226,7 +203,7 @@ Full HTML patterns are in [components.md](./components.md). Class signatures onl
 
 ## Data attributes (behaviors)
 
-Replace **all** `data-bs-*` with `data-cx-*`:
+Chassis behavior attributes use the `data-cx-*` namespace:
 
 | Behavior                   | Attribute                                        |
 | -------------------------- | ------------------------------------------------ | --------------------------- | --------- | ------- | ------- | --- | -------- | -------- |
@@ -240,7 +217,9 @@ Replace **all** `data-bs-*` with `data-cx-*`:
 | Backdrop                   | `data-cx-backdrop="static                        | true                        | false"`   |
 | Keyboard                   | `data-cx-keyboard="true                          | false"`                     |
 
-## Bootstrap → Chassis quick lookup
+## Legacy: Bootstrap → Chassis class migration
+
+> This section is for **porting existing Bootstrap code** to Chassis, not for Figma translation. When translating from Figma, use the Tailwind → Chassis table above and `get_variable_defs`.
 
 | Bootstrap pattern                      | Chassis pattern                  |
 | -------------------------------------- | -------------------------------- |
@@ -262,14 +241,58 @@ Replace **all** `data-bs-*` with `data-cx-*`:
 | `me-2 ms-auto`                         | `me-xsmall ms-auto`              |
 | `data-bs-toggle="modal"`               | `data-cx-toggle="modal"`         |
 
+## Tailwind → Chassis quick lookup
+
+The Figma MCP code block uses Tailwind utilities and JSX. Discard all of it — use only `get_variable_defs` for style decisions. Common replacements:
+
+| Tailwind / JSX (MCP output)                                       | Chassis CSS                                                                   | Rule                              |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------- |
+| `className="…"`                                                   | `class="…"`                                                                   | JSX → HTML                        |
+| `text-{color}-{n}` (e.g. `text-blue-500`)                         | `fg-{emphasis}` or `{ctx}-fg-{emphasis}`                                   | Always from `get_variable_defs` — never guess from the color name |
+| `bg-{color}-{n}` (e.g. `bg-gray-100`)                             | `bg-main`, `{ctx}-bg-{emphasis}`                                              | Resolve via `get_variable_defs`   |
+| `text-sm` / `text-base` / `text-lg` / `text-xl` / `text-2xl`     | `font-small` / `font-medium` / `font-large` / `font-xlarge` / `font-2xlarge` | Confirm via token                 |
+| `font-bold`, `font-semibold`                                      | `font-strong`                                                                 |                                   |
+| `font-light`                                                      | `font-elegant`                                                                |                                   |
+| `p-{n}` / `px-{n}` / `py-{n}` / `pt-{n}` etc.                   | `p-{step}` / `px-{step}` / `py-{step}` / `pt-{step}` etc.                    | Semantic step from token          |
+| `m-{n}` / `mt-{n}` / `mx-{n}` etc.                               | `m-{step}` / `mt-{step}` / `mx-{step}` etc.                                  | Semantic step from token          |
+| `gap-{n}` / `gap-x-{n}` / `gap-y-{n}`                            | `gap-{step}` / `column-gap-{step}` / `row-gap-{step}`                        | Semantic step from token          |
+| `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`           | `rounded-{ctx}`                                                               | Token from `get_variable_defs`    |
+| `rounded-full`                                                    | `rounded-round`                                                               |                                   |
+| `flex`                                                            | `d-flex`                                                                      |                                   |
+| `flex flex-col`                                                   | `d-flex flex-column`                                                          |                                   |
+| `grid`                                                            | `d-grid`                                                                      |                                   |
+| `hidden`                                                          | `d-none`                                                                      |                                   |
+| `block`                                                           | `d-block`                                                                     |                                   |
+| `inline-flex`                                                     | `d-inline-flex`                                                               |                                   |
+| `items-center` / `items-start` / `items-end`                      | `align-items-center` / `align-items-start` / `align-items-end`                |                                   |
+| `justify-center` / `justify-between` / `justify-start`            | `justify-content-center` / `justify-content-between` / `justify-content-start` |                                  |
+| `w-full`                                                          | `w-100`                                                                       |                                   |
+| `sm:` / `md:` / `lg:` / `xl:` / `2xl:` (prefix)                  | `small:` / `medium:` / `large:` / `xlarge:` / `2xlarge:`                     | Full names — never abbreviated    |
+| `p-[14px]`, `text-[#hex]`, `bg-[rgba(…)]`                        | 🚩 raise to user                                                              | Arbitrary values = detached token |
+
 ## Anti-patterns (HARD STOPS)
+
+**Tailwind / MCP output leakage (primary concern — what `get_design_context` emits):**
+
+- ❌ `className="text-blue-500"` → ✅ `class="fg-primary"` (from `get_variable_defs`)
+- ❌ `className="bg-gray-100"` → ✅ `class="bg-main"` (from `get_variable_defs`)
+- ❌ `p-4`, `gap-3`, `m-2` (numeric Tailwind spacing) → ✅ `p-large`, `gap-medium`, `m-xsmall` (semantic step from token)
+- ❌ `rounded-lg` → ✅ `rounded-{ctx}` (token from `get_variable_defs` — never guess the step from Tailwind's size name)
+- ❌ `font-bold` → ✅ `font-strong`
+- ❌ `md:flex`, `lg:col-6` (abbreviated breakpoints) → ✅ `medium:d-flex`, `large:col-6`
+- ❌ `p-[14px]`, `bg-[#0a84ff]` (arbitrary Tailwind values) → 🚩 raise to user, do not emit inline CSS
+
+**Also invalid (Bootstrap-style):**
 
 - ❌ `btn-primary-outline-lg` → ✅ `button primary outline large`
 - ❌ `text-muted` → ✅ `fg-subtle`
 - ❌ `bg-light` → ✅ `bg-main`
-- ❌ `p-3` → ✅ `p-medium`
+- ❌ `p-3` (numeric) → ✅ `p-medium`
 - ❌ `col-md-6` → ✅ `col-medium-6`
 - ❌ `data-bs-toggle` → ✅ `data-cx-toggle`
+
+**Always invalid (regardless of origin):**
+
 - ❌ `<div class="text-asset">…</div>` (Asset wrapper kept) → ✅ asset text lifted onto its parent semantic element
 - ❌ `style="color:#0a84ff"` for a token color → ✅ `class="fg-primary"`
-- ❌ Mixing `card-body` (Bootstrap wrapper) with `card-content` (Chassis wrapper) — pick one (Chassis) and translate fully
+- ❌ `card-body` as the outer content wrapper → ✅ `card-content` (in Chassis, `card-body` is the `<p>` inside `card-content`)
