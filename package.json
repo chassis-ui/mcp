@@ -1,6 +1,6 @@
 {
   "name": "@chassis-ui/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Chassis UI MCP server — skills and prompts for AI agents working with the Chassis design system",
   "license": "MIT",
   "type": "module",
@@ -26,7 +26,8 @@
     "dev": "vercel dev",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "change-version": "node build/change-version.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.0",
