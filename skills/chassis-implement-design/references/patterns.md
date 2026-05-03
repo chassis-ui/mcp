@@ -217,9 +217,9 @@ Figma constraints (left, right, scale) and breakpoint variants map to Chassis's 
 ```html
 <div class="container">
   <div class="row g-medium">
-    <div class="col-12 col-medium-6 col-large-4">…</div>
-    <div class="col-12 col-medium-6 col-large-4">…</div>
-    <div class="col-12 col-medium-12 col-large-4">…</div>
+    <div class="col-12 medium:col-6 large:col-4">…</div>
+    <div class="col-12 medium:col-6 large:col-4">…</div>
+    <div class="col-12 medium:col-12 large:col-4">…</div>
   </div>
 </div>
 ```
@@ -232,34 +232,38 @@ After implementation:
 
 1. **Visual diff** vs. the per-section `get_screenshot`. Look for spacing, alignment, type mismatches.
 2. **Theme cycle**: render under each Brand × Theme × App combination targeted by the source. Watch for low-contrast text, broken backgrounds, hidden-but-needed assets.
-3. **Class lint**: grep the output for `btn-`, `text-muted`, `bg-light`, `data-bs-`, numeric spacing (`p-[0-9]`), abbreviated breakpoints (`-md-`, `-sm-`, `-lg-`, `-xl-`, `-xxl-`), Asset wrapper class names (`text-asset`, `*-asset`).
+3. **Class lint**: grep the output for `className` (JSX leak), Tailwind color patterns (`text-\w+-\d+`, `bg-\w+-\d+`), numeric spacing (`p-[0-9]`, `gap-[0-9]`, `m-[0-9]`), arbitrary Tailwind values (`\[`), abbreviated breakpoint prefixes (`md:`, `lg:`, `sm:`, `xl:`, `2xl:`), Asset wrapper class names (`text-asset`, `*-asset`), and hyphenated modifier patterns (`button-primary`).
 4. **Accessibility**: confirm `<label for>`, `aria-*`, `role`, `scope`, `tabindex` per the component patterns in [components.md](./components.md).
 5. **Behavior**: every interactive component carries the matching `data-cx-*` attributes.
 
 ## Anti-patterns
 
-### Bootstrap leakage
+### Tailwind / MCP output leakage
+
+The Figma MCP code block outputs React + Tailwind. Discard it entirely — never adapt it.
 
 ```html
-<!-- ❌ -->
-<button class="btn btn-primary btn-lg">Save</button>
-<p class="text-muted small">Hint</p>
-<div class="card">
-  <div class="card-body"><p class="card-text">…</p></div>
+<!-- ❌ Raw MCP output (Tailwind + JSX) — do not adapt, discard completely -->
+<Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold text-sm">
+  Save
+</Button>
+<p className="text-gray-500 text-sm mt-2">Hint</p>
+<div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+  <h2 className="text-xl font-bold text-gray-900">Title</h2>
+  <p className="text-gray-600 mt-2">Body text</p>
 </div>
-<div class="col-md-6"></div>
-<button data-bs-toggle="modal" data-bs-target="#m">Open</button>
-<div class="p-3 mb-4">…</div>
+<div className="md:flex gap-4 lg:grid-cols-3">…</div>
 
-<!-- ✅ -->
-<button class="button primary large">Save</button>
+<!-- ✅ Correct Chassis CSS (classes resolved from get_variable_defs tokens) -->
+<button class="button primary">Save</button>
 <p class="fg-subtle font-small">Hint</p>
 <div class="card">
-  <div class="card-content"><p class="card-body">…</p></div>
+  <div class="card-content">
+    <h5 class="card-title">Title</h5>
+    <p class="card-body">Body text</p>
+  </div>
 </div>
-<div class="col-medium-6"></div>
-<button data-cx-toggle="modal" data-cx-target="#m">Open</button>
-<div class="p-medium mb-large">…</div>
+<div class="medium:d-flex gap-large large:col-4">…</div>
 ```
 
 ### Hyphenated modifiers
@@ -297,7 +301,7 @@ After implementation:
 ### Wrong card subpart names
 
 ```html
-<!-- ❌ Bootstrap subpart names -->
+<!-- ❌ Wrong subpart names (MCP output and Bootstrap both emit these) -->
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">…</h5>

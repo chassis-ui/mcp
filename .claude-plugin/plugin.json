@@ -1,7 +1,7 @@
 {
   "name": "chassis-ui",
   "description": "Plugin that includes the Chassis UI MCP server and Skills for common workflows",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Chassis UI"
   }
