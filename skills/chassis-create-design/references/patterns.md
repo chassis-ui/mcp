@@ -123,6 +123,56 @@ button.setProperties({
 
 ---
 
+## Basic Text Asset — Standalone Text in Chassis
+
+> **Never use `figma.createText()` in a Chassis workflow.** Raw text nodes have no token bindings, no theme response, and diverge silently on theme switch. Always use **Basic Text Asset** for any standalone text layer.
+
+### Component details
+
+| Property         | Value                                                                    |
+| ---------------- | ------------------------------------------------------------------------ |
+| Library          | `cx.asset.text`                                                          |
+| Component key    | `6209e2b0b166983bcb5697be17578479f8bcbfcb`                               |
+| Import with      | `importComponentByKeyAsync` (it is a single component, not a set)        |
+| Text property    | `text#142:1`                                                             |
+| Default font     | Library-carried; resolved by active brand mode — read via `textNode.fontName`, never hardcode |
+
+### Procedure
+
+```ts
+// 1. Insert the component — no font loading needed for this step.
+//    The library carries whatever font the component uses in the active brand mode.
+const component = await figma.importComponentByKeyAsync('6209e2b0b166983bcb5697be17578479f8bcbfcb');
+const inst = component.createInstance();
+parent.appendChild(inst);
+
+// 2. Set text content via component property.
+inst.setProperties({ 'text#142:1': 'Your text here' });
+
+// 3. Resolve font names at runtime — NEVER hardcode family names.
+//    Chassis font families are typography variables; they resolve differently per brand mode.
+const textNode = inst.findOne(n => n.type === 'TEXT');
+const style = await figma.importStyleByKeyAsync(textStyleKey);
+
+await figma.loadFontAsync(textNode.fontName as FontName); // "from": current font in active brand mode
+await figma.loadFontAsync(style.fontName   as FontName); // "to":   target font in active brand mode
+
+// 4. Apply the text style.
+await textNode.setTextStyleIdAsync(style.id);
+```
+
+### Anti-patterns
+
+```
+❌ figma.createText()                          — raw text node, no Chassis token bindings
+❌ loadFontAsync({ family: 'Archivo Narrow' }) — hardcoded; breaks under a different brand mode
+❌ loadFontAsync({ family: 'Helvetica Neue' }) — hardcoded; same problem
+❌ textNode.fontName = { ... }                 — bypasses the text style system
+❌ textNode.fontSize = 16                      — raw typography, not system-driven
+```
+
+---
+
 ## Buttons
 
 ### Choosing a button style
@@ -294,9 +344,127 @@ This enables a single component to morph across themes without instance swapping
 
 ---
 
+## Plugin API Recipes
+
+Canonical, copy-paste-safe snippets for the most common operations. These encode the Chassis-specific rules (pre-load fonts for text nodes, no variable mode on instances, `layoutSizingHorizontal` after `appendChild`) so you don't have to reconstruct them from first principles each time.
+
+### Inserting a Chassis component instance
+
+```ts
+// CORRECT: Insert a Chassis component and make it fill its parent's width.
+async function insertChassisComponent(
+  wrapper: FrameNode,
+  componentKey: string,
+  variantName?: string   // e.g. "size=small" or "variant=top"
+): Promise<InstanceNode> {
+  const set = await figma.importComponentSetByKeyAsync(componentKey)
+  const variant = variantName
+    ? (set.children.find(c => c.name === variantName) ?? set.defaultVariant)
+    : set.defaultVariant
+  const inst = (variant as ComponentNode).createInstance()
+
+  // ⚠️ NEVER call figma.loadFontAsync() here — not needed.
+  // ⚠️ NEVER call inst.setExplicitVariableModeForCollection() —
+  //    Chassis components resolve tokens automatically from the library.
+
+  wrapper.appendChild(inst)
+
+  // layoutSizingHorizontal MUST be set AFTER appendChild,
+  // otherwise it silently has no effect.
+  inst.layoutSizingHorizontal = 'FILL'
+
+  return inst
+}
+```
+
+### Applying a Chassis text style to a text node
+
+> **Always use Basic Text Asset — never `figma.createText()`** for standalone text in Chassis. Raw text nodes have no token bindings and don't respond to theme changes.
+
+```ts
+// CORRECT: Insert a Basic Text Asset instance and apply a font/* text style.
+//
+// Font loading — resolve names at runtime, never hardcode:
+//   setTextStyleIdAsync does NOT auto-load fonts. Load both the "from" font
+//   (what the text node currently has) and the "to" font (what the style resolves to).
+//   Both are brand-variable — they depend on the active brand collection mode.
+
+async function chassisText(
+  parent: FrameNode | GroupNode,
+  styleKey: string,  // key from search_design_system / get_metadata
+  content: string
+): Promise<InstanceNode> {
+  // 1. Insert Basic Text Asset — no font loading needed for the component itself.
+  const component = await figma.importComponentByKeyAsync('6209e2b0b166983bcb5697be17578479f8bcbfcb')
+  const inst = component.createInstance()
+  parent.appendChild(inst)
+
+  // 2. Set text content via the component's text property.
+  inst.setProperties({ 'text#142:1': content })
+
+  // 3. Resolve and load both fonts dynamically — brand-agnostic.
+  const textNode = inst.findOne(n => n.type === 'TEXT') as TextNode
+  const style = await figma.importStyleByKeyAsync(styleKey)
+  await figma.loadFontAsync(textNode.fontName as FontName)  // "from": current brand mode font
+  await figma.loadFontAsync(style.fontName   as FontName)   // "to":   target brand mode font
+
+  // 4. Apply the style.
+  await textNode.setTextStyleIdAsync(style.id)
+
+  return inst
+}
+```
+
+### Setting text inside a Chassis component's Asset slot
+
+Chassis components expose text through nested `*Asset` instances, not top-level props. To set the text label on a component (button, badge, tab, etc.):
+
+```ts
+// CORRECT: Override text in a Chassis component's Asset slot.
+async function setChassisAssetText(
+  instance: InstanceNode,
+  slotName: string,   // e.g. "Label", "Text", "Title"
+  content: string,
+  styleKey?: string   // optional: apply a Chassis text style too
+): Promise<void> {
+  // Find the *Asset nested instance (name ends in "Asset")
+  const asset = instance.findOne(
+    n => n.name === `${slotName} Asset` || n.name === `${slotName}Asset`
+  ) as InstanceNode | null
+  if (!asset) throw new Error(`Asset slot "${slotName}" not found on "${instance.name}"`)
+
+  // Most Chassis Assets expose a "text" TEXT property on the instance itself:
+  asset.setProperties({ text: content })
+
+  // If a style key is provided, also apply it to the inner TEXT node:
+  if (styleKey) {
+    const textNode = asset.findOne(n => n.type === 'TEXT') as TextNode | null
+    if (textNode) {
+      const style = await figma.importStyleByKeyAsync(styleKey)
+      // Load both fonts dynamically — never hardcode; font families are brand-variable.
+      await figma.loadFontAsync(textNode.fontName as FontName)  // "from"
+      await figma.loadFontAsync(style.fontName   as FontName)   // "to"
+      await textNode.setTextStyleIdAsync(style.id)
+    }
+  }
+}
+```
+
+> **Finding the slot name:** Call `instance.findAll(n => n.name.endsWith('Asset'))` to list all Asset slots on an instance. The slot name is the part before `" Asset"` or `"Asset"` in the layer name.
+
+---
+
 ## Anti-patterns
 
 Reject these when working in Chassis:
+
+### Font & typography (Plugin API)
+
+- ❌ **Using `loadFontAsync` to directly assign a font** (e.g. as a substitute for `setTextStyleIdAsync`) — raw font application bypasses the Chassis text style system. `loadFontAsync` IS required as a prerequisite before `setTextStyleIdAsync`, but only to satisfy the API — resolve both fonts dynamically from `textNode.fontName` ("from") and `style.fontName` ("to"). Never hardcode font family names; they are brand-variable and will break under a different brand mode.
+- ❌ **`figma.createText()` for standalone text in Chassis** — always use Basic Text Asset instead. See [Basic Text Asset — Standalone Text in Chassis](#basic-text-asset--standalone-text-in-chassis).
+- ❌ **`textNode.fontName = { family, style }`** — raw font assignment bypasses text styles; use `importStyleByKeyAsync` + `setTextStyleIdAsync`.
+- ❌ **`textNode.fontSize`, `.letterSpacing`, `.lineHeight` (raw)** — all typography properties must come from a `font/*` text style, never assigned directly.
+- ❌ **`instance.setExplicitVariableModeForCollection()` on a component instance** — Chassis components resolve variable modes automatically from the library. Setting modes on individual instances overrides that context and causes wrong font/color resolution. Only set variable modes on **wrapper frames**.
 
 ### Token & variable
 
@@ -311,6 +479,7 @@ Reject these when working in Chassis:
 
 - ❌ **Setting text on parent component** — use the nested `*Asset` (Asset Override Pattern)
 - ❌ **Importing by component name** — use `componentKey` (names can collide / change)
+- ❌ **Setting `layoutSizingHorizontal = 'FILL'` before `appendChild`** — silently has no effect. Always append to the parent first, then set sizing.
 - ❌ **Revealing hidden sub-layers** — only the documented prop API is supported
 - ❌ **Mixing button sizes within an action group** — pick one size per group
 - ❌ **Mixing form styles within one form** — pick `regular`, `floating`, or `outline` and stick with it

@@ -188,6 +188,63 @@ For each replacement (one at a time):
 4. Validate visual integrity
 ```
 
+### Session Context — Capture and Hand Off Discovered Keys
+
+Component keys, text style keys, and variable IDs are resolved at runtime via `search_design_system` and `get_metadata`. These lookups take several tool calls. Once discovered, they should be captured and carried forward so they aren't re-discovered from scratch in the next session or context window.
+
+**During a build session — after each component or style key is confirmed:**
+
+Record it immediately in your working notes:
+
+```
+# Discovered keys (file: <fileKey>)
+cx.comp.navbar       → c1e2dd8018e1440a72748d542c3adc2e1dfbc03d  (size=small)
+cx.comp.tab          → a5a682e0178815555c38ba7ce3d8544b7d895ded  (variant=top)
+font/display/small/mass → 472f0ee1366d54724816222ad36095dea2506f89
+theme collection     → VariableCollectionId:f99b4c5f.../302:8
+light mode ID        → 302:4
+```
+
+**At the end of each session (or when approaching context limit) — emit a session context block:**
+
+```json
+{
+  "_chassisSessionContext": true,
+  "fileKey": "<fileKey>",
+  "pageId": "<pageNodeId>",
+  "wrapperId": "<wrapperNodeId>",
+  "builtSections": ["navbar"],
+  "pendingSections": ["page-header", "tab-bar", "filter-row", "table"],
+  "discoveredKeys": {
+    "components": {
+      "navbar":    { "key": "<key>", "variant": "size=small" },
+      "tab":       { "key": "<key>", "variant": "variant=top" }
+    },
+    "textStyles": {
+      "font/display/small/mass": "<key>",
+      "font/text/medium/mass":   "<key>"
+    },
+    "colorVariables": {
+      "fg-main": "<variableId>"
+    },
+    "themeCollection": "<collectionId>",
+    "lightModeId": "<modeId>",
+    "darkModeId":  "<modeId>"
+  }
+}
+```
+
+Paste this block at the top of your next session message. A new context window can use these keys directly without re-running `search_design_system` discovery calls.
+
+**On session resume — if a session context block is present:**
+
+1. Parse the `discoveredKeys` map
+2. Verify the wrapper node still exists (`get_metadata` on `wrapperId`)
+3. Skip discovery for any component/style already in the map — use the key directly
+4. Proceed to the first item in `pendingSections`
+
+> **Why this matters:** Context window limits are a build constraint, not an exception. Treating session continuity as a first-class concern prevents multi-session builds from re-discovering the same 15 keys every time.
+
 ### Recovering When Stuck
 
 If you cannot complete an action after one attempt:
@@ -214,3 +271,4 @@ If you cannot complete an action after one attempt:
 - [ ] Multi-theme combinations validated (if applicable)
 - [ ] Original positions preserved in non-auto-layout parents
 - [ ] Deliverable summary written using the Built/Swapped/Composed/Already connected/Blocked format
+- [ ] Session context block emitted (if build is incomplete or context limit is near) — see [Session Context — Capture and Hand Off Discovered Keys](#session-context--capture-and-hand-off-discovered-keys)
