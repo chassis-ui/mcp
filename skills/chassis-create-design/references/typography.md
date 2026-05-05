@@ -143,13 +143,10 @@ Pattern: `font/{family}/{size}/{weight}`
 
 ## Anti-patterns
 
-- ❌ **Raw font values** (`Inter`, `16`, `24`, `0%`) on a text node.
-- ❌ **`textNode.fontName = { family, style }`** — never set font properties directly. Always apply a `font/*` text style via `setTextStyleIdAsync`.
-- ❌ **`textNode.fontSize = 16` / `.letterSpacing` / `.lineHeight`** — never set typography properties raw. Use text styles only.
+> General font/typography anti-patterns (raw font assignment, `createText()`, hardcoded family names) are in the SKILL.md NEVER DO table. The following are typography-workflow-specific:
+
 - ❌ **Skipping `figma.loadFontAsync()` before `setTextStyleIdAsync`** — `setTextStyleIdAsync` does NOT auto-load fonts. Always load both the node's current font (`textNode.fontName`) and the style's target font (`style.fontName`) before calling it.
-- ❌ **Hardcoding font family names in `loadFontAsync` calls** — Chassis font families are resolved through typography variables whose values depend on the active brand collection mode. Hardcoding names like `Archivo Narrow` or `Helvetica Neue` silently breaks when a different brand mode is active. Use `textNode.fontName` and `style.fontName` to resolve font names at runtime.
 - ❌ **`figma.loadFontAsync()` before component insertion** — component instances carry their own font context from the library. Font loading is only needed immediately before `setTextStyleIdAsync`, not before `importComponentByKeyAsync` / `importComponentSetByKeyAsync` / `createInstance()`.
-- ❌ **`figma.createText()` for standalone text in Chassis** — always use Basic Text Asset (`cx.asset.text`). Resolve its component key at runtime via `search_design_system` scoped to the file's linked libraries — never hardcode the key.
 - ❌ **Binding only `typography/fontSize/*` (or any single typography variable)** instead of applying the full `font/*` text style.
 - ❌ **Calling `font/text/medium/normal` a "variable" or "token"** — it's a **text style**. Variables are the things _inside_ it (`typography/*`).
 - ❌ **Setting `textStyleId` synchronously** for library styles — use `setTextStyleIdAsync`.

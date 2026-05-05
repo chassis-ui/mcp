@@ -71,7 +71,7 @@ For each section in order:
 
 ### Phase 4: Multi-Theme Validation (if applicable)
 
-16. **Switch the screen frame to each target mode** (Theme: Dark, Brand: B, etc.)
+16. **Ask the designer to switch the screen frame to each target mode** in Figma (Theme: Dark, Brand: B, etc.) — this is a manual action in the Appearance panel, not a programmatic step.
 
 17. **Inspect each section** in the alternate mode. Watch for:
     - Hardcoded colors that don't invert
@@ -159,17 +159,6 @@ For each replacement (one at a time):
 
 ## Common Procedures
 
-### Importing a Component
-
-```
-1. search_design_system({ query: "button-smooth" })
-2. → returns componentKey "abcdef..."
-3. use_figma to insert instance with that key into target frame
-4. Set position (or rely on auto-layout)
-5. Set variants
-6. Set Asset text overrides
-```
-
 ### Overriding Asset Text
 
 ```
@@ -179,8 +168,11 @@ For each replacement (one at a time):
 4. Set TEXT property on the asset instance (not parent)
 ```
 
-### Section-Level Theme Switch
+### Section-Level Theme Switch *(designer action — not the agent)*
 
+> **This is a manual Figma action performed by the designer, not a programmatic step.** The agent must never call `setExplicitVariableModeForCollection` for any reason. If a theme or brand switch is needed, ask the designer to do it.
+
+Designer steps in Figma:
 ```
 1. Select section frame
 2. Open Appearance panel → Apply variable mode
@@ -198,13 +190,15 @@ Record it immediately in your working notes:
 
 ```
 # Discovered keys (file: <fileKey>)
-cx.comp.navbar       → c1e2dd8018e1440a72748d542c3adc2e1dfbc03d  (size=small)
-cx.comp.tab          → a5a682e0178815555c38ba7ce3d8544b7d895ded  (variant=top)
-font/display/small/mass → 472f0ee1366d54724816222ad36095dea2506f89
-property ID        → text#142:1
-variable collection     → VariableCollectionId:f99b4c5f.../302:8
-light mode ID        → 302:4
+cx.comp.navbar          → <componentKey>  (variant: size=small)
+cx.comp.tab             → <componentKey>  (variant: variant=top)
+cx.asset.text           → <componentKey>  (textPropKey: text#<nodeId>)
+font/display/small/mass → <styleKey>
+font/text/medium/normal → <styleKey>
+color/context/default/bg-main → <variableId>
 ```
+
+> **Keys are always team-specific.** Never copy example keys from docs — always resolve at runtime via `search_design_system` scoped to the file's linked libraries.
 
 **At the end of each session (or when approaching context limit) — emit a session context block:**
 
@@ -226,13 +220,11 @@ light mode ID        → 302:4
       "font/text/medium/mass":   "<key>"
     },
     "colorVariables": {
-      "fg-main": "<variableId>"
-    },
-    "themeCollection": "<collectionId>",
-    "lightModeId": "<modeId>",
-    "darkModeId":  "<modeId>"
+      "color/context/default/bg-main": "<variableId>"
+    }
   }
 }
+
 ```
 
 Paste this block at the top of your next session message. A new context window can use these keys directly without re-running `search_design_system` discovery calls.
