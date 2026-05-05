@@ -132,22 +132,38 @@ button.setProperties({
 | Property         | Value                                                                    |
 | ---------------- | ------------------------------------------------------------------------ |
 | Library          | `cx.asset.text`                                                          |
-| Component key    | `6209e2b0b166983bcb5697be17578479f8bcbfcb`                               |
-| Import with      | `importComponentByKeyAsync` (it is a single component, not a set)        |
-| Text property    | `text#142:1`                                                             |
+| Component key    | **Resolve at runtime** via `search_design_system({ query: 'cx.asset.text', includeComponents: true, includeLibraryKeys: [...] })` — the key differs per team's Chassis library instance |
+| Import with      | `importComponentByKeyAsync(resolvedKey)` (it is a single component, not a set) |
+| Text property    | **Discover at runtime** from `inst.componentProperties` — the logical name is `text` but the full key includes a `#nodeId` suffix that differs per library instance. Find it with: `Object.keys(inst.componentProperties).find(k => k.startsWith('text') && inst.componentProperties[k].type === 'TEXT')` |
 | Default font     | Library-carried; resolved by active brand mode — read via `textNode.fontName`, never hardcode |
 
 ### Procedure
 
+> **Ordering rule:** `parent` must already be appended to its ancestor chain (ultimately reaching the page or a top-level frame) **before** you append the instance to it and call `setProperties`. The font availability check happens in the context of the full ancestor hierarchy. If the parent is a freshly created frame that is not yet part of any placed container, `setProperties` will fail with "component uses a font that isn't available" even though the node was appended to `parent`. Build the frame tree first — wrapper → section → subsection — then add text instances.
+
 ```ts
+// 0. Resolve the component key at the start of the session (once per file).
+//    Never hardcode — keys differ per team's Chassis library instance.
+//    (textAssetKey and textPropKey should be obtained in Step 2 of the workflow
+//    and passed into every text-insertion call.)
+//
+//    Key: search_design_system({ query: 'cx.asset.text', includeComponents: true,
+//           includeLibraryKeys: addedLibraryKeys })  → results.components[0].key
+//
+//    Property: create a temp instance, read componentProperties, remove temp:
+//      const tmp = component.createInstance();
+//      const textPropKey = Object.keys(tmp.componentProperties)
+//        .find(k => k.startsWith('text') && tmp.componentProperties[k].type === 'TEXT');
+//      tmp.remove();
+
 // 1. Insert the component — no font loading needed for this step.
 //    The library carries whatever font the component uses in the active brand mode.
-const component = await figma.importComponentByKeyAsync('6209e2b0b166983bcb5697be17578479f8bcbfcb');
+const component = await figma.importComponentByKeyAsync(textAssetKey); // resolved above
 const inst = component.createInstance();
-parent.appendChild(inst);
+parent.appendChild(inst); // parent must already be in the placed frame tree
 
-// 2. Set text content via component property.
-inst.setProperties({ 'text#142:1': 'Your text here' });
+// 2. Set text content via component property — AFTER appendChild.
+inst.setProperties({ [textPropKey]: 'Your text here' }); // textPropKey resolved above
 
 // 3. Resolve font names at runtime — NEVER hardcode family names.
 //    Chassis font families are typography variables; they resolve differently per brand mode.
@@ -391,16 +407,20 @@ async function insertChassisComponent(
 
 async function chassisText(
   parent: FrameNode | GroupNode,
-  styleKey: string,  // key from search_design_system / get_metadata
+  textAssetKey: string,  // resolved via search_design_system({ query: 'cx.asset.text', ... })
+  textPropKey: string,   // e.g. 'text#<nodeId>' — discovered from componentProperties
+  styleKey: string,      // key from search_design_system / get_metadata
   content: string
 ): Promise<InstanceNode> {
   // 1. Insert Basic Text Asset — no font loading needed for the component itself.
-  const component = await figma.importComponentByKeyAsync('6209e2b0b166983bcb5697be17578479f8bcbfcb')
+  //    textAssetKey and textPropKey must be resolved BEFORE calling this function
+  //    (see "Component details" table above for the resolution pattern).
+  const component = await figma.importComponentByKeyAsync(textAssetKey)
   const inst = component.createInstance()
   parent.appendChild(inst)
 
   // 2. Set text content via the component's text property.
-  inst.setProperties({ 'text#142:1': content })
+  inst.setProperties({ [textPropKey]: content })
 
   // 3. Resolve and load both fonts dynamically — brand-agnostic.
   const textNode = inst.findOne(n => n.type === 'TEXT') as TextNode
@@ -464,7 +484,7 @@ Reject these when working in Chassis:
 - ❌ **`figma.createText()` for standalone text in Chassis** — always use Basic Text Asset instead. See [Basic Text Asset — Standalone Text in Chassis](#basic-text-asset--standalone-text-in-chassis).
 - ❌ **`textNode.fontName = { family, style }`** — raw font assignment bypasses text styles; use `importStyleByKeyAsync` + `setTextStyleIdAsync`.
 - ❌ **`textNode.fontSize`, `.letterSpacing`, `.lineHeight` (raw)** — all typography properties must come from a `font/*` text style, never assigned directly.
-- ❌ **`instance.setExplicitVariableModeForCollection()` on a component instance** — Chassis components resolve variable modes automatically from the library. Setting modes on individual instances overrides that context and causes wrong font/color resolution. Only set variable modes on **wrapper frames**.
+- ❌ **`node.setExplicitVariableModeForCollection()` on any node** — never call this in a Chassis workflow. Brand, Theme, and App mode configuration is the designer's responsibility; it must be set manually in Figma, not by the MCP agent. Calling it on instances causes wrong font/color resolution; calling it on wrapper frames overrides the intended library context and produces non-reproducible designs.
 
 ### Token & variable
 
@@ -490,6 +510,7 @@ Reject these when working in Chassis:
 - ❌ **Converting frames to auto-layout opportunistically** — only when user requests structural cleanup
 - ❌ **Losing position info** — when replacing inside a non-auto-layout parent, preserve `x`, `y`, `width`, `height` explicitly
 - ❌ **Detached instances** — never detach a library component to "fix" a missing variant; either use a different component, compose, or report blocked
+- ❌ **`counterAxisAlignItems = 'FLEX_END'` (or any CSS-style enum value)** — the Figma Plugin API does not accept CSS alignment values. Valid values for `counterAxisAlignItems` are `'MIN' | 'MAX' | 'CENTER' | 'BASELINE'`; for `primaryAxisAlignItems` they are `'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN'`. For bottom-alignment in a `HORIZONTAL` auto-layout, use `counterAxisAlignItems = 'MAX'`.
 
 ### Workflow
 

@@ -66,10 +66,18 @@ This recipe works unchanged for:
 
 ```ts
 // No font loading before component insertion — library carries fonts automatically.
-const component = await figma.importComponentByKeyAsync('6209e2b0b166983bcb5697be17578479f8bcbfcb')
+//
+// IMPORTANT: Do NOT hardcode the component key or property key here.
+// Both vary per team's Chassis library instance and must be resolved at runtime:
+//   - textAssetKey: search_design_system({ query: 'cx.asset.text', includeComponents: true,
+//       includeLibraryKeys: addedLibraryKeys }) → results.components[0].key
+//   - textPropKey:  Object.keys(inst.componentProperties)
+//       .find(k => k.startsWith('text') && inst.componentProperties[k].type === 'TEXT')
+//     (create a temp instance, read props, remove it — do this once per session)
+const component = await figma.importComponentByKeyAsync(textAssetKey)  // resolved above
 const inst = component.createInstance()
 parent.appendChild(inst)
-inst.setProperties({ 'text#142:1': content })
+inst.setProperties({ [textPropKey]: content })  // textPropKey resolved above
 
 // Then apply the text style using the universal recipe above:
 const textNode = inst.findOne(n => n.type === 'TEXT')
@@ -141,7 +149,7 @@ Pattern: `font/{family}/{size}/{weight}`
 - ❌ **Skipping `figma.loadFontAsync()` before `setTextStyleIdAsync`** — `setTextStyleIdAsync` does NOT auto-load fonts. Always load both the node's current font (`textNode.fontName`) and the style's target font (`style.fontName`) before calling it.
 - ❌ **Hardcoding font family names in `loadFontAsync` calls** — Chassis font families are resolved through typography variables whose values depend on the active brand collection mode. Hardcoding names like `Archivo Narrow` or `Helvetica Neue` silently breaks when a different brand mode is active. Use `textNode.fontName` and `style.fontName` to resolve font names at runtime.
 - ❌ **`figma.loadFontAsync()` before component insertion** — component instances carry their own font context from the library. Font loading is only needed immediately before `setTextStyleIdAsync`, not before `importComponentByKeyAsync` / `importComponentSetByKeyAsync` / `createInstance()`.
-- ❌ **`figma.createText()` for standalone text in Chassis** — always use Basic Text Asset (`importComponentByKeyAsync('6209e2b0b166983bcb5697be17578479f8bcbfcb')`) instead.
+- ❌ **`figma.createText()` for standalone text in Chassis** — always use Basic Text Asset (`cx.asset.text`). Resolve its component key at runtime via `search_design_system` scoped to the file's linked libraries — never hardcode the key.
 - ❌ **Binding only `typography/fontSize/*` (or any single typography variable)** instead of applying the full `font/*` text style.
 - ❌ **Calling `font/text/medium/normal` a "variable" or "token"** — it's a **text style**. Variables are the things _inside_ it (`typography/*`).
 - ❌ **Setting `textStyleId` synchronously** for library styles — use `setTextStyleIdAsync`.

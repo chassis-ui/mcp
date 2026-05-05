@@ -201,7 +201,8 @@ Record it immediately in your working notes:
 cx.comp.navbar       → c1e2dd8018e1440a72748d542c3adc2e1dfbc03d  (size=small)
 cx.comp.tab          → a5a682e0178815555c38ba7ce3d8544b7d895ded  (variant=top)
 font/display/small/mass → 472f0ee1366d54724816222ad36095dea2506f89
-theme collection     → VariableCollectionId:f99b4c5f.../302:8
+property ID        → text#142:1
+variable collection     → VariableCollectionId:f99b4c5f.../302:8
 light mode ID        → 302:4
 ```
 
