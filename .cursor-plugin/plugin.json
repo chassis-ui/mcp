@@ -1,7 +1,7 @@
 {
   "name": "chassis-ui",
   "displayName": "Chassis UI",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Chassis UI skills and MCP server for AI agents working with the Chassis design system",
   "author": {
     "name": "Chassis UI"
