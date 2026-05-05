@@ -4,5 +4,6 @@
   "version": "0.1.2",
   "author": {
     "name": "Chassis UI"
-  }
+  },
+  "skills": "./skills/"
 }
