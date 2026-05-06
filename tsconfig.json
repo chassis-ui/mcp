@@ -6,10 +6,9 @@
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "rootDir": "api",
     "outDir": "dist",
     "types": ["node"]
   },
-  "include": ["api/**/*"],
+  "include": ["server/**/*", "api/**/*"],
   "exclude": ["node_modules", "dist"]
 }

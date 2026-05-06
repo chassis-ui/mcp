@@ -2,9 +2,10 @@ dist/
 
 # Claude Code
 .claude/worktrees/
+.claude/*.local.json
 
 # Generated
-api/_content.generated.ts
+server/content.generated.ts
 
 # OS
 ._*

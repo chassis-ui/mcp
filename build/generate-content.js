@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const OUT = join(ROOT, 'api/_content.generated.ts')
+const OUT = join(ROOT, 'server/content.generated.ts')
 
 const PATHS = ['prompts/chassis-ui.prompt.md', ...collectMd('skills')]
 
@@ -31,7 +31,7 @@ const entries = PATHS.map((p) => {
   return `  '${p}': \`${escaped}\``
 })
 
-const output = `// AUTO-GENERATED — do not edit. Run \`pnpm run generate\` to regenerate.
+const output = `// AUTO-GENERATED — do not edit. Run \`pnpm generate\` to regenerate.
 export const CONTENT: Record<string, string> = {
 ${entries.join(',\n')}
 }
