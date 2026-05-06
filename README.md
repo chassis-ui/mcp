@@ -6,6 +6,8 @@ MCP server and agent skills for working with the **Chassis UI** design system �
 
 Add the Chassis UI MCP server to your editor or agent configuration:
 
+Then add to your project's `.mcp.json`:
+
 ```json
 {
   "mcpServers": {
@@ -20,6 +22,19 @@ Once connected, the server exposes:
 
 - **Resources** — all skill and reference files, readable by your agent on demand
 - **Prompt** — `/chassis-ui` — one-shot command to build or reconnect a Figma screen using the Chassis UI library
+- **Tools** — `chassis_create_design`, `chassis_implement_design`, `chassis_get_reference`
+
+### Using slash commands
+
+Copy the skills into Claude Code's global skills directory and add the MCP server to your project:
+
+```bash
+git clone https://github.com/chassis-ui/mcp chassis-mcp
+cp -r chassis-mcp/skills/chassis-create-design ~/.claude/skills/
+cp -r chassis-mcp/skills/chassis-implement-design ~/.claude/skills/
+```
+
+Restart Claude Code. `/chassis-create-design` and `/chassis-implement-design` will appear in slash command autocomplete.
 
 ## Overview
 
