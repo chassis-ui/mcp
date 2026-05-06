@@ -1,0 +1,20 @@
+{
+  "name": "chassis-ui",
+  "description": "Chassis UI skills and MCP server for AI agents working with the Chassis design system",
+  "owner": {
+    "name": "Chassis UI"
+  },
+  "plugins": [
+    {
+      "name": "chassis-ui",
+      "source": {
+        "source": "github",
+        "repo": "chassis-ui/mcp"
+      },
+      "description": "Chassis UI skills and MCP server for AI agents working with the Chassis design system",
+      "homepage": "https://github.com/chassis-ui/mcp",
+      "repository": "https://github.com/chassis-ui/mcp",
+      "keywords": ["chassis-ui", "chassis", "figma", "design", "mcp", "ui"]
+    }
+  ]
+}
