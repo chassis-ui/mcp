@@ -1,5 +1,8 @@
 dist/
 
+# Claude Code
+.claude/worktrees/
+
 # Generated
 api/_content.generated.ts
 

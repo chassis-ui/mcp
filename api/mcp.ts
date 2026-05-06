@@ -88,7 +88,7 @@ function stripFrontmatter(content: string): string {
 function createServer(): McpServer {
   const server = new McpServer({
     name: 'chassis-ui',
-    version: '0.1.0'
+    version: '0.1.4'
   })
 
   for (const resource of RESOURCES) {
