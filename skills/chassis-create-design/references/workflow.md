@@ -71,7 +71,7 @@ For each section in order:
 
 ### Phase 4: Multi-Theme Validation (if applicable)
 
-16. **Switch the screen frame to each target mode** (Theme: Dark, Brand: B, etc.)
+16. **Ask the designer to switch the screen frame to each target mode** in Figma (Theme: Dark, Brand: B, etc.) — this is a manual action in the Appearance panel, not a programmatic step.
 
 17. **Inspect each section** in the alternate mode. Watch for:
     - Hardcoded colors that don't invert
@@ -159,17 +159,6 @@ For each replacement (one at a time):
 
 ## Common Procedures
 
-### Importing a Component
-
-```
-1. search_design_system({ query: "button-smooth" })
-2. → returns componentKey "abcdef..."
-3. use_figma to insert instance with that key into target frame
-4. Set position (or rely on auto-layout)
-5. Set variants
-6. Set Asset text overrides
-```
-
 ### Overriding Asset Text
 
 ```
@@ -179,14 +168,75 @@ For each replacement (one at a time):
 4. Set TEXT property on the asset instance (not parent)
 ```
 
-### Section-Level Theme Switch
+### Section-Level Theme Switch *(designer action — not the agent)*
 
+> **This is a manual Figma action performed by the designer, not a programmatic step.** The agent must never call `setExplicitVariableModeForCollection` for any reason. If a theme or brand switch is needed, ask the designer to do it.
+
+Designer steps in Figma:
 ```
 1. Select section frame
 2. Open Appearance panel → Apply variable mode
 3. Set Brand / Theme / App as needed
 4. Validate visual integrity
 ```
+
+### Session Context — Capture and Hand Off Discovered Keys
+
+Component keys, text style keys, and variable IDs are resolved at runtime via `search_design_system` and `get_metadata`. These lookups take several tool calls. Once discovered, they should be captured and carried forward so they aren't re-discovered from scratch in the next session or context window.
+
+**During a build session — after each component or style key is confirmed:**
+
+Record it immediately in your working notes:
+
+```
+# Discovered keys (file: <fileKey>)
+cx.comp.navbar          → <componentKey>  (variant: size=small)
+cx.comp.tab             → <componentKey>  (variant: variant=top)
+cx.asset.text           → <componentKey>  (textPropKey: text#<nodeId>)
+font/display/small/mass → <styleKey>
+font/text/medium/normal → <styleKey>
+color/context/default/bg-main → <variableId>
+```
+
+> **Keys are always team-specific.** Never copy example keys from docs — always resolve at runtime via `search_design_system` scoped to the file's linked libraries.
+
+**At the end of each session (or when approaching context limit) — emit a session context block:**
+
+```json
+{
+  "_chassisSessionContext": true,
+  "fileKey": "<fileKey>",
+  "pageId": "<pageNodeId>",
+  "wrapperId": "<wrapperNodeId>",
+  "builtSections": ["navbar"],
+  "pendingSections": ["page-header", "tab-bar", "filter-row", "table"],
+  "discoveredKeys": {
+    "components": {
+      "navbar":    { "key": "<key>", "variant": "size=small" },
+      "tab":       { "key": "<key>", "variant": "variant=top" }
+    },
+    "textStyles": {
+      "font/display/small/mass": "<key>",
+      "font/text/medium/mass":   "<key>"
+    },
+    "colorVariables": {
+      "color/context/default/bg-main": "<variableId>"
+    }
+  }
+}
+
+```
+
+Paste this block at the top of your next session message. A new context window can use these keys directly without re-running `search_design_system` discovery calls.
+
+**On session resume — if a session context block is present:**
+
+1. Parse the `discoveredKeys` map
+2. Verify the wrapper node still exists (`get_metadata` on `wrapperId`)
+3. Skip discovery for any component/style already in the map — use the key directly
+4. Proceed to the first item in `pendingSections`
+
+> **Why this matters:** Context window limits are a build constraint, not an exception. Treating session continuity as a first-class concern prevents multi-session builds from re-discovering the same 15 keys every time.
 
 ### Recovering When Stuck
 
@@ -214,3 +264,4 @@ If you cannot complete an action after one attempt:
 - [ ] Multi-theme combinations validated (if applicable)
 - [ ] Original positions preserved in non-auto-layout parents
 - [ ] Deliverable summary written using the Built/Swapped/Composed/Already connected/Blocked format
+- [ ] Session context block emitted (if build is incomplete or context limit is near) — see [Session Context — Capture and Hand Off Discovered Keys](#session-context--capture-and-hand-off-discovered-keys)

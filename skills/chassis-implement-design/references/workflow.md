@@ -102,9 +102,9 @@ For each section, in order (top → bottom for pages, outer → inner for nested
 ### Phase 5: Final Sweep
 
 19. **Run the Chassis lint checklist:**
-    - [ ] No `btn-`, `text-muted`, `bg-light`, `text-primary` (only `fg-primary`), `bg-dark` (only `bg-inverse`)
-    - [ ] No numeric spacing (`p-1`, `m-3`, `g-4`)
-    - [ ] No abbreviated breakpoints (`col-md-`, `d-sm-`, `me-lg-`)
+    - [ ] No Tailwind class names — no `className`, `text-{color}-{n}`, `bg-{color}-{n}`, `p-{n}`, `gap-{n}`, `font-bold`, `rounded-lg`
+    - [ ] No arbitrary Tailwind values — no `p-[14px]`, `bg-[#hex]`, `text-[1.25rem]`
+    - [ ] No abbreviated breakpoints — `medium:`, `large:`, never `md:`, `lg:`, `col-md-`
     - [ ] No `data-bs-*` — all `data-cx-*`
     - [ ] No hyphenated multi-word modifiers — `button primary outline`, not `button-primary-outline`
     - [ ] No leftover `Asset` wrapper divs
@@ -153,8 +153,8 @@ Same as Screen Mode Phase 2 → Phase 5, scoped to the single section node. Skip
 | ------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Empty text in output                        | Looked at top-level instance, missed `*Asset` child | Re-walk node tree for `*Asset` layers; lift their TEXT property                                  |
 | Tailwind classes leaked into output         | Used MCP output verbatim                            | Discard MCP output's class layer; rewrite from scratch using Chassis classes                     |
-| Hyphenated modifier (e.g. `button-primary`) | Treated Chassis like Bootstrap                      | Use space-separated modifiers: `button primary`                                                  |
-| Card content displays wrong                 | Used Bootstrap's `card-body` for content            | Chassis content wrapper is `card-content`; `card-body` is the text paragraph                     |
+| Hyphenated modifier (e.g. `button-primary`) | Copied MCP output class names or Bootstrap habit                      | Use space-separated modifiers: `button primary`                                                  |
+| Card content displays wrong                 | Used `card-body` as the content wrapper instead of `card-content`               | Chassis: `card-content` is the wrapper; `card-body` is the text paragraph                     |
 | Theme switch breaks colors                  | Used raw hex or unit color tokens                   | Replace with `fg-*` / `bg-*` / context-prefix variants                                           |
 | `get_design_context` truncated              | Section too large                                   | Use `get_metadata` first, then per-subsection `get_design_context`                               |
 | No variables returned                       | Used `getLocalVariableCollectionsAsync` only        | Use `get_variable_defs` — that's the source of truth for library variables                       |

@@ -1,10 +1,11 @@
-# Site
-_site
-site/.astro
-site/dist
-site/public
-
 dist/
+
+# Claude Code
+.claude/worktrees/
+.claude/*.local.json
+
+# Generated
+server/content.generated.ts
 
 # OS
 ._*

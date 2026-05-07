@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "chassis-ui": {
+      "name": "Chassis UI",
+      "type": "http",
+      "url": "https://mcp.chassis-ui.com/mcp"
+    },
+    "figma": {
+      "name": "Figma",
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
+    }
+  }
+}

@@ -132,16 +132,10 @@ Most Chassis components share these variant axes — confirm per component:
 
 ## Deprecated / Avoid
 
-### Versioned-name convention
-
 Any component whose name ends with `@ x.x` (e.g. `Dropdown Button @ 0.2`) is **deprecated but not yet unpublished**. It still resolves via the API for backward compatibility but must not be used in new work. The replacement is the same-named component **without** the `@ x.x` suffix (e.g. `Dropdown Button`).
 
 - When `search_design_system` returns both, always pick the unversioned one.
 - When inheriting an existing screen that uses a `@ x.x` instance, treat it as a swap candidate (see [workflow.md → Reconnect Mode](./workflow.md#reconnect-mode--existing-screen-with-detached-layers)).
-
-### Known deprecations
-
-- **`Dropdown Button @ 0.2`** — use `Dropdown Button` (componentKey `b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`).
 
 ## When a Component Doesn't Exist
 

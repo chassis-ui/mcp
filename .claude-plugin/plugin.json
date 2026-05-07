@@ -1,8 +1,15 @@
 {
   "name": "chassis-ui",
-  "description": "Plugin that includes the Chassis UI MCP server and Skills for common workflows",
-  "version": "0.1.0",
+  "displayName": "Chassis UI",
+  "version": "0.1.5",
+  "description": "Chassis UI skills and MCP server for AI agents working with the Chassis design system",
   "author": {
     "name": "Chassis UI"
-  }
+  },
+  "logo": "./Chassis-Icon.svg",
+  "homepage": "https://github.com/chassis-ui/mcp",
+  "repository": "https://github.com/chassis-ui/mcp",
+  "keywords": ["chassis-ui", "chassis", "figma", "design", "mcp", "ui"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
 }

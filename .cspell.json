@@ -1,0 +1,8 @@
+{
+  "version": "0.2",
+  "words": ["chassis"],
+  "language": "en-US",
+  "files": ["**/*.md", "**/*.mdx"],
+  "ignorePaths": [".cspell.json", "*.min.*", "node_modules/", "dist/", ".vercel/"],
+  "useGitignore": true
+}

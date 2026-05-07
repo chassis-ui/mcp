@@ -56,11 +56,11 @@ Chassis Figma variables follow strict namespaces:
 
 ### Border colors
 
-Same as bg/fg roles applied as `border-{emphasis}` (compatible with Bootstrap utility names) or `{context}-border-{emphasis}` for advanced cases. Confirm against the actual stylesheet.
+Same as bg/fg roles applied as `border-{emphasis}` or `{context}-border-{emphasis}` for advanced cases. Confirm against the actual stylesheet.
 
 ### Contexts
 
-`primary`, `secondary`, `success`, `danger`, `warning`, `info`, `neutral`, plus `default` (page-level neutral context, inverted in dark mode), `alternate` (for prominent content, may not inverted in dark mode), `black` (persists black in all color modes), `white` (persists white in all color modes).
+`primary`, `secondary`, `success`, `danger`, `warning`, `info`, `neutral`, plus `default` (page-level neutral context, inverted in dark mode), `alternate` (for prominent content, may not invert in dark mode), `black` (persists black in all color modes), `white` (persists white in all color modes).
 
 ## Typography
 

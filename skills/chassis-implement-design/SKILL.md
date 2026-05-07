@@ -1,6 +1,6 @@
 ---
 name: chassis-implement-design
-description: "Implement a Figma design (made with the Chassis UI Figma library) as production HTML/CSS using Chassis CSS (`@chassis-ui/css`). Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, sidebar, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-implement-design` and adds Chassis-specific class mapping, token translation, Asset Override extraction, component composition, and Brand/Theme/App theming conventions. Do NOT use for: writing INTO Figma (use `chassis-create-design`), pure token/SCSS edits, or non-Chassis design systems."
+description: 'Implement a Figma design (made with the Chassis UI Figma library) as production HTML/CSS using Chassis CSS (`@chassis-ui/css`). Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, sidebar, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-implement-design` and adds Chassis-specific class mapping, token translation, Asset Override extraction, component composition, and Brand/Theme/App theming conventions. Do NOT use for: writing INTO Figma (use `chassis-create-design`), pure token/SCSS edits, or non-Chassis design systems.'
 disable-model-invocation: false
 ---
 
@@ -45,22 +45,45 @@ When the deliverable is **Chassis CSS code** (HTML + Chassis CSS classes; option
 - Target project either depends on `@chassis-ui/css` or includes its built CSS via `chassis.css`
 - Reference docs for the live class system: see [css-classes.md](./references/css-classes.md)
 
-## 🔑 Core Chassis Rule — Bootstrap Is Not Chassis
+## 🔑 Core Chassis Rule — Figma MCP Output Is Not Chassis CSS
 
-Chassis CSS is **not Bootstrap with renames.** The default Figma MCP output is React + Tailwind; treat it as a **structural / visual reference only**, then rewrite to Chassis conventions:
+`get_design_context` returns a **React + Tailwind** code block. **Discard all its class names.** Use it only to understand layer nesting — every style decision must come from `get_variable_defs` tokens, not from Tailwind utilities.
 
-| Concept       | Chassis CSS rule                                                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Modifiers     | **Space-separated** on a single class (`button primary outline large`), never hyphenated (`btn-primary-outline-lg`)                   |
-| Colors (text) | `fg-{role}` — `fg-primary`, `fg-subtle`, `fg-main` (never `text-primary`, `text-muted`)                                               |
-| Colors (bg)   | `bg-{role}` plus context-prefix variants (`primary-bg-evident`)                                                                       |
-| Typography    | `font-{role                                                                                                                           | size}`—`font-h1`, `font-display font-2xlarge`, `font-lead`, `font-strong` |
-| Spacing       | **Semantic scale** — `zero`, `4xsmall`, `xsmall`, `small`, `medium`, `large`, `xlarge`, `2xlarge` … `6xlarge`. Never numeric (`p-3`). |
-| Breakpoints   | `small`, `medium`, `large`, `xlarge`, `2xlarge` (never `sm`/`md`/`lg`/`xl`/`xxl`)                                                     |
-| Behavior data | `data-cx-*` (never `data-bs-*`)                                                                                                       |
-| Card subparts | `card-content` (Bootstrap's `card-body`), `card-body` (Bootstrap's `card-text`) — these flipped                                       |
+### What to use from the MCP output
 
-If you find yourself emitting `btn-`, `text-muted`, `bg-light`, `p-3`, `col-md-*`, `data-bs-*`, or a hyphenated modifier — **stop**, you're producing Bootstrap. See the full Bootstrap → Chassis class map in [css-classes.md](./references/css-classes.md).
+| MCP output part | Use it for | Never use it for |
+| --- | --- | --- |
+| `code` block (React + Tailwind JSX) | Understanding layer nesting and component structure | Emitting class names or inline styles |
+| Resolved hex / rgba / px values | Visual cross-check against screenshot | Writing to code — never emit raw values |
+| Component instance tree (children) | Asset slot discovery and component identification | — |
+| `get_variable_defs` results | **Every** style decision — the sole source of truth | — |
+
+### Tailwind → Chassis quick map
+
+The MCP JSX uses Tailwind utilities and React component syntax. Replace them:
+
+| Tailwind / JSX (MCP output) | Chassis CSS | Note |
+| --- | --- | --- |
+| `className="…"` | `class="…"` | JSX → HTML |
+| `text-{color}-{n}` | `fg-subtle`, `fg-main`, `{ctx}-fg-{emphasis}` | Always from `get_variable_defs` |
+| `bg-{color}-{n}` | `bg-main`, `bg-evident`, `{ctx}-bg-{emphasis}` | Always from `get_variable_defs` |
+| `p-4`, `px-3`, `py-2`, `m-3` | `p-medium`, `px-small`, `py-xsmall`, `m-medium` | Semantic step from token |
+| `gap-4`, `gap-x-2` | `gap-large`, `column-gap-xsmall` | Semantic step from token |
+| `text-xl`, `text-2xl`, `text-sm` | `font-xlarge`, `font-2xlarge`, `font-small` | Confirm via `get_variable_defs` |
+| `font-bold` | `font-strong` | |
+| `font-light` | `font-elegant` | |
+| `rounded-lg`, `rounded-md` | `rounded-{ctx}` | Token from `get_variable_defs` |
+| `flex flex-col` | `d-flex flex-column` | |
+| `grid grid-cols-{n}` | `row` + `col-*` | Use responsive col classes |
+| `hidden` | `d-none` | |
+| `md:`, `lg:`, `sm:`, `xl:`, `2xl:` | `medium:`, `large:`, `small:`, `xlarge:`, `2xlarge:` | Full name — never abbreviated |
+| `data-bs-*` | `data-cx-*` | (rare in MCP output) |
+| `<Button variant="primary">` | `<button class="button primary">` | See [components.md](./references/components.md) |
+| `p-[14px]`, `bg-[#ff0000]` | 🚩 raise to user | Arbitrary values = detached or unknown token |
+
+> **Modifiers are space-separated, never hyphenated:** `button primary outline large` — not `button-primary-outline-large`.
+>
+> ⚠️ **Arbitrary Tailwind values** (`p-[14px]`, `text-[#hex]`, `bg-[rgba(…)]`) mean the design has a detached or undocumented token. Raise it explicitly — never silently emit inline CSS.
 
 ## 🔑 Core Chassis Rule — Asset Layer Extraction
 
@@ -88,6 +111,10 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 - **Run `get_code_connect_map`** for the node before generating code — Chassis components may have Code Connect snippets that already pin the correct Chassis CSS class names. If a mapping exists, use it verbatim.
 - For large screens, use `get_metadata` first to identify section nodes, then fetch each section's context separately.
 
+> ⛔ **The `code` block inside `get_design_context` output is React + Tailwind. Discard it completely — do not adapt it.**
+> The resolved hex/rgba/px values in the style data are also off-limits for emitting CSS. They exist only as a visual cross-check.
+> **You may not emit any color, spacing, or typography style until you have a matching variable name from `get_variable_defs`.** Every style decision must trace back to a token name → Chassis class lookup via [tokens.md](./references/tokens.md). If no variable name covers a property, raise it — do not fall back to inline hex or hardcoded pixel values.
+
 ### Step 3 — Capture Visual Reference
 
 - `get_screenshot` per section as well as the full view — use sections to validate Asset extraction and theme correctness.
@@ -101,6 +128,7 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 ### Step 5 — Translate to Chassis CSS Conventions
 
 - **Discard** the Tailwind utility classes from the MCP output entirely.
+- **Gate on `get_variable_defs`**: before writing any color, spacing, or typography class for an element, confirm you have the variable name for it from `get_variable_defs`. No variable name = raise it to the user; never fall back to a hex value, a Tailwind class, or a numeric pixel value.
 - **Map every Figma variable** returned by `get_variable_defs` to its Chassis CSS class using [tokens.md](./references/tokens.md). Token-bound colors → `fg-*` / `bg-*` / context-prefix variants. Token-bound spacing → semantic spacing utilities. Token-bound type → `font-*` classes.
 - **Identify each Figma component instance** and emit its canonical Chassis CSS HTML pattern from [components.md](./references/components.md). Variants in Figma map to space-separated modifiers (`button primary outline large`).
 - **Lift Asset text** into the wrapping element per the rule above — never emit an `Asset` div as wrapper markup.
@@ -112,18 +140,19 @@ Follow the 7-step workflow defined by `figma-implement-design`. Apply these **Ch
 - **Never hardcode** colors, spacing, typography, radius, border-width — they must resolve to a Chassis class.
 - **Prefer context tokens** (`bg-main`, `fg-subtle`, `space-medium`) over unit/level tokens — context tokens swap correctly across themes/modes; unit tokens do not.
 - **Don't fabricate classes.** If a needed style has no Chassis class, raise it explicitly rather than emitting raw CSS or Tailwind. Custom one-off CSS is allowed only as an inline `style="…"` for non-token values that genuinely don't exist in the system (e.g., a precise pixel offset for an illustration), and must be flagged in the deliverable summary.
-- **Auto-layout in Figma → flex/grid utilities**: `d-flex`, `flex-column`, `gap-{size}`, `justify-content-*`, `align-items-*` (these utility names match Bootstrap; semantic gap sizes do not). See [css-classes.md → Layout](./references/css-classes.md#layout--flex).
+- **Auto-layout in Figma → flex/grid utilities**: `d-flex`, `flex-column`, `gap-{size}`, `justify-content-*`, `align-items-*`. See [css-classes.md → Layout](./references/css-classes.md#layout--flex).
 - **Constraints in Figma → responsive col classes**: `col-12 col-medium-6 col-large-4`.
 
 ### Step 7 — Validate Against Figma
 
 - Apply the parent skill's checklist.
 - **Add Chassis-specific checks:**
-  - All classes are Chassis (no `btn-`, `text-muted`, `bg-light`, `p-3`, `col-md-*`, `data-bs-*`)
+  - All classes are Chassis (no Tailwind leftovers: `className`, `text-{color}-{n}`, `bg-{color}-{n}`, numeric spacing `p-{n}` / `gap-{n}`, abbreviated breakpoints `md:` / `lg:`, arbitrary values `[…]`)
   - All variants are space-separated (`button primary outline`, not `button-primary-outline`)
   - All Asset wrappers were lifted (no leftover `<div class="text-asset">` shells)
   - Theme/mode switching works — render under each target Brand × Theme × App combination if applicable
   - `data-cx-*` behavior attributes present where the component requires JS
+  - **Zero hex colors** in class attributes, inline `style=""`, or a `<style>` block — any hex value that isn't a deliberate non-token art direction override (flagged in the deliverable summary) is a translation error; go back and find the correct Chassis class
 
 ## Component Catalog → Chassis CSS Map
 
@@ -131,7 +160,7 @@ Every documented Chassis component family has a canonical HTML/CSS pattern. The 
 
 - **Buttons** — `<button class="button {context} {style?} {size?}">…</button>` ; groups via `<div class="button-group">…</div>` ; floating, close, dropdown variants
 - **Forms** — `<form>` with `<div class="form-floating | form-outline | form-check">` blocks; pair real `<label>` with `<input class="form-control">` / `<select class="form-select">`
-- **Cards** — `<div class="card">` with `card-content`, `card-title`, `card-body`, `card-footer` (Bootstrap subpart names are flipped)
+- **Cards** — `<div class="card">` with `card-content`, `card-title`, `card-body`, `card-footer` (`card-content` is the body wrapper; `card-body` is the text paragraph inside it — the MCP JSX will often emit these backwards)
 - **Tables** — `<table class="table {variant?}">` with semantic `<thead>/<tbody>` and `<th scope="…">`
 - **Navigation** — `<nav class="navbar">`, `<ul class="nav">` (tabs), `<ul class="pagination">`, `<ol class="breadcrumb">`, mobile nav top/bottom
 - **Surfaces** — Modal, Accordion, Section, Page — wired via `data-cx-toggle` / `data-cx-target` where interactive
@@ -174,18 +203,19 @@ See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
 
 ## Chassis-Specific Critical Rules
 
-1. **No Bootstrap remnants** — no `btn-*`, `text-muted`, `bg-light`, `p-3`, `m-md-2`, `col-md-*`, `data-bs-*`.
+1. **No Tailwind remnants** — no `className`, `text-{color}-{n}`, `bg-{color}-{n}`, numeric spacing (`p-4`, `gap-3`), abbreviated breakpoints (`md:`, `lg:`), or arbitrary values (`p-[14px]`, `bg-[#hex]`).
 2. **Space-separated modifiers** — `button primary outline large`, NOT `button-primary-outline-large`.
 3. **Lift Asset text** — never render Figma `*Asset` wrapper layers as DOM nodes.
 4. **Semantic HTML always** — `<button>` for buttons (not `<div role="button">`), real `<label for>`, `<table>` for tables, `<nav>` for navs.
 5. **Token-bound styles only** — every color/spacing/type/radius decision maps to a Chassis class.
 6. **Context tokens > unit tokens** — `space-medium` not `space-16`; `bg-main` not raw hex.
-7. **`card-content` ≠ Bootstrap's `card-body`** — Chassis flipped these subpart names; double-check during conversion.
+7. **`card-content` ≠ `card-body`** — the MCP output will often use `card-body` for the wrapper; in Chassis that's `card-content`. `card-body` in Chassis is the text paragraph inside `card-content`.
 8. **`data-cx-*` for behaviors** — toggle, target, dismiss, theme, spy, etc.
 9. **Run `get_code_connect_map` first** — if Chassis has a Code Connect snippet for the component, that's the source of truth.
 10. **Run `get_variable_defs`** — never guess token classes; the variable namespaces returned are the ground truth.
 11. **Don't expand hidden Figma sub-layers** — if a layer is hidden in the source, omit it from the markup.
 12. **Don't mix button sizes within an action group; don't mix form styles within a single form** (regular vs floating vs outline).
+13. **Always check border color against `border-main`** — a bare `border` or `border-top` resolves to `border-main` (the default context border color). If the design uses any other border color, pair a color class explicitly: `border border-subtle`, `border-top border-primary`, etc. Matching `border-main` in the design requires no extra class; any other color does.
 
 These extend (do not replace) the rules in `figma-implement-design`. Extended anti-patterns: [patterns.md → Anti-patterns](./references/patterns.md#anti-patterns).
 
@@ -204,7 +234,7 @@ If everything is blocked, say so plainly with the specific failure reason.
 
 ## References
 
-- [css-classes.md](./references/css-classes.md) — Complete Chassis CSS class catalog (typography, colors, spacing, layout, components, data attributes, breakpoints) with the full Bootstrap → Chassis migration map
+- [css-classes.md](./references/css-classes.md) — Complete Chassis CSS class catalog (typography, colors, spacing, layout, components, data attributes, breakpoints)
 - [tokens.md](./references/tokens.md) — Figma token namespaces → Chassis CSS class families translation
 - [components.md](./references/components.md) — Chassis component family → canonical HTML/CSS output snippets
 - [patterns.md](./references/patterns.md) — Asset extraction, theme switching, theme-conditional assets, anti-patterns

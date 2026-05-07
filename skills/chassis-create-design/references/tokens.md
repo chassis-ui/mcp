@@ -311,12 +311,12 @@ Pattern: `shadow/context/{size}` — the four sizes for general design work:
 
 ```ts
 // 1. Resolve the effect style key via search_design_system or get_metadata.
-const style = await figma.importStyleByKeyAsync(effectStyleKey);
+const style = await figma.importStyleByKeyAsync(effectStyleKey)
 
 // 2. Apply.
-node.effectStyleId = style.id;
+node.effectStyleId = style.id
 // or async form:
-await node.setEffectStyleIdAsync(style.id);
+await node.setEffectStyleIdAsync(style.id)
 ```
 
 > After applying, **do not** manually set `node.effects` — that detaches the style link.
