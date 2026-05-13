@@ -169,7 +169,7 @@ Apply to: `{bp}:col-*`, `{bp}:d-*`, `{bp}:flex-*`, `{bp}:text-*`, spacing `{bp}:
 Full HTML patterns are in [components.md](./components.md). Class signatures only:
 
 | Component      | Base + modifiers                                                                                                                 |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | --- | ---------------------------------------------- |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | Button         | `button {context} {style?} {size?} {state?}` (style: `outline`/`smooth`/`link`; size: `small`/`large`)                           |
 | Button group   | `button-group` (wrap multiple `.button`)                                                                                         |
 | Form control   | `form-control`, `form-select`, `form-check-input`, `form-range`, `form-control-color`                                            |
@@ -180,22 +180,22 @@ Full HTML patterns are in [components.md](./components.md). Class signatures onl
 | Chip           | `chip {context}`                                                                                                                 |
 | Avatar         | `avatar {size?}`                                                                                                                 |
 | Modal          | `modal`, `modal-dialog`, `modal-content`, `modal-header`, `modal-body`, `modal-footer`, `modal-title`                            |
-| Offcanvas      | `offcanvas`, `offcanvas-{start                                                                                                   | end                                               | top | bottom}`, `offcanvas-header`, `offcanvas-body` |
+| Offcanvas      | `offcanvas`, `offcanvas-{start \| end \| top \| bottom}`, `offcanvas-header`, `offcanvas-body`                                   |
 | Popover        | `popover`, `popover-header`, `popover-body`                                                                                      |
 | Tooltip        | `tooltip`, `tooltip-inner`, `tooltip-arrow`                                                                                      |
 | Toast          | `toast`, `toast-header`, `toast-body`                                                                                            |
 | Notification   | `notification {context}`                                                                                                         |
 | Progress       | `progress`, `progress-bar`                                                                                                       |
 | Skeleton       | `skeleton`, `skeleton-{shape}`                                                                                                   |
-| Spinner        | `spinner-{border                                                                                                                 | grow}`                                            |
+| Spinner        | `spinner-{border \| grow}`                                                                                                       |
 | Navbar         | `navbar`, `navbar-brand`, `navbar-toggler`, `navbar-collapse`, `navbar-nav`                                                      |
 | Nav            | `nav`, `nav-tabs`, `nav-pills`, `nav-link`, `nav-item`                                                                           |
 | Breadcrumb     | `breadcrumb`, `breadcrumb-item`                                                                                                  |
 | Pagination     | `pagination`, `page-item`, `page-link`                                                                                           |
 | Dropdown       | `dropdown`, `dropdown-toggle`, `dropdown-menu`, `dropdown-item`, `dropdown-divider`                                              |
 | Accordion      | `accordion`, `accordion-item`, `accordion-header`, `accordion-button`, `accordion-collapse`, `accordion-body`                    |
-| Carousel       | `carousel`, `carousel-inner`, `carousel-item`, `carousel-control-{prev                                                           | next}`, `carousel-indicators`, `carousel-caption` |
-| Table          | `table {variant?}` (variants: `table-striped`, `table-bordered`, `table-hover`, `table-sm`)                                      |
+| Carousel       | `carousel`, `carousel-inner`, `carousel-item`, `carousel-control-{prev\| next}`, `carousel-indicators`, `carousel-caption`       |
+| Table          | `table {variant?}` (variants: `striped`, `bordered`, `hoverable`)                                                                |
 | List           | `list-group`, `list-group-item`                                                                                                  |
 | Close button   | `close-button`                                                                                                                   |
 | Icon           | `icon` (often inside `<svg class="icon">`)                                                                                       |
@@ -205,17 +205,17 @@ Full HTML patterns are in [components.md](./components.md). Class signatures onl
 
 Chassis behavior attributes use the `data-cx-*` namespace:
 
-| Behavior                   | Attribute                                        |
-| -------------------------- | ------------------------------------------------ | --------------------------- | --------- | ------- | ------- | --- | -------- | -------- |
-| Toggle a component         | `data-cx-toggle="modal                           | offcanvas                   | dropdown  | tooltip | popover | tab | collapse | button"` |
-| Target selector            | `data-cx-target="#id"`                           |
-| Dismiss component          | `data-cx-dismiss="modal                          | alert                       | offcanvas | toast"` |
-| Scrollspy                  | `data-cx-spy="scroll"` + `data-cx-target="#nav"` |
-| Carousel auto              | `data-cx-ride="carousel"`                        |
-| Theme attribute (document) | `data-cx-theme="dark                             | light"` (or brand-specific) |
-| Slide-to (carousel)        | `data-cx-slide-to="0"`                           |
-| Backdrop                   | `data-cx-backdrop="static                        | true                        | false"`   |
-| Keyboard                   | `data-cx-keyboard="true                          | false"`                     |
+| Behavior                   | Attribute                                                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Toggle a component         | `data-cx-toggle="modal \| offcanvas \| dropdown \| tooltip \| popover \| tab \| collapse \| button"` |
+| Target selector            | `data-cx-target="#id"`                                                                                |
+| Dismiss component          | `data-cx-dismiss="modal \| alert \| offcanvas \| toast"`                                              |
+| Scrollspy                  | `data-cx-spy="scroll"` + `data-cx-target="#nav"`                                                      |
+| Carousel auto              | `data-cx-ride="carousel"`                                                                             |
+| Theme attribute (document) | `data-cx-theme="dark \| light"` (or brand-specific)                                                   |
+| Slide-to (carousel)        | `data-cx-slide-to="0"`                                                                                |
+| Backdrop                   | `data-cx-backdrop="static \| true \| false"`                                                          |
+| Keyboard                   | `data-cx-keyboard="true \| false"`                                                                    |
 
 ## Legacy: Bootstrap → Chassis class migration
 

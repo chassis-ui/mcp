@@ -49,6 +49,8 @@ For each Chassis component family, the canonical Chassis CSS HTML pattern. Use t
 
 ### Regular form (label + control stacked)
 
+> **Chassis uses `form-input` and `form-help` classes** instead of `form-control` and `form-text` for input fields.
+
 ```html
 <form>
   <div class="mb-medium">
@@ -56,10 +58,10 @@ For each Chassis component family, the canonical Chassis CSS HTML pattern. Use t
     <input
       type="email"
       id="email"
-      class="form-control"
+      class="form-input"
       placeholder="you@example.com"
     />
-    <small class="form-text fg-subtle">We'll never share it.</small>
+    <small class="form-help">We'll never share it.</small>
   </div>
 </form>
 ```
@@ -71,18 +73,9 @@ For each Chassis component family, the canonical Chassis CSS HTML pattern. Use t
   <input
     type="email"
     id="email"
-    class="form-control"
+    class="form-input"
     placeholder="you@example.com"
   />
-  <label for="email">Email</label>
-</div>
-```
-
-### Outline label
-
-```html
-<div class="form-outline mb-medium">
-  <input type="email" id="email" class="form-control" />
   <label for="email">Email</label>
 </div>
 ```
@@ -123,22 +116,20 @@ For each Chassis component family, the canonical Chassis CSS HTML pattern. Use t
 ```html
 <div class="card">
   <img class="card-img-top" src="…" alt="" />
-  <div class="card-content">
+  <div class="card-body">
     <h5 class="card-title">Title</h5>
-    <h6 class="card-subtitle fg-subtle">Subtitle</h6>
-    <p class="card-body">Card body content.</p>
+    <h6 class="card-subtitle">Subtitle</h6>
+    <p>Card body content.</p>
     <a href="#" class="button primary small">Action</a>
   </div>
   <div class="card-footer fg-subtle">2 days ago</div>
 </div>
 ```
 
-> **`card-content` is the wrapper.** `card-body` is the text paragraph. (Bootstrap flipped these; Chassis flipped them back.)
-
 ## Tables
 
 ```html
-<table class="table table-striped table-hover">
+<table class="table striped hoverable">
   <thead>
     <tr>
       <th scope="col">Name</th>
@@ -156,8 +147,37 @@ For each Chassis component family, the canonical Chassis CSS HTML pattern. Use t
 </table>
 ```
 
-Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, `table-sm`. Color contexts on rows/cells: `table-primary`, `table-success`, etc.
+> Variants: `striped`, `striped-columns`, `bordered`, `borderless`, `hoverable`. Color contexts on rows/cells: `table-primary`, `table-success`, etc.
 
+`<tr>` and `<td>` Elements can take `active` class.
+
+```
+<tbody>
+  <tr class="active">
+    ...
+  </tr>
+  <tr>
+    <th scope="row">2</th>
+    <td>Jacob</td>
+    <td class="active">Thornton</td>
+    <td>@fat</td>
+  </tr>
+  <tr>
+    ...
+  </tr>
+</tbody>
+```
+
+`<tbody>` and `<tfoot>` elements can take `table-divider` class.
+
+```
+<tbody class="table-divider">
+  ...
+</tbody>
+<tfoot class="table-divider">
+  ...
+</tfoot>
+```
 ## Navigation
 
 ### Navbar
@@ -408,7 +428,7 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 
 ```html
 <span class="avatar">
-  <img src="/avatar.jpg" alt="Jane Doe" />
+  <img class="avatar-image" src="/avatar.jpg" alt="Jane Doe" />
 </span>
 <span class="avatar large">JD</span>
 ```
@@ -417,9 +437,9 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 
 ```html
 <ul class="list-group">
-  <li class="list-group-item active">Item 1</li>
-  <li class="list-group-item">Item 2</li>
-  <li class="list-group-item disabled">Item 3</li>
+  <li class="list-item active">Item 1</li>
+  <li class="list-item">Item 2</li>
+  <li class="list-item disabled">Item 3</li>
 </ul>
 ```
 
@@ -427,30 +447,35 @@ Variants: `table-striped`, `table-bordered`, `table-borderless`, `table-hover`, 
 
 ### Accordion
 
+Accordions use html `<details>` element.
+
 ```html
-<div class="accordion" id="faq">
-  <div class="accordion-item">
-    <h2 class="accordion-header">
-      <button
-        class="accordion-button"
-        data-cx-toggle="collapse"
-        data-cx-target="#faq-1"
-        aria-expanded="true"
-        aria-controls="faq-1"
-      >
-        Question one
-      </button>
-    </h2>
-    <div
-      id="faq-1"
-      class="accordion-collapse collapse show"
-      data-cx-parent="#faq"
-    >
-      <div class="accordion-body">Answer.</div>
-    </div>
+<div class="accordion">
+<details name="example" open>
+  <summary>
+    <span class="accordion-title">Accordion Item #1</span>
+  </summary>
+  <div class="accordion-body">
+    <p>This is the <b>first item's body</b>, shown by default. It will automatically close when another item is opened by clicking its summary element.</p>
   </div>
-</div>
-```
+</details>
+<details name="example">
+  <summary>
+    <span class="accordion-title">Accordion Item #2</span>
+  </summary>
+  <div class="accordion-body">
+    <p>This is the <b>second item's body</b>. It is hidden by default and will open when its summary element is clicked.</p>
+  </div>
+</details>
+<details name="example">
+  <summary>
+    <span class="accordion-title">Accordion Item #3</span>
+  </summary>
+  <div class="accordion-body">
+    <p>This is the <b>third item's body</b>. It is hidden by default and will open when its summary element is clicked.</p>
+  </div>
+</details>
+</div>```
 
 ### Carousel
 
@@ -509,9 +534,13 @@ Chassis ships an icon system via `@chassis-ui/icons` (sprite at `/icons/sprite.s
    ```
    Or, for accessible icons:
    ```html
-   <svg class="icon" role="img" aria-label="Save">
+   <svg class="icon danger 2xlarge" role="img" aria-label="Save">
      <use href="/icons/sprite.svg#icon-save"></use>
    </svg>
+   ```
+   Usage with `<span>` element.
+   ```
+   <span class="icon icon-info-circle-solid"></span>
    ```
 3. Size with utility (`icon icon-large`) or wrapping context. Color via `fg-{role}` on a parent or directly on the svg.
 4. If the icon is **not** in `@chassis-ui/icons`, fall back to the localhost SVG and flag in the deliverable summary.
