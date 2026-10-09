@@ -22,20 +22,22 @@
     "ui"
   ],
   "scripts": {
-    "generate": "node build/generate-content.js",
+    "generate": "node build/generate-css-classes.js && node build/generate-content.js",
     "build": "node build/generate-content.js && tsc --noEmit",
     "dev": "tsx --watch server/dev.ts",
     "inspect": "npx @modelcontextprotocol/inspector http://localhost:3000/mcp",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "change-version": "node build/change-version.js"
+    "change-version": "node build/change-version.js",
+    "generate:css-classes": "node build/generate-css-classes.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@chassis-ui/css": "0.7.2",
     "@eslint/js": "^9.0.0",
     "@types/node": "^22.0.0",
     "@vercel/node": "^5.0.0",

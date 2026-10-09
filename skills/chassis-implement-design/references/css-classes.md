@@ -1,298 +1,243 @@
 # Chassis CSS Class Catalog
 
-Complete class reference for translating Chassis Figma views into Chassis CSS code. Source of truth: `@chassis-ui/css`.
+<!-- AUTO-GENERATED from @chassis-ui/css 0.7.2 by build/generate-css-classes.js. Do not edit; run `pnpm generate:css-classes`. -->
 
-> **Golden rule:** Chassis CSS uses **space-separated modifiers** on a single base class, **semantic spacing/breakpoint names**, and **`fg-*`/`bg-*`** color families. The Figma MCP outputs React + Tailwind — **every class name it produces must be discarded and replaced**. If you find yourself emitting `className`, `text-blue-500`, `p-4`, `gap-3`, `rounded-lg`, or `md:flex`, stop — that's Tailwind. Bootstrap-style classes (`btn-primary`, `text-muted`, `col-md-6`) are equally invalid.
+Every class below exists in `dist/css/chassis.css` of `@chassis-ui/css` 0.7.2. A class that is not here does not exist. Placeholders stand for a dimension of a family:
 
-## Typography
+- `{ctx}` — a context color: `default` `alternate` `primary` `secondary` `neutral` `success` `danger` `warning` `info` `black` `white`
+- `{size}` — a step of the size scale: `zero` `4xs` `3xs` `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` `4xl` `5xl` `6xl`
+- `{level}` — an opacity level: `05` `10` `20` `30` `40` `50` `60` `70` `80` `90` `95`
+- `{n}` — a number (grid lines, spans, twelfths)
 
-### Headings & display
+When a template lists fewer values after it, only those exist. The bracket before a list names the variant prefixes those classes take: `sm:`–`2xl:` are the viewport breakpoints, `@sm:`–`@2xl:` the container-query breakpoints, `max-sm:`–`max-2xl:` the narrower-than variants, `print:`, `dark:` (system preference only in this build) and `hover:` their media states. Write the prefix before the class, with a colon: `md:d-flex`, `@lg:col-span-6`.
 
-| Role                         | Class                                                   |
-| ---------------------------- | ------------------------------------------------------- |
-| H1–H6 (semantic)             | `font-h1` … `font-h6`                                   |
-| Display (largest → smallest) | `font-display font-5xlarge` … `font-display font-large` |
-| Lead paragraph               | `font-lead`                                             |
-| Small text                   | `font-small`                                            |
-| Code / mono                  | `font-code`                                             |
-| Body family                  | `font-text`                                             |
-| HTML semantic family         | `font-html`                                             |
+## Scales
 
-Heading utility equivalents on non-`<h*>` elements: pair `font-{size}` (`font-2xlarge`, `font-xlarge`, …, `font-large`) with optional `font-display` for the display family.
+### Breakpoints
 
-### Sizes
+| Name  | Prefix | Min width |
+| ----- | ------ | --------- |
+| `xs`  | none   | 0         |
+| `sm`  | `sm:`  | 36rem     |
+| `md`  | `md:`  | 48rem     |
+| `lg`  | `lg:`  | 64rem     |
+| `xl`  | `xl:`  | 80rem     |
+| `2xl` | `2xl:` | 96rem     |
 
-`font-5xlarge`, `font-4xlarge`, `font-3xlarge`, `font-2xlarge`, `font-xlarge`, `font-large`, `font-medium`, `font-small`, `font-xsmall`, `font-2xsmall`.
+### Spacing
 
-### Weights
+The values of the default tokens (`--cx-space-*`); a project with its own tokens has other values under the same names.
 
-| Tailwind                       | Bootstrap   | Chassis        |
-| ------------------------------ | ----------- | -------------- |
-| `font-light`                   | `fw-light`  | `font-elegant` |
-| `font-normal`                  | `fw-normal` | `font-normal`  |
-| `font-semibold`, `font-bold`   | `fw-bold`   | `font-strong`  |
-| `font-extrabold`, `font-black` | `fw-bolder` | `font-mass`    |
+`zero` 0rem · `4xs` 0.0625rem · `3xs` 0.125rem · `2xs` 0.25rem · `xs` 0.5rem · `sm` 0.75rem · `md` 1rem · `lg` 1.25rem · `xl` 1.5rem · `2xl` 1.75rem · `3xl` 2rem · `4xl` 2.25rem · `5xl` 2.5rem · `6xl` 3rem
 
-### Alignment / transform
+## Utilities and helpers
 
-`text-start`, `text-center`, `text-end`, `text-uppercase`, `text-lowercase`, `text-capitalize`, `text-wrap`, `text-nowrap`, `text-truncate`.
+### Display
 
-## Colors
+- [sm:–2xl:, @sm:–@2xl:, print:, dark:] `d-block`, `d-flex`, `d-grid`, `d-inline`, `d-inline-block`, `d-inline-flex`, `d-inline-grid`, `d-none`, `d-table`, `d-table-cell`, `d-table-row`
 
-### Foreground (text)
+### Flex
 
-**Default-context emphases** (no prefix — these inherit the page's neutral context and invert in dark mode):
+- [sm:–2xl:, @sm:–@2xl:] `align-content-around`, `align-content-between`, `align-content-center`, `align-content-end`, `align-content-start`, `align-content-stretch`, `align-items-baseline`, `align-items-center`, `align-items-end`, `align-items-start`, `align-items-stretch`, `align-self-auto`, `align-self-baseline`, `align-self-center`, `align-self-end`, `align-self-start`, `align-self-stretch`, `flex-column`, `flex-column-reverse`, `flex-fill`, `flex-grow-0`, `flex-grow-1`, `flex-nowrap`, `flex-row`, `flex-row-reverse`, `flex-shrink-0`, `flex-shrink-1`, `flex-wrap`, `flex-wrap-reverse`, `justify-content-around`, `justify-content-between`, `justify-content-center`, `justify-content-end`, `justify-content-evenly`, `justify-content-start`, `justify-items-center`, `justify-items-end`, `justify-items-start`, `justify-items-stretch`, `justify-self-auto`, `justify-self-center`, `justify-self-end`, `justify-self-start`, `justify-self-stretch`, `order-{n}` ({n}: 1 2 3 4 5), `order-0`, `order-first`, `order-last`, `place-content-around`, `place-content-between`, `place-content-center`, `place-content-end`, `place-content-evenly`, `place-content-start`, `place-content-stretch`, `place-items-center`, `place-items-end`, `place-items-start`, `place-items-stretch`, `place-self-auto`, `place-self-center`, `place-self-end`, `place-self-start`, `place-self-stretch`
 
-| Role                       | Class          |
-| -------------------------- | -------------- |
-| Main (strongest body text) | `fg-main`      |
-| Subtle (muted body text)   | `fg-subtle`    |
-| Slight (lightest readable) | `fg-slight`    |
-| Highlight                  | `fg-highlight` |
-| Solid                      | `fg-solid`     |
-| Inverse                    | `fg-inverse`   |
+### Grid
 
-**Per-context shortcut utilities** (each resolves to the context's `main` emphasis):
+- [sm:–2xl:, @sm:–@2xl:] `auto-cols-auto`, `auto-cols-fr`, `auto-cols-max`, `auto-cols-min`, `auto-rows-auto`, `auto-rows-fr`, `auto-rows-max`, `auto-rows-min`, `col-auto`, `col-end-{n}`, `col-end-auto`, `col-span-{n}` ({n}: 1 2 3 4 5 6 7 8 9 10 11 12), `col-span-full`, `col-start-{n}` ({n}: 1 2 3 4 5 6 7 8 9 10 11 12), `col-start-auto`, `grid-cols-{n}` ({n}: 1 2 3 4 5 6 7 8 9 10 11 12), `grid-cols-none`, `grid-cols-subgrid`, `grid-flow-col`, `grid-flow-col-dense`, `grid-flow-dense`, `grid-flow-row`, `grid-flow-row-dense`, `grid-rows-{n}` ({n}: 1 2 3 4 5 6), `grid-rows-none`, `grid-rows-subgrid`, `row-auto`, `row-end-{n}` ({n}: 1 2 3 4 5 6 7), `row-end-auto`, `row-span-{n}` ({n}: 1 2 3 4 5 6), `row-start-{n}` ({n}: 1 2 3 4 5 6), `row-start-auto`
+- [no variants] `grid`, `grid-fill`
 
-| Context   | Class          |
-| --------- | -------------- |
-| Primary   | `fg-primary`   |
-| Secondary | `fg-secondary` |
-| Neutral   | `fg-neutral`   |
-| Success   | `fg-success`   |
-| Danger    | `fg-danger`    |
-| Warning   | `fg-warning`   |
-| Info      | `fg-info`      |
-| Alternate | `fg-alternate` |
-| Black     | `fg-black`     |
-| White     | `fg-white`     |
+### Gap
 
-For non-`main` emphases on a non-default context, use the canonical prefixed form below: `primary-fg-subtle`, `success-fg-slight`, etc.
+- [sm:–2xl:, @sm:–@2xl:] `column-gap-{size}`, `column-gap-0`, `gap-{size}`, `gap-0`, `row-gap-{size}`, `row-gap-0`
 
-### Background
+### Vertical align
 
-Shortcut utilities: `bg-primary`, `bg-secondary`, `bg-success`, `bg-danger`, `bg-warning`, `bg-info`, `bg-alternate`, `bg-neutral`, `bg-black`, `bg-white` (each resolves to the context's `base-color`).
+- [no variants] `align-baseline`, `align-bottom`, `align-middle`, `align-text-bottom`, `align-text-top`, `align-top`
 
-Default-context background emphases (no prefix): `bg-main`, `bg-even`, `bg-evident`, `bg-highlight`, `bg-solid`, `bg-inverse`.
+### Space between children
 
-### Context-prefixed variants (canonical)
+- [sm:–2xl:, @sm:–@2xl:] `space-x-{size}`, `space-x-0`, `space-y-{size}`, `space-y-0`
 
-`{context}-fg-{emphasis}` and `{context}-bg-{emphasis}` are the **canonical** classes generated from Figma variables. The `fg-{context}` / `bg-{context}` shortcuts above are convenience utilities that resolve to the matching context's `main` emphasis.
+### Divide
 
-```html
-<div class="primary-fg-main">Main primary text</div>
-<div class="primary-fg-subtle">Subtle primary text</div>
-<div class="primary-fg-slight">Slight primary text</div>
-<div class="primary-fg-highlight">Highlighted primary text</div>
-<div class="primary-fg-inverse primary-bg-main">Inverse primary text</div>
+- [sm:–2xl:, @sm:–@2xl:] `divide-x`, `divide-x-0`, `divide-y`, `divide-y-0`
 
-<div class="primary-bg-main">Main primary background</div>
-<div class="primary-bg-evident">Evident primary background</div>
-```
+### Padding
 
-**Contexts (11):** `default`, `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `alternate`, `neutral`, `black`, `white`.
+- [sm:–2xl:] `p-{size}`, `p-0`, `pb-{size}`, `pb-0`, `pe-{size}`, `pe-0`, `ps-{size}`, `ps-0`, `pt-{size}`, `pt-0`, `px-{size}`, `px-0`, `py-{size}`, `py-0`
 
-- `default` — page-level neutral context; **inverts in dark mode**. Classes drop the prefix: `color/context/default/fg-main` → `fg-main`.
-- `alternate` — prominent content (e.g., featured / promoted sections); may not invert in dark mode.
-- `neutral` — grayscale / non-semantic accent context.
-- `black` / `white` — persist their literal color in all themes/modes (use sparingly for branding).
-- `primary`–`info` — semantic role colors; invert per theme.
+### Margin
 
-**Emphasis (fg):** `main`, `subtle`, `slight`, `highlight`, `solid`, `inverse`.
-**Emphasis (bg):** `main`, `even`, `evident`, `highlight`, `solid`, `inverse`.
+- [sm:–2xl:] `-m-{size}`, `-mb-{size}`, `-me-{size}`, `-ms-{size}`, `-mt-{size}`, `-mx-{size}`, `-my-{size}`, `m-{size}`, `m-0`, `m-auto`, `mb-{size}`, `mb-0`, `mb-auto`, `me-{size}`, `me-0`, `me-auto`, `ms-{size}`, `ms-0`, `ms-auto`, `mt-{size}`, `mt-0`, `mt-auto`, `mx-{size}`, `mx-0`, `mx-auto`, `my-{size}`, `my-0`, `my-auto`
 
-### Opacity utilities
+### Sizing
 
-`fg-opacity-{level}`, `bg-opacity-{level}` — levels: `main`, `subtle`, `slight`. Combine with a color: `fg-primary fg-opacity-subtle`.
+- [no variants] `dvh-100`, `dvh-25`, `dvh-50`, `dvh-75`, `h-{size}` ({size}: 2xs xs sm md lg xl 2xl), `h-100`, `h-25`, `h-50`, `h-75`, `h-auto`, `max-h-{size}` ({size}: 2xs xs sm md lg xl 2xl), `max-h-100`, `max-h-auto`, `max-w-{size}` ({size}: 2xs xs sm md lg xl 2xl), `max-w-100`, `max-w-auto`, `min-h-{size}` ({size}: 2xs xs sm md lg xl 2xl), `min-h-100`, `min-h-auto`, `min-vh-100`, `min-vh-25`, `min-vh-50`, `min-vh-75`, `min-vw-100`, `min-vw-25`, `min-vw-50`, `min-vw-75`, `min-w-{size}` ({size}: 2xs xs sm md lg xl 2xl), `min-w-100`, `min-w-auto`, `vh-100`, `vh-25`, `vh-50`, `vh-75`, `vw-100`, `vw-25`, `vw-50`, `vw-75`, `w-{size}` ({size}: 2xs xs sm md lg xl 2xl), `w-25`, `w-50`, `w-75`
+- [sm:–2xl:, @sm:–@2xl:] `w-{n}/12` ({n}: 1 2 3 4 5 6 7 8 9 10 11), `w-100`, `w-auto`
 
-## Spacing
+### Foreground color
 
-### Scale (semantic)
+- [no variants] `{ctx}-fg-active`, `{ctx}-fg-disabled`, `{ctx}-fg-highlight`, `{ctx}-fg-hover`, `{ctx}-fg-idle`, `{ctx}-fg-inverse`, `{ctx}-fg-main`, `{ctx}-fg-press`, `{ctx}-fg-slight`, `{ctx}-fg-solid`, `{ctx}-fg-subtle`, `fg-{ctx}`, `fg-{ctx}-contrast`, `fg-a11y`, `fg-active`, `fg-contrast`, `fg-disabled`, `fg-highlight`, `fg-hover`, `fg-idle`, `fg-inverse`, `fg-main`, `fg-opacity-{level}`, `fg-opacity-a11y`, `fg-opacity-slight`, `fg-opacity-solid`, `fg-opacity-subtle`, `fg-opacity-zero`, `fg-press`, `fg-reset`, `fg-slight`, `fg-solid`, `fg-subtle`
 
-`zero`, `4xsmall`, `3xsmall`, `2xsmall`, `xsmall`, `small`, `medium`, `large`, `xlarge`, `2xlarge`, `3xlarge`, `4xlarge`, `5xlarge`, `6xlarge`.
+### Background color
 
-### Properties
+- [no variants] `{ctx}-bg-active`, `{ctx}-bg-disabled`, `{ctx}-bg-even`, `{ctx}-bg-evident`, `{ctx}-bg-highlight`, `{ctx}-bg-hover`, `{ctx}-bg-idle`, `{ctx}-bg-inverse`, `{ctx}-bg-main`, `{ctx}-bg-press`, `{ctx}-bg-solid`, `bg-{ctx}`, `bg-{ctx}-contrast`, `bg-a11y`, `bg-active`, `bg-contrast`, `bg-disabled`, `bg-even`, `bg-evident`, `bg-gradient`, `bg-highlight`, `bg-hover`, `bg-idle`, `bg-inverse`, `bg-main`, `bg-opacity-{level}`, `bg-opacity-main`, `bg-opacity-slight`, `bg-opacity-solid`, `bg-opacity-subtle`, `bg-opacity-zero`, `bg-press`, `bg-reset`, `bg-solid`, `bg-transparent`
 
-- Padding: `p-{size}`, `pt-`, `pe-`, `pb-`, `ps-`, `px-`, `py-`
-- Margin: `m-{size}`, `mt-`, `me-`, `mb-`, `ms-`, `mx-`, `my-` (auto allowed: `mx-auto`, `ms-auto`, `me-auto`)
-- Gap (in flex/grid): `gap-{size}`, `row-gap-{size}`, `column-gap-{size}`
+### Dim (backdrop) color
 
-> Always pick the **named scale step that matches the bound Figma `space/context/{ctx}` token**. Never guess a step from a numeric value (Tailwind's `p-4` or Bootstrap's `p-3`). The token is the only source of truth.
+- [no variants] `{ctx}-dim-main`, `{ctx}-dim-slight`, `{ctx}-dim-subtle`, `dim-main`, `dim-slight`, `dim-subtle`
 
-## Layout & Flex
+### Border
 
-### Containers / grid
+- [no variants] `{ctx}-border-main`, `{ctx}-border-subtle`, `border`, `border-{ctx}`, `border-{size}` ({size}: zero sm md lg xl 2xl), `border-0`, `border-bottom`, `border-bottom-0`, `border-end`, `border-end-0`, `border-main`, `border-opacity-{level}`, `border-opacity-main`, `border-opacity-solid`, `border-opacity-subtle`, `border-opacity-zero`, `border-reset`, `border-start`, `border-start-0`, `border-style-dashed`, `border-style-inherit`, `border-style-none`, `border-style-solid`, `border-subtle`, `border-top`, `border-top-0`, `border-transparent`
 
-- `container`, `container fluid`, `container {breakpoint}`
-- `row`, `col`, `col-{n}`, `{breakpoint}:col-{n}`
-- `g-{size}`, `gx-{size}`, `gy-{size}` (grid gutters)
+### Border radius
 
-### Flex / display utilities
+- [no variants] `rounded`, `rounded-{size}` ({size}: zero xs sm md lg xl 2xl 3xl), `rounded-bottom`, `rounded-bottom-{size}` ({size}: zero xs sm md lg xl 2xl 3xl), `rounded-bottom-circle`, `rounded-bottom-full`, `rounded-circle`, `rounded-end`, `rounded-end-{size}` ({size}: zero xs sm md lg xl 2xl 3xl), `rounded-end-circle`, `rounded-end-full`, `rounded-full`, `rounded-start`, `rounded-start-{size}` ({size}: zero xs sm md lg xl 2xl 3xl), `rounded-start-circle`, `rounded-start-full`, `rounded-top`, `rounded-top-{size}` ({size}: zero xs sm md lg xl 2xl 3xl), `rounded-top-circle`, `rounded-top-full`
 
-`d-flex`, `d-inline-flex`, `d-grid`, `d-block`, `d-inline-block`, `d-inline`, `d-none`, plus responsive variants `{breakpoint}:d--{value}`.
+### Shadow
 
-`flex-row`, `flex-row-reverse`, `flex-column`, `flex-column-reverse`, `flex-wrap`, `flex-nowrap`, `flex-fill`, `flex-grow-{0|1}`, `flex-shrink-{0|1}`.
+- [no variants] `shadow`, `shadow-{size}` ({size}: sm lg), `shadow-emboss`, `shadow-inset`, `shadow-none`
+- [hover:] `shadow-{ctx}`, `shadow-{level}`
 
-`justify-content-start | center | end | between | around | evenly`.
-`align-items-start | center | end | baseline | stretch`.
-`align-self-*`, `align-content-*`.
-
-### Position / sizing
-
-`position-{static|relative|absolute|fixed|sticky}`, `top-0` … `top-100`, `start-0` … `start-100`, `end-0`, `bottom-0`, `translate-middle{-x|-y}`.
-
-`w-25`, `w-50`, `w-75`, `w-100`, `w-auto`, `mw-100`, `vw-100`, `min-vw-100`.
-
-### Borders & radius
-
-- Border presence: `border`, `border-top`, `border-end`, `border-bottom`, `border-start`, `border-0`
-- Border color: `border-{role}` (`border-primary`, `border-success`, …) · default-context emphases: `border-main`, `border-subtle`
-- Border width (semantic): `border-{size}` (where size is a semantic token from the borderWidth family)
-- Radius: `rounded`, `rounded-{ctx}` (semantic, where `ctx` includes `round` for pills/avatars), `rounded-{side}`
-
-> ⚠️ **`border` / `border-{side}` alone resolves to `border-main`** (the default context border color) — not the browser reset. If the design uses `border-main`, no color class is needed. If the design uses any other border color, add a color class explicitly: `border-top border-subtle`, `border border-primary`, etc. Omitting the color class when the design isn't `border-main` is a translation error.
-
-## Breakpoints
-
-| Tailwind prefix | Bootstrap | Chassis   | ≥      |
-| --------------- | --------- | --------- | ------ |
-| `sm:`           | `sm`      | `small`   | 576px  |
-| `md:`           | `md`      | `medium`  | 768px  |
-| `lg:`           | `lg`      | `large`   | 992px  |
-| `xl:`           | `xl`      | `xlarge`  | 1200px |
-| `2xl:`          | `xxl`     | `2xlarge` | 1400px |
-
-Apply to: `{bp}:col-*`, `{bp}:d-*`, `{bp}:flex-*`, `{bp}:text-*`, spacing `{bp}:m{side}-{size}` etc.
-
-## Components — class shortlist
-
-Full HTML patterns are in [components.md](./components.md). Class signatures only:
-
-| Component      | Base + modifiers                                                                                                                 |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Button         | `button {context} {style?} {size?} {state?}` (style: `outline`/`smooth`/`link`; size: `small`/`large`)                           |
-| Button group   | `button-group` (wrap multiple `.button`)                                                                                         |
-| Form control   | `form-control`, `form-select`, `form-check-input`, `form-range`, `form-control-color`                                            |
-| Form blocks    | `form-floating`, `form-outline`, `form-check`, `form-switch`, `form-text`                                                        |
-| Card           | `card`, `card-content`, `card-title`, `card-subtitle`, `card-body`, `card-footer`, `card-img`, `card-img-overlay`, `card-header` |
-| Alert          | `alert {context}`                                                                                                                |
-| Badge          | `badge {context}`                                                                                                                |
-| Chip           | `chip {context}`                                                                                                                 |
-| Avatar         | `avatar {size?}`                                                                                                                 |
-| Modal          | `modal`, `modal-dialog`, `modal-content`, `modal-header`, `modal-body`, `modal-footer`, `modal-title`                            |
-| Offcanvas      | `offcanvas`, `offcanvas-{start \| end \| top \| bottom}`, `offcanvas-header`, `offcanvas-body`                                   |
-| Popover        | `popover`, `popover-header`, `popover-body`                                                                                      |
-| Tooltip        | `tooltip`, `tooltip-inner`, `tooltip-arrow`                                                                                      |
-| Toast          | `toast`, `toast-header`, `toast-body`                                                                                            |
-| Notification   | `notification {context}`                                                                                                         |
-| Progress       | `progress`, `progress-bar`                                                                                                       |
-| Skeleton       | `skeleton`, `skeleton-{shape}`                                                                                                   |
-| Spinner        | `spinner-{border \| grow}`                                                                                                       |
-| Navbar         | `navbar`, `navbar-brand`, `navbar-toggler`, `navbar-collapse`, `navbar-nav`                                                      |
-| Nav            | `nav`, `nav-tabs`, `nav-pills`, `nav-link`, `nav-item`                                                                           |
-| Breadcrumb     | `breadcrumb`, `breadcrumb-item`                                                                                                  |
-| Pagination     | `pagination`, `page-item`, `page-link`                                                                                           |
-| Dropdown       | `dropdown`, `dropdown-toggle`, `dropdown-menu`, `dropdown-item`, `dropdown-divider`                                              |
-| Accordion      | `accordion`, `accordion-item`, `accordion-header`, `accordion-button`, `accordion-collapse`, `accordion-body`                    |
-| Carousel       | `carousel`, `carousel-inner`, `carousel-item`, `carousel-control-{prev\| next}`, `carousel-indicators`, `carousel-caption`       |
-| Table          | `table {variant?}` (variants: `striped`, `bordered`, `hoverable`)                                                                |
-| List           | `list-group`, `list-group-item`                                                                                                  |
-| Close button   | `close-button`                                                                                                                   |
-| Icon           | `icon` (often inside `<svg class="icon">`)                                                                                       |
-| Tooltip target | element with `data-cx-toggle="tooltip"`                                                                                          |
-
-## Data attributes (behaviors)
-
-Chassis behavior attributes use the `data-cx-*` namespace:
-
-| Behavior                   | Attribute                                                                                             |
-| -------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Toggle a component         | `data-cx-toggle="modal \| offcanvas \| dropdown \| tooltip \| popover \| tab \| collapse \| button"` |
-| Target selector            | `data-cx-target="#id"`                                                                                |
-| Dismiss component          | `data-cx-dismiss="modal \| alert \| offcanvas \| toast"`                                              |
-| Scrollspy                  | `data-cx-spy="scroll"` + `data-cx-target="#nav"`                                                      |
-| Carousel auto              | `data-cx-ride="carousel"`                                                                             |
-| Theme attribute (document) | `data-cx-theme="dark \| light"` (or brand-specific)                                                   |
-| Slide-to (carousel)        | `data-cx-slide-to="0"`                                                                                |
-| Backdrop                   | `data-cx-backdrop="static \| true \| false"`                                                          |
-| Keyboard                   | `data-cx-keyboard="true \| false"`                                                                    |
-
-## Legacy: Bootstrap → Chassis class migration
-
-> This section is for **porting existing Bootstrap code** to Chassis, not for Figma translation. When translating from Figma, use the Tailwind → Chassis table above and `get_variable_defs`.
-
-| Bootstrap pattern                      | Chassis pattern                  |
-| -------------------------------------- | -------------------------------- |
-| `btn btn-primary btn-lg`               | `button primary large`           |
-| `btn btn-outline-secondary btn-sm`     | `button secondary outline small` |
-| `btn-link`                             | `button link`                    |
-| `card-body` (wrapper)                  | `card-content`                   |
-| `card-text`                            | `card-body`                      |
-| `badge bg-success` / `text-bg-success` | `badge success`                  |
-| `alert alert-danger`                   | `alert danger`                   |
-| `display-4`                            | `font-display font-2xlarge`      |
-| `lead`                                 | `font-lead`                      |
-| `text-muted`                           | `fg-subtle`                      |
-| `font-monospace`                       | `font-code`                      |
-| `fw-bold`                              | `font-strong`                    |
-| `p-3 mb-4`                             | `p-medium mb-large`              |
-| `col-md-6`                             | `col-medium-6`                   |
-| `d-md-flex`                            | `d-medium-flex`                  |
-| `me-2 ms-auto`                         | `me-xsmall ms-auto`              |
-| `data-bs-toggle="modal"`               | `data-cx-toggle="modal"`         |
-
-## Tailwind → Chassis quick lookup
-
-The Figma MCP code block uses Tailwind utilities and JSX. Discard all of it — use only `get_variable_defs` for style decisions. Common replacements:
-
-| Tailwind / JSX (MCP output)                                       | Chassis CSS                                                                   | Rule                              |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------- |
-| `className="…"`                                                   | `class="…"`                                                                   | JSX → HTML                        |
-| `text-{color}-{n}` (e.g. `text-blue-500`)                         | `fg-{emphasis}` or `{ctx}-fg-{emphasis}`                                   | Always from `get_variable_defs` — never guess from the color name |
-| `bg-{color}-{n}` (e.g. `bg-gray-100`)                             | `bg-main`, `{ctx}-bg-{emphasis}`                                              | Resolve via `get_variable_defs`   |
-| `text-sm` / `text-base` / `text-lg` / `text-xl` / `text-2xl`     | `font-small` / `font-medium` / `font-large` / `font-xlarge` / `font-2xlarge` | Confirm via token                 |
-| `font-bold`, `font-semibold`                                      | `font-strong`                                                                 |                                   |
-| `font-light`                                                      | `font-elegant`                                                                |                                   |
-| `p-{n}` / `px-{n}` / `py-{n}` / `pt-{n}` etc.                   | `p-{step}` / `px-{step}` / `py-{step}` / `pt-{step}` etc.                    | Semantic step from token          |
-| `m-{n}` / `mt-{n}` / `mx-{n}` etc.                               | `m-{step}` / `mt-{step}` / `mx-{step}` etc.                                  | Semantic step from token          |
-| `gap-{n}` / `gap-x-{n}` / `gap-y-{n}`                            | `gap-{step}` / `column-gap-{step}` / `row-gap-{step}`                        | Semantic step from token          |
-| `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`           | `rounded-{ctx}`                                                               | Token from `get_variable_defs`    |
-| `rounded-full`                                                    | `rounded-round`                                                               |                                   |
-| `flex`                                                            | `d-flex`                                                                      |                                   |
-| `flex flex-col`                                                   | `d-flex flex-column`                                                          |                                   |
-| `grid`                                                            | `d-grid`                                                                      |                                   |
-| `hidden`                                                          | `d-none`                                                                      |                                   |
-| `block`                                                           | `d-block`                                                                     |                                   |
-| `inline-flex`                                                     | `d-inline-flex`                                                               |                                   |
-| `items-center` / `items-start` / `items-end`                      | `align-items-center` / `align-items-start` / `align-items-end`                |                                   |
-| `justify-center` / `justify-between` / `justify-start`            | `justify-content-center` / `justify-content-between` / `justify-content-start` |                                  |
-| `w-full`                                                          | `w-100`                                                                       |                                   |
-| `sm:` / `md:` / `lg:` / `xl:` / `2xl:` (prefix)                  | `small:` / `medium:` / `large:` / `xlarge:` / `2xlarge:`                     | Full names — never abbreviated    |
-| `p-[14px]`, `text-[#hex]`, `bg-[rgba(…)]`                        | 🚩 raise to user                                                              | Arbitrary values = detached token |
-
-## Anti-patterns (HARD STOPS)
-
-**Tailwind / MCP output leakage (primary concern — what `get_design_context` emits):**
-
-- ❌ `className="text-blue-500"` → ✅ `class="fg-primary"` (from `get_variable_defs`)
-- ❌ `className="bg-gray-100"` → ✅ `class="bg-main"` (from `get_variable_defs`)
-- ❌ `p-4`, `gap-3`, `m-2` (numeric Tailwind spacing) → ✅ `p-large`, `gap-medium`, `m-xsmall` (semantic step from token)
-- ❌ `rounded-lg` → ✅ `rounded-{ctx}` (token from `get_variable_defs` — never guess the step from Tailwind's size name)
-- ❌ `font-bold` → ✅ `font-strong`
-- ❌ `md:flex`, `lg:col-6` (abbreviated breakpoints) → ✅ `medium:d-flex`, `large:col-6`
-- ❌ `p-[14px]`, `bg-[#0a84ff]` (arbitrary Tailwind values) → 🚩 raise to user, do not emit inline CSS
-
-**Also invalid (Bootstrap-style):**
-
-- ❌ `btn-primary-outline-lg` → ✅ `button primary outline large`
-- ❌ `text-muted` → ✅ `fg-subtle`
-- ❌ `bg-light` → ✅ `bg-main`
-- ❌ `p-3` (numeric) → ✅ `p-medium`
-- ❌ `col-md-6` → ✅ `col-medium-6`
-- ❌ `data-bs-toggle` → ✅ `data-cx-toggle`
-
-**Always invalid (regardless of origin):**
-
-- ❌ `<div class="text-asset">…</div>` (Asset wrapper kept) → ✅ asset text lifted onto its parent semantic element
-- ❌ `style="color:#0a84ff"` for a token color → ✅ `class="fg-primary"`
-- ❌ `card-body` as the outer content wrapper → ✅ `card-content` (in Chassis, `card-body` is the `<p>` inside `card-content`)
+### Opacity
+
+- [no variants] `cue-opacity-{level}`, `cue-opacity-slight`, `cue-opacity-solid`, `cue-opacity-zero`, `opacity-{level}`, `opacity-solid`, `opacity-zero`
+
+### Typography
+
+- [no variants] `attribution`, `blockquote`, `bulletless`, `font-body`, `font-body-{size}` ({size}: sm lg), `font-code`, `font-display`, `font-elegant`, `font-heading`, `font-hero`, `font-html`, `font-icon`, `font-initials`, `font-jumbo`, `font-label`, `font-label-{size}` ({size}: sm lg), `font-lead`, `font-mass`, `font-monospace`, `font-normal`, `font-strong`, `font-text`, `font-title`, `font-title-{size}` ({size}: sm lg), `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `inline`, `text-{size}` ({size}: sm lg), `text-bold`, `text-bolder`, `text-break`, `text-capitalize`, `text-decoration`, `text-decoration-{ctx}`, `text-decoration-{n}` ({n}: 1 2 3 4), `text-decoration-none`, `text-italic`, `text-lh-{size}` ({size}: sm md lg), `text-lh-1`, `text-light`, `text-lighter`, `text-line-through`, `text-lowercase`, `text-mark`, `text-medium`, `text-normal`, `text-nowrap`, `text-regular`, `text-semibold`, `text-truncate`, `text-underline`, `text-uppercase`, `text-wrap`, `underline-offset-{n}` ({n}: 1 2 3), `underline-offset-0`
+- [sm:–2xl:] `font-{size}` ({size}: 2xs xs sm md lg xl 2xl 3xl 4xl 5xl)
+- [sm:–2xl:, @sm:–@2xl:] `text-center`, `text-end`, `text-start`
+- [hover:] `text-decoration-opacity-{level}`, `text-decoration-opacity-slight`, `text-decoration-opacity-solid`, `text-decoration-opacity-subtle`, `text-decoration-opacity-zero`
+
+### Icon
+
+- [no variants] `{ctx}-icon-main`, `{ctx}-icon-slight`, `{ctx}-icon-subtle`, `icon`, `icon-{ctx}`, `icon-adaptive`, `icon-addon`, `icon-link`, `icon-link-hover`, `icon-main`, `icon-only`, `icon-opacity-{level}`, `icon-opacity-slight`, `icon-opacity-solid`, `icon-opacity-subtle`, `icon-opacity-zero`, `icon-reset`, `icon-slight`, `icon-stepper`, `icon-subtle`
+- [sm:–2xl:] `icon-{size}` ({size}: 3xs 2xs xs sm md lg xl 2xl 3xl 4xl)
+
+### Link
+
+- [no variants] `link`, `link-{ctx}`, `stretched-link`
+- [hover:] `link-opacity-{level}`, `link-opacity-slight`, `link-opacity-solid`, `link-opacity-subtle`, `link-opacity-zero`
+
+### Position
+
+- [no variants] `bottom-0`, `bottom-100`, `bottom-25`, `bottom-50`, `bottom-75`, `bottom-auto`, `end-0`, `end-100`, `end-25`, `end-50`, `end-75`, `end-auto`, `fixed-bottom`, `fixed-top`, `position-absolute`, `position-fixed`, `position-relative`, `position-static`, `position-sticky`, `start-0`, `start-100`, `start-25`, `start-50`, `start-75`, `start-auto`, `sticky-column`, `sticky-header`, `top-0`, `top-100`, `top-25`, `top-50`, `top-75`, `top-auto`, `translate-middle`, `translate-middle-x`, `translate-middle-y`, `z-{n}` ({n}: 1 2 3 4 5), `z-0`, `z-n1`
+- [sm:–2xl:] `sticky-bottom`, `sticky-top`
+
+### Overflow, object fit, float, interaction
+
+- [no variants] `contains-inline`, `contains-size`, `overflow-auto`, `overflow-hidden`, `overflow-scroll`, `overflow-visible`, `overflow-x-auto`, `overflow-x-hidden`, `overflow-x-scroll`, `overflow-x-visible`, `overflow-y-auto`, `overflow-y-hidden`, `overflow-y-scroll`, `overflow-y-visible`, `pointer-event-auto`, `pointer-event-none`, `user-select-all`, `user-select-auto`, `user-select-none`
+- [sm:–2xl:, @sm:–@2xl:] `float-end`, `float-none`, `float-start`, `object-fit-contain`, `object-fit-cover`, `object-fit-fill`, `object-fit-none`, `object-fit-scale`
+
+### Ratio
+
+- [no variants] `ratio-16x9`, `ratio-1x1`, `ratio-21x9`, `ratio-4x3`, `ratio-auto`
+
+### Context
+
+- [no variants] `context`
+
+### Helpers
+
+- [no variants] `caret`, `caret-before`, `caret-end`, `caret-start`, `caret-up`, `clearfix`, `directional-icon`, `focus-ring`, `focus-ring-{ctx}`, `last-mb-0`, `last-mb-reset`, `visually-hidden`, `visually-hidden-focusable`, `vr`
+- [sm:–2xl:] `hstack`, `vstack`
+
+### Other
+
+- `caption-top`, `striped-columns`, `submenu-back`, `submenu-stacked`
+
+## Components
+
+For each component: the root class, its subpart classes, the modifiers that appear on the root in the stylesheet, and whether a context color (`primary`, `danger`, …) is written directly on the root ("direct color"). A component without a direct color takes `context {ctx}` instead. State classes such as `active`, `disabled` and `show` are listed where the stylesheet styles them.
+
+### Layout
+
+- `container` — modifiers `2xl`, `fluid`, `lg`, `md`, `sm`, `xl`
+
+### Actions
+
+- `button` — subparts `button-check`, `button-group`, `button-toolbar`; modifiers `active`, `disabled`, `icon-only`, `lg`, `link`, `outline`, `show`, `sm`, `smooth`; direct color
+- `button-group` — subparts `button-group-vertical`; modifiers `lg`, `sm`
+- `close-button` — modifiers `disabled`, `lg`, `sm`
+
+### Forms
+
+- `form-field`
+- `form-label`
+- `col-form-label` — modifiers `lg`, `sm`
+- `form-input` — modifiers `disabled`, `is-invalid`, `is-valid`, `lg`, `plaintext`, `sm`
+- `form-help`
+- `form-floating`
+- `form-check` — modifiers `lg`, `reverse`, `sm`
+- `check-input` — modifiers `is-invalid`, `is-valid`, `lg`, `sm`; direct color
+- `form-card`
+- `form-caret` — modifiers `disabled`
+- `input-group` — modifiers `lg`, `sm`, `vertical`
+- `input-addon`
+- `input-adorn`
+- `form-range` — modifiers `is-invalid`, `is-valid`
+- `form-otp` — subparts `form-otp-separator`; modifiers `is-invalid`, `is-valid`
+- `combobox` — subparts `combobox-no-results`, `combobox-placeholder`, `combobox-search`, `combobox-search-input`, `combobox-value`; modifiers `disabled`, `is-invalid`, `is-valid`
+- `datepicker` — subparts `datepicker-arrow`, `datepicker-arrow-next`, `datepicker-arrow-prev`, `datepicker-column`, `datepicker-content`, `datepicker-controls`, `datepicker-date`, `datepicker-date-btn`, `datepicker-dates`, `datepicker-dates-row`, `datepicker-grid`, `datepicker-header`, `datepicker-header-content`, `datepicker-month`, `datepicker-months`, `datepicker-months-month`, `datepicker-week`, `datepicker-week-day`, `datepicker-week-number`, `datepicker-week-numbers`, `datepicker-week-numbers-content`, `datepicker-week-numbers-title`, `datepicker-wrapper`, `datepicker-year`, `datepicker-years`, `datepicker-years-year`
+- `chip-input` — modifiers `disabled`
+- `strength` — subparts `strength-bar`, `strength-segment`, `strength-text`
+- `valid-feedback`
+- `invalid-feedback`
+- `valid-tooltip`
+- `invalid-tooltip`
+- `validation-icons`
+- `ghost-input` — modifiers `is-invalid`, `is-valid`
+
+### Navigation
+
+- `navbar` — subparts `navbar-brand`, `navbar-expand`, `navbar-nav`, `navbar-text`, `navbar-toggler`, `navbar-toggler-icon`; modifiers `translucent`
+- `nav` — subparts `nav-fill`, `nav-item`, `nav-justified`, `nav-link`, `nav-overflow`, `nav-segments`, `nav-tabs`, `nav-underline`; modifiers `lg`, `sm`
+- `nav-overflow` — subparts `nav-overflow-item`
+- `breadcrumb` — subparts `breadcrumb-item`
+- `pagination` — subparts `pagination-link`; modifiers `bordered`, `grouped`, `lg`, `sm`
+- `stepper` — subparts `stepper-item`, `stepper-overflow`; modifiers `context`, `horizontal`
+- `menu` — subparts `menu-divider`, `menu-header`, `menu-image`, `menu-item`, `menu-item-check`, `menu-item-content`, `menu-item-description`, `menu-item-icon`, `menu-text`; modifiers `context`, `scrollable`, `show`, `translucent`
+
+### Surfaces
+
+- `card` — subparts `card-body`, `card-footer`, `card-group`, `card-header`, `card-header-segments`, `card-header-tabs`, `card-image`, `card-image-bottom`, `card-image-end`, `card-image-start`, `card-image-top`, `card-link`, `card-overlay`, `card-subtitle`, `card-title`; modifiers `lg`, `sm`
+- `accordion` — subparts `accordion-body`, `accordion-title`; modifiers `caret-end`, `context`, `flush`, `lg`, `sm`
+- `collapse` — subparts `collapse-horizontal`
+- `list` — subparts `list-action`, `list-item`; modifiers `flush`, `horizontal`, `numbered`, `outline`, `plain`
+- `table` — subparts `table-divider`, `table-responsive`; modifiers `bordered`, `borderless`, `caption-top`, `context`, `hoverable`, `sticky-column`, `sticky-header`, `striped`, `striped-columns`
+- `dialog` — subparts `dialog-open`, `dialog-static`; modifiers `instant`, `nonmodal`, `scrollable`, `translucent`
+- `modal` — subparts `modal-body`, `modal-footer`, `modal-header`, `modal-title`; modifiers `fullscreen`, `lg`, `md`, `scrollable`, `sm`, `xl`
+- `drawer` — subparts `drawer-body`, `drawer-bottom`, `drawer-end`, `drawer-fit-content`, `drawer-footer`, `drawer-header`, `drawer-start`, `drawer-title`, `drawer-top`; modifiers `hiding`, `sheet`, `translucent`
+- `alert` — subparts `alert-body`, `alert-code`, `alert-footer`, `alert-icon`, `alert-title`
+
+### Feedback
+
+- `notification` — subparts `notification-icon`, `notification-title`; modifiers `solid`; direct color
+- `toast` — subparts `toast-body`, `toast-container`, `toast-footer`, `toast-header`; modifiers `showing`, `translucent`
+- `tooltip` — subparts `tooltip-arrow`, `tooltip-inner`; modifiers `show`
+- `popover` — subparts `popover-arrow`, `popover-body`, `popover-header`
+- `progress` — subparts `progress-bar`, `progress-stacked`
+- `spinner` — subparts `spinner-{ctx}`, `spinner-{size}` ({size}: 3xs 2xs xs sm md lg xl 2xl 3xl 4xl), `spinner-adaptive`, `spinner-border`, `spinner-grow`, `spinner-opacity-slight`, `spinner-opacity-subtle`, `spinner-transparent`
+- `skeleton` — subparts `skeleton-{ctx}`, `skeleton-glow`, `skeleton-wave`
+
+### Data
+
+- `badge` — subparts `badge-adaptive`; modifiers `circle`, `lg`, `outline`, `sm`, `smooth`; direct color
+- `chip` — subparts `chip-input`; modifiers `active`, `disabled`, `lg`, `outline`, `show`, `sm`, `smooth`; direct color
+- `avatar` — subparts `avatar-image`, `avatar-stack`; modifiers `2xl`, `2xs`, `disabled`, `lg`, `md`, `sm`, `smooth`, `xl`, `xs`; direct color
+- `carousel` — subparts `carousel-auto`, `carousel-center`, `carousel-control-play-pause`, `carousel-fade`, `carousel-icon-pause`, `carousel-icon-play`, `carousel-indicators`, `carousel-inner`, `carousel-item`, `carousel-overlay`, `carousel-playing`
+- `tab-content`
+- `tab-pane`
+- `figure` — subparts `figure-caption`
+- `image` — modifiers `fluid`, `thumbnail`
+
+## JavaScript data attributes
+
+Plugins initialize from markup. `data-cx-toggle` values: `button`, `chip`, `collapse`, `combobox`, `datepicker`, `dialog`, `drawer`, `menu`, `nav-overflow`, `popover`, `tab`, `toggler`, `tooltip`.
+
+Attribute names that appear literally in the plugin code: `data-cx-accordion`, `data-cx-autoplay`, `data-cx-chips`, `data-cx-clone`, `data-cx-datepicker-display`, `data-cx-dismiss`, `data-cx-inline`, `data-cx-interval`, `data-cx-original-title`, `data-cx-otp`, `data-cx-overflow-icon`, `data-cx-pause-label`, `data-cx-placement`, `data-cx-play-label`, `data-cx-slide`, `data-cx-slide-to`, `data-cx-spy`, `data-cx-strength`, `data-cx-target`, `data-cx-theme`, `data-cx-toggle`, `data-cx-value`. A plugin also reads each of its options as `data-cx-{option}` on the element (for example `data-cx-backdrop`, `data-cx-keyboard`, `data-cx-placement`, `data-cx-content`, `data-cx-title`); the options of each plugin are in components.md and on its docs page.
+
+## Tailwind entry
+
+`@chassis-ui/css/tailwind` emits 1485 Chassis utilities as Tailwind `@utility` rules under the same names as above, so every Tailwind variant applies to them (`dark:`, `light:`, `hover:`, `sm:`–`2xl:`, `@sm:`–`@2xl:`, `print:`). Components stay plain CSS. These names are excluded from Tailwind core because they are Chassis classes: `caption-top`, `collapse`, `container`, `grid`, `inline`, `list-item`, `outline`, `static`, `table`. The grid placement classes (`col-span-*`, `col-start-*`, `row-span-*`, …) are Tailwind core's own there, with the same declarations as the regular build.

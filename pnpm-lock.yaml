@@ -15,6 +15,9 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
+      '@chassis-ui/css':
+        specifier: 0.7.2
+        version: 0.7.2(@floating-ui/dom@1.8.0)(vanilla-calendar-pro@3.4.0)
       '@eslint/js':
         specifier: ^9.0.0
         version: 9.39.4
@@ -67,6 +70,20 @@ packages:
 
   '@bytecodealliance/preview2-shim@0.17.6':
     resolution: {integrity: sha512-n3cM88gTen5980UOBAD6xDcNNL3ocTK8keab21bpx1ONdA+ARj7uD1qoFxOWCyKlkpSi195FH+GeAut7Oc6zZw==}
+
+  '@chassis-ui/css@0.7.2':
+    resolution: {integrity: sha512-VZTJE7RsQK62503cwsHOeR7t4ug03IRCrs6lVJqqQ3z4U7Rb+ii6/Ics3RbuvoDlPMnsxPU8fz5KmGlh162c0w==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@floating-ui/dom': ^1.7.6
+      postcss-prefix-custom-properties: ^0.1.0
+      tailwindcss: '>=4.1.0'
+      vanilla-calendar-pro: ^3.1.0
+    peerDependenciesMeta:
+      postcss-prefix-custom-properties:
+        optional: true
+      tailwindcss:
+        optional: true
 
   '@edge-runtime/format@2.2.1':
     resolution: {integrity: sha512-JQTRVuiusQLNNLe2W9tnzBlV/GvSVcozLl4XZHk5swnRZ/v6jp8TqR8P7sqmJsQqblDZ3EztcWmLDbhRje/+8g==}
@@ -293,6 +310,15 @@ packages:
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
+
+  '@floating-ui/core@1.8.0':
+    resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
+
+  '@floating-ui/dom@1.8.0':
+    resolution: {integrity: sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg==}
+
+  '@floating-ui/utils@0.2.12':
+    resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
   '@hono/node-server@1.19.14':
     resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
@@ -1946,6 +1972,9 @@ packages:
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
 
+  vanilla-calendar-pro@3.4.0:
+    resolution: {integrity: sha512-HLWjzHOWvMIrjI77tXK5bYzp0s5TeBSrZC247STjcTAdWI7kqEwWT6Xvu20vqdwzF498H1Da8l4WpdgVIGtc1Q==}
+
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
@@ -2014,6 +2043,11 @@ snapshots:
   '@babel/helper-validator-identifier@7.28.5': {}
 
   '@bytecodealliance/preview2-shim@0.17.6': {}
+
+  '@chassis-ui/css@0.7.2(@floating-ui/dom@1.8.0)(vanilla-calendar-pro@3.4.0)':
+    dependencies:
+      '@floating-ui/dom': 1.8.0
+      vanilla-calendar-pro: 3.4.0
 
   '@edge-runtime/format@2.2.1': {}
 
@@ -2161,6 +2195,17 @@ snapshots:
       levn: 0.4.1
 
   '@fastify/busboy@2.1.1': {}
+
+  '@floating-ui/core@1.8.0':
+    dependencies:
+      '@floating-ui/utils': 0.2.12
+
+  '@floating-ui/dom@1.8.0':
+    dependencies:
+      '@floating-ui/core': 1.8.0
+      '@floating-ui/utils': 0.2.12
+
+  '@floating-ui/utils@0.2.12': {}
 
   '@hono/node-server@1.19.14(hono@4.12.16)':
     dependencies:
@@ -4081,6 +4126,8 @@ snapshots:
     dependencies:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
+
+  vanilla-calendar-pro@3.4.0: {}
 
   vary@1.1.2: {}
 

@@ -1,356 +1,230 @@
 # Chassis Implementation Patterns
 
-Patterns and anti-patterns for translating Chassis Figma views into Chassis CSS code.
+## Asset extraction
 
-## Asset Extraction
+Chassis Figma components expose no top-level text property. Text, images and icons live in nested instances whose name ends in `Asset` (`Title Text Asset`, `Label Asset`, `Description Asset`, `Icon Asset`, `Image Asset`).
 
-Chassis components in Figma expose **no top-level text properties**. Text content sits inside nested instances whose name ends in `Asset`.
+1. Walk the instance's children for `*Asset` layers; read TEXT, image hash or icon name.
+2. Pick the semantic element from the asset's role and the parent component.
+3. Put the content inside that element. The Asset layer itself never becomes a DOM node.
+4. If the screenshot shows text that no `*Asset` child carries, drill down with `get_metadata`; the text sits in a deeper instance.
 
-### The rule
+| Asset role                       | Target                                                                                               |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Title / Heading                  | `<h1>`–`<h6>` by outline; `<h3 class="card-title">` in a card, `<h2 class="modal-title">` in a modal |
+| Subtitle                         | `<p class="card-subtitle">` in a card; `<p class="font-lead">` under a page title                    |
+| Label (form)                     | `<label class="form-label" for="…">`                                                                 |
+| Label (button, badge, chip, tab) | the element's own text                                                                               |
+| Description / Body               | `<p>`                                                                                                |
+| Helper                           | `<div class="form-help">`                                                                            |
+| Action                           | text of the `<button>` or `<a>`                                                                      |
+| Icon                             | `<svg class="icon">` or `<i class="icon cx-{name}-{style}">`, see components.md                      |
+| Image                            | `<img>`; `<picture>` when theme-conditional                                                          |
 
-When `get_design_context` returns a Chassis component instance, walk its children. **Any layer whose name ends in `Asset` is a content slot** — its TEXT (or image / icon reference) is the real content; the wrapper itself is a Figma authoring convention with no DOM equivalent.
-
-Don't try to enumerate Asset names ahead of time; the library evolves. Instead:
-
-1. List every child whose name matches `*Asset`.
-2. Read its content (TEXT for text assets, image hash for image assets, icon slug for `Icon Asset`).
-3. Pick the semantic HTML element from the **role implied by the asset's name and its parent component context** (a "Title"-style asset inside a card becomes `<h5 class="card-title">`; the same name inside a page header becomes `<h1>`).
-4. Inline the content into that element. **Do not emit the Asset wrapper as a DOM node.**
-
-### Mapping role → semantic element
-
-The asset's name suffix and its parent component's role together determine the target element. Common patterns (illustrative — confirm against the actual node tree, don't memorize):
-
-| Role suffix in asset name     | Typical target element                                                                         |
-| ----------------------------- | ---------------------------------------------------------------------------------------------- |
-| Title / Heading               | `<h1>`–`<h6>` per outline; `<h5 class="card-title">` inside a card                             |
-| Subtitle                      | `<h6 class="card-subtitle fg-subtle">` inside a card; `<p class="font-lead">` on a page header |
-| Label (form-adjacent)         | `<label class="form-label" for="…">`                                                           |
-| Label (badge / chip / button) | inline content of the wrapping `<span>` / `<button>`                                           |
-| Description / Body            | `<p>` (sometimes `<p class="card-body">` inside a card)                                        |
-| Action                        | inline content of the wrapping `<button>` / `<a>`                                              |
-| Helper                        | `<small class="form-text">`                                                                    |
-| Caption                       | `<figcaption>` or `<small>`                                                                    |
-| Icon                          | `<svg class="icon">` with the resolved sprite reference                                        |
-| Image                         | `<img>` with the transferred asset (or `<picture>` for theme-conditional)                      |
-
-If the asset's role isn't obvious from its name and parent, fall back to the screenshot and pick the element that matches the rendered semantics.
-
-### Example
-
-**Figma instance tree:**
-
+```text
+Card / Vertical (instance)
+├─ Image Asset
+├─ Title Text Asset   TEXT="Roadmap update"
+├─ Subtitle Asset     TEXT="Q2 highlights"
+├─ Description Asset  TEXT="What shipped this quarter…"
+└─ Action Asset       TEXT="Read more"
 ```
-Card / Vertical / Default (instance of @chassis Card)
-├─ Image Asset (image fill)
-├─ Title Text Asset (TEXT="Roadmap update")
-├─ Subtitle Asset (TEXT="Q2 highlights")
-├─ Description Asset (TEXT="What shipped this quarter…")
-└─ Action Asset (TEXT="Read more", icon=arrow-right)
-```
-
-**Emitted Chassis CSS HTML:**
 
 ```html
 <div class="card">
-  <img class="card-img-top" src="/assets/roadmap.jpg" alt="" />
-  <div class="card-content">
-    <h5 class="card-title">Roadmap update</h5>
-    <h6 class="card-subtitle fg-subtle">Q2 highlights</h6>
-    <p class="card-body">What shipped this quarter…</p>
-    <a href="#" class="button primary small">
-      Read more
-      <svg class="icon" aria-hidden="true">
-        <use href="/icons/sprite.svg#icon-arrow-right"></use>
-      </svg>
-    </a>
+  <img class="card-image-top" src="/assets/roadmap.jpg" alt="" />
+  <div class="card-body">
+    <h3 class="card-title">Roadmap update</h3>
+    <p class="card-subtitle">Q2 highlights</p>
+    <p>What shipped this quarter…</p>
+    <a href="#" class="button primary sm me-auto">Read more</a>
   </div>
 </div>
 ```
 
-Note: every `*Asset` wrapper has been **lifted** — no `<div class="text-asset">` survives.
+## Variants → modifiers
 
-### Anti-pattern
+Figma variant props become space-separated classes on the root, in the order `{root} {color} {style} {size} {state}`. States that HTML expresses are attributes, not classes.
+
+| Figma                                                 | Markup                                            |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| `Button / context=primary`                            | `button primary`                                  |
+| `Button / context=primary, style=outline, size=small` | `button primary outline sm`                       |
+| `Button / state=disabled`                             | `button primary` + `disabled`                     |
+| `Badge / context=success`                             | `badge success`                                   |
+| `Card / size=large`                                   | `card lg`                                         |
+| `Card / context=warning`                              | `card context warning`                            |
+| `Tab / state=active`                                  | `nav-link active` + `aria-selected="true"`        |
+| `has-icon=false`, `has-subtitle=false`                | omit the child element; there is no `has-*` class |
+
+Which components take the color directly and which need `context` is in the Components table of css-classes.md ("Direct color").
+
+## The context class
+
+`context {ctx}` re-aims every color variable of a subtree; `solid`, `smooth` and `outline` change the surface treatment. Use it for any component or region whose Figma context is not `default` and that has no direct color class:
 
 ```html
-<!-- ❌ Asset wrappers kept as DOM nodes -->
-<div class="card">
-  <div class="image-asset"><img src="…" /></div>
-  <div class="title-text-asset">Roadmap update</div>
-  <div class="subtitle-asset">Q2 highlights</div>
+<div class="card context warning">…</div>
+<table class="table striped context primary">
+  …
+</table>
+<nav class="navbar md:navbar-expand context primary solid">…</nav>
+<section class="context alternate py-3xl">…</section>
+```
+
+Inside it, `fg-main`, `bg-even`, `border-subtle`, `icon-subtle` and the component colors resolve to the context's palette. Prefer one `context` on the wrapper over per-element `{ctx}-fg-*` classes.
+
+## Layout
+
+### Auto-layout → flex or stacks
+
+| Figma auto-layout      | Classes                                                     |
+| ---------------------- | ----------------------------------------------------------- | ------ | --- | -------- | -------- | ------- |
+| Horizontal             | `d-flex` (or `hstack` for a centered row with `gap-{size}`) |
+| Vertical               | `d-flex flex-column` (or `vstack`)                          |
+| Wrap                   | `flex-wrap`                                                 |
+| Item spacing           | `gap-{size}`                                                |
+| Padding                | `p-{size}`, `px-`, `py-`                                    |
+| Main-axis alignment    | `justify-content-start                                      | center | end | between  | around   | evenly` |
+| Cross-axis alignment   | `align-items-start                                          | center | end | baseline | stretch` |
+| Fill container (child) | `flex-fill` or `w-100`                                      |
+| Hug contents (child)   | `w-auto`                                                    |
+
+### Columns → the grid
+
+Figma column layouts, constraints and breakpoint variants map to CSS Grid. `grid` is twelve tracks with the breakpoint's gutter; items span tracks.
+
+```html
+<div class="container">
+  <div class="grid">
+    <div class="col-span-full md:col-span-6 lg:col-span-4">…</div>
+    <div class="col-span-full md:col-span-6 lg:col-span-4">…</div>
+    <div class="col-span-full lg:col-span-4">…</div>
+  </div>
 </div>
 ```
 
-## Semantic HTML
+- An item with no span class is one track wide, so write `col-span-full` for the mobile layout.
+- `grid-cols-{n}` changes the track count; `grid-fill` makes equal auto-fit columns (card grids, galleries).
+- `col-start-{n}` offsets; `gap-{size}`, `row-gap-`, `column-gap-` override the gutter.
+- A grid inside a component that should respond to its own width uses `@md:col-span-6` and sits inside a `contains-inline` ancestor (or a `grid contained`).
+- `container` centers and pads to the page margin; `container fluid` is full width; `container lg` is full width until `lg`. A grid does not need a container.
 
-Always pick the correct semantic element for the role; class names are styling, not semantics.
+Figma width variants named by breakpoint (`screen-small`, `screen-medium`, `screen-large`) are mobile-first: the smallest variant is the unprefixed layout, each larger one adds a prefixed class.
 
-| Role                      | Element                                                         |
-| ------------------------- | --------------------------------------------------------------- |
-| Action that runs JS       | `<button type="button">`                                        |
-| Action that navigates     | `<a href="…">`                                                  |
-| Form input                | `<input>` / `<textarea>` / `<select>` with paired `<label for>` |
-| Heading                   | `<h1>`–`<h6>` per outline                                       |
-| Navigation region         | `<nav>`                                                         |
-| List                      | `<ul>` / `<ol>` / `<li>`                                        |
-| Tabular data              | `<table>` with `<thead>` / `<tbody>` / `<th scope>`             |
-| Aside / sidebar           | `<aside>`                                                       |
-| Article / card-as-content | `<article>`                                                     |
-| Dialog / modal            | `<dialog>` (or `<div role="dialog">`)                           |
+### Sections and pages
 
-## Themes & Modes
+Figma `Page` and `Section` components have no CSS class. Compose: `<main class="container py-3xl">`, `<section class="py-2xl">` with a `<h2 class="font-heading">`, and a `grid` or `vstack` inside. Mobile navs (`mobile-nav-top`, `mobile-nav-bottom`) are a `navbar` at the top, or a `nav nav-segments` in a `position-fixed bottom-0 w-100` wrapper at the bottom.
 
-Chassis supports multi-theme designs via Brand × Theme × App. In code:
+## Theming
 
-### Document-level toggle
+### Document and subtree
 
 ```html
-<html lang="en" data-cx-theme="dark">
-  …
-</html>
+<html lang="en" data-cx-theme="dark"></html>
 ```
 
-All `fg-*` / `bg-*` / context-prefixed tokens cascade automatically.
-
-### Section-level inversion
-
-If the Figma source has a section that uses an inverse theme (e.g., dark hero on a light page):
-
 ```html
-<section class="bg-inverse" data-cx-theme="dark">
-  <h1 class="font-h1 fg-main">Inverse hero</h1>
+<section class="context alternate" data-cx-theme="dark">
+  <h2 class="font-heading">Inverse hero</h2>
   <p class="fg-subtle">Subtitle</p>
 </section>
 ```
 
+The nearest attribute wins. Colors are `light-dark()` tokens, so every class follows; no `bg-inverse` tricks are needed to invert a section. `data-cx-theme="primary"` and the other context names exist for pages that set a colored theme; use them only when the project does.
+
 ### Theme-conditional assets
 
-Layers gated by a Figma switch variable (`figma/switch/theme/mode-1`) — typically logos and illustrations — translate to **conditional rendering** in code, not display toggles on raw colors:
+A layer gated by `figma/switch/theme/mode-*` (a dark-mode logo, an illustration) becomes conditional markup:
 
 ```html
-<!-- Twin elements, gated by theme attribute -->
-<img class="logo logo-light" src="/logo-light.svg" alt="Brand" />
-<img
-  class="logo logo-dark"
-  src="/logo-dark.svg"
-  alt="Brand"
-  aria-hidden="true"
-/>
-```
-
-```css
-[data-cx-theme='light'] .logo-dark {
-  display: none;
-}
-[data-cx-theme='dark'] .logo-light {
-  display: none;
-}
-```
-
-…or use `<picture>` with `prefers-color-scheme`:
-
-```html
+<!-- Follows the attribute and the system preference -->
 <picture>
   <source srcset="/logo-dark.svg" media="(prefers-color-scheme: dark)" />
   <img src="/logo-light.svg" alt="Brand" />
 </picture>
 ```
 
-### Brand switching
+When the page toggles `data-cx-theme` itself, `<picture>` does not follow the attribute. Native mode: twin images with a `color-mode()` rule in the project's Sass. Tailwind mode: `<img class="d-none dark:d-block" …>` and `<img class="dark:d-none" …>`, which follow both the attribute and the preference.
 
-Brand-level overrides typically scope to a class on the document or a top-level wrapper:
+Brand switches (`figma/switch/brand/*`) are not expressed in markup. A project compiles one brand of `@chassis-ui/tokens`.
 
-```html
-<body class="brand-acme">
-  …
-</body>
-```
+## Native vs Tailwind mode
 
-Confirm the project's actual brand-toggle mechanism before emitting.
+| Concern                         | `native`                                          | `tailwind`                                                                                                                  |
+| ------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Class names                     | css-classes.md                                    | The same names                                                                                                              |
+| Responsive prefixes             | Only on the families that list them               | On every utility                                                                                                            |
+| `dark:` / `light:`              | `dark:` on a few families, system preference only | On every utility; follows `data-cx-theme` and the preference                                                                |
+| `hover:`                        | On shadow, link and decoration opacities          | On every utility                                                                                                            |
+| Grid placement                  | `col-span-*` from Chassis                         | `col-span-*` from Tailwind core, same declarations; numeric gaps (`gap-4`) do not exist                                     |
+| Numeric Tailwind utilities      | Do not exist                                      | Do not exist either: the theme is reset, only Chassis scales remain                                                         |
+| Tailwind names that are Chassis | —                                                 | `grid`, `container`, `table`, `inline`, `list-item`, `collapse`, `outline`, `static`, `caption-top` are the Chassis classes |
+| Runtime-built class names       | Fine                                              | Need the safelist (`@chassis-ui/css/tailwind/safelist.css`) or literal names in source                                      |
+| Extra color utilities           | None                                              | With the bridge: `ring-primary/50`, `bg-primary-70`, gradient stops                                                         |
 
-## Variant → modifier translation
+Markup written with the Chassis names renders the same in both modes. Reach for Tailwind-only variants (`hover:bg-even`, `dark:fg-primary`) only in `tailwind` mode, and say so in the summary.
 
-Figma component variants map to **space-separated modifiers** on the base class, in this conventional order:
+## Semantic HTML
 
-```
-{base} {context} {style?} {size?} {state?}
-```
-
-Examples:
-
-| Figma variants                                        | Chassis class                                      |
-| ----------------------------------------------------- | -------------------------------------------------- |
-| `Button / context=primary`                            | `button primary`                                   |
-| `Button / context=primary, style=outline`             | `button primary outline`                           |
-| `Button / context=primary, style=outline, size=small` | `button primary outline small`                     |
-| `Button / context=primary, state=disabled`            | `button primary` + `disabled` attribute on element |
-| `Badge / context=success`                             | `badge success`                                    |
-| `Alert / context=danger`                              | `alert danger`                                     |
-| `Card / variant=horizontal`                           | `card horizontal` (if defined)                     |
-
-> **State variants** (`disabled`, `loading`, `active`) are typically expressed via element attributes (`disabled`, `aria-busy="true"`, `aria-current="true"`), not class modifiers — confirm per component.
-
-## `has-*` boolean props
-
-Figma components often expose `has-icon`, `has-title`, `has-subtitle`, `has-action` boolean props that toggle nested layer visibility. In code, these become **presence or absence** of the corresponding child element — there is no `has-icon` class to emit. If `has-icon=false`, simply omit the `<svg class="icon">` element.
-
-## Layout translation
-
-### Auto-layout → flex / gap
-
-Figma auto-layout maps to flex utilities:
-
-| Figma direction        | Chassis classes                                                    |
-| ---------------------- | ------------------------------------------------------------------ | ------ | --- | -------- | --------- | -------- |
-| Horizontal             | `d-flex flex-row` (or just `d-flex`)                               |
-| Vertical               | `d-flex flex-column`                                               |
-| Wrap                   | add `flex-wrap`                                                    |
-| Spacing between        | `gap-{semantic}` (resolved from the Figma `space/context/*` token) |
-| Padding                | `p-{semantic}` / `px-` / `py-` / individual sides                  |
-| Alignment (main axis)  | `justify-content-{start                                            | center | end | between  | around    | evenly}` |
-| Alignment (cross axis) | `align-items-{start                                                | center | end | baseline | stretch}` |
-
-### Constraints → responsive grid
-
-Figma constraints (left, right, scale) and breakpoint variants map to Chassis's responsive grid:
-
-```html
-<div class="container">
-  <div class="row g-medium">
-    <div class="col-12 medium:col-6 large:col-4">…</div>
-    <div class="col-12 medium:col-6 large:col-4">…</div>
-    <div class="col-12 medium:col-12 large:col-4">…</div>
-  </div>
-</div>
-```
-
-Breakpoint mapping is fixed: `sm→small`, `md→medium`, `lg→large`, `xl→xlarge`, `xxl→2xlarge`.
-
-## Validation patterns
-
-After implementation:
-
-1. **Visual diff** vs. the per-section `get_screenshot`. Look for spacing, alignment, type mismatches.
-2. **Theme cycle**: render under each Brand × Theme × App combination targeted by the source. Watch for low-contrast text, broken backgrounds, hidden-but-needed assets.
-3. **Class lint**: grep the output for `className` (JSX leak), Tailwind color patterns (`text-\w+-\d+`, `bg-\w+-\d+`), numeric spacing (`p-[0-9]`, `gap-[0-9]`, `m-[0-9]`), arbitrary Tailwind values (`\[`), abbreviated breakpoint prefixes (`md:`, `lg:`, `sm:`, `xl:`, `2xl:`), Asset wrapper class names (`text-asset`, `*-asset`), and hyphenated modifier patterns (`button-primary`).
-4. **Accessibility**: confirm `<label for>`, `aria-*`, `role`, `scope`, `tabindex` per the component patterns in [components.md](./components.md).
-5. **Behavior**: every interactive component carries the matching `data-cx-*` attributes.
+| Role                  | Element                                                                |
+| --------------------- | ---------------------------------------------------------------------- |
+| Action that runs code | `<button type="button">`                                               |
+| Action that navigates | `<a href>`                                                             |
+| Form control          | `<input>` / `<select>` / `<textarea>` with `<label for>`               |
+| Navigation            | `<nav aria-label>`                                                     |
+| List                  | `<ul>` / `<ol>`; `<ul class="list">` for the component                 |
+| Table                 | `<table class="table">` with `<thead>`, `<th scope>`                   |
+| Modal, drawer, alert  | `<dialog>`                                                             |
+| Accordion item        | `<details>` / `<summary>`                                              |
+| Icon                  | `aria-hidden="true"` when decorative, `role="img" aria-label` when not |
 
 ## Anti-patterns
 
-### Tailwind / MCP output leakage
-
-The Figma MCP code block outputs React + Tailwind. Discard it entirely — never adapt it.
-
 ```html
-<!-- ❌ Raw MCP output (Tailwind + JSX) — do not adapt, discard completely -->
-<Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold text-sm">
-  Save
-</Button>
-<p className="text-gray-500 text-sm mt-2">Hint</p>
-<div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+<!-- ❌ MCP output adapted -->
+<div className="bg-white rounded-lg shadow p-6 md:flex gap-4">
   <h2 className="text-xl font-bold text-gray-900">Title</h2>
-  <p className="text-gray-600 mt-2">Body text</p>
 </div>
-<div className="md:flex gap-4 lg:grid-cols-3">…</div>
 
-<!-- ✅ Correct Chassis CSS (classes resolved from get_variable_defs tokens) -->
-<button class="button primary">Save</button>
-<p class="fg-subtle font-small">Hint</p>
+<!-- ✅ Chassis, from the tokens -->
 <div class="card">
-  <div class="card-content">
-    <h5 class="card-title">Title</h5>
-    <p class="card-body">Body text</p>
+  <div class="card-body md:d-flex gap-md">
+    <h3 class="card-title">Title</h3>
   </div>
 </div>
-<div class="medium:d-flex gap-large large:col-4">…</div>
 ```
 
-### Hyphenated modifiers
-
 ```html
-<!-- ❌ -->
-<button class="button-primary-outline-large">…</button>
-<span class="badge-success-soft">…</span>
+<!-- ❌ long names, old breakpoints, old grid, Bootstrap parts -->
+<div class="row">
+  <div class="col-12 col-medium-6 p-medium rounded-round">…</div>
+</div>
+<button class="btn btn-primary btn-lg">…</button>
+<div class="card">
+  <div class="card-content"><p class="card-text">…</p></div>
+</div>
 
 <!-- ✅ -->
-<button class="button primary outline large">…</button>
-<span class="badge success">…</span>
+<div class="grid">
+  <div class="col-span-full md:col-span-6 p-md rounded-full">…</div>
+</div>
+<button class="button primary lg">…</button>
+<div class="card">
+  <div class="card-body"><p>…</p></div>
+</div>
 ```
 
-### Raw colors / spacing
-
 ```html
-<!-- ❌ -->
-<p style="color:#0a84ff; margin-top:24px">Token-bound text</p>
-
-<!-- ✅ -->
-<p class="fg-primary mt-large">Token-bound text</p>
-```
-
-### Asset wrappers kept
-
-```html
-<!-- ❌ -->
+<!-- ❌ Asset wrapper kept; hyphenated modifiers; raw values -->
 <div class="title-text-asset">Heading</div>
+<span class="badge-success-smooth">New</span>
+<p style="color:#0a84ff; margin-top:24px">…</p>
 
 <!-- ✅ -->
-<h2 class="font-h2">Heading</h2>
+<h2>Heading</h2>
+<span class="badge success smooth">New</span>
+<p class="fg-primary mt-xl">…</p>
 ```
 
-### Wrong card subpart names
-
-```html
-<!-- ❌ Wrong subpart names (MCP output and Bootstrap both emit these) -->
-<div class="card">
-  <div class="card-body">
-    <h5 class="card-title">…</h5>
-    <p class="card-text">…</p>
-  </div>
-</div>
-
-<!-- ✅ Chassis subpart names -->
-<div class="card">
-  <div class="card-content">
-    <h5 class="card-title">…</h5>
-    <p class="card-body">…</p>
-  </div>
-</div>
-```
-
-### Mixing form styles in one form
-
-```html
-<!-- ❌ -->
-<form>
-  <div class="form-floating">…</div>
-  <div class="mb-medium"><label>…</label><input class="form-control" /></div>
-  <div class="form-outline">…</div>
-</form>
-
-<!-- ✅ pick one style and stick with it -->
-<form>
-  <div class="form-floating mb-medium">…</div>
-  <div class="form-floating mb-medium">…</div>
-</form>
-```
-
-### Mixing button sizes in a group
-
-```html
-<!-- ❌ -->
-<div class="button-group">
-  <button class="button primary large">Save</button>
-  <button class="button secondary small">Cancel</button>
-</div>
-
-<!-- ✅ -->
-<div class="button-group">
-  <button class="button primary">Save</button>
-  <button class="button secondary">Cancel</button>
-</div>
-```
-
-### Revealing hidden Figma sub-layers
-
-If a layer is hidden in the source, **omit it from the markup**. Do not emit it with `display:none` or `visibility:hidden` "just in case."
+Also wrong: two colors on one root (`button primary success`), mixed sizes in one `button-group`, mixed regular and floating fields in one form, hidden Figma layers emitted with `d-none`, `data-bs-*` attributes, `<div role="button">`.

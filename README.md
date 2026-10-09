@@ -64,28 +64,40 @@ Key behaviours:
 
 ### `chassis-implement-design`
 
-Guides agents through turning a Figma design into code using Chassis UI's component library and token system.
+Guides agents through turning a Figma design into HTML that uses Chassis CSS (`@chassis-ui/css`), in a native CSS project or a Tailwind CSS v4 project that uses the Chassis Tailwind entry.
 
 Use when:
 
-- Translating a Figma screen or component into framework code
-- Mapping Figma design tokens and styles to the correct Chassis UI code equivalents
-- Ensuring component props, variants, and content overrides match the design intent
+- Translating a Figma screen, section, or component into Chassis CSS markup
+- Mapping Figma variables (long names such as `space/context/medium`) to the Chassis classes (short names such as `p-md`)
+- Ensuring component variants, Asset text, theming, and `data-cx-*` behaviors match the design intent
+
+Its class catalog, `references/css-classes.md`, is generated from the compiled stylesheet of the `@chassis-ui/css` dev dependency, so it cannot drift from the framework. After bumping the dependency, regenerate it:
+
+```bash
+pnpm generate:css-classes
+```
+
+Set `CHASSIS_CSS_DIR` to a checkout of `chassis-css/packages/css` to generate from an unreleased build instead.
 
 ## Structure
 
 ```
 api/
-  mcp.ts                          # Vercel serverless MCP handler
+  index.ts                        # Vercel serverless MCP handler
+build/
+  generate-content.js             # Bundles the skills and prompts into server/content.generated.ts
+  generate-css-classes.js         # Generates the implement-design class catalog from @chassis-ui/css
 prompts/
   chassis-ui.prompt.md            # /chassis-ui prompt
+server/                           # MCP server: resources, prompts, tools
 skills/
   chassis-create-design/
     SKILL.md                      # Workflow skill — design screens in Figma with Chassis UI
     references/                   # Component catalog, tokens, patterns, typography, workflow
   chassis-implement-design/
-    SKILL.md                      # Workflow skill — implement Figma designs in code with Chassis UI
-    references/                   # CSS classes, components, tokens, patterns, workflow
+    SKILL.md                      # Workflow skill — implement Figma designs as Chassis CSS HTML
+    references/                   # css-classes (generated), components, tokens, patterns, workflow
 ```
 
 ## Requirements
