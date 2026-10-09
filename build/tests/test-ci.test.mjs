@@ -9,7 +9,9 @@ import { readFile, root } from './helpers.mjs'
 // What CI runs and `test:ci` does not, with the reason
 const NOT_LOCAL = {
   install: 'the dependencies are installed',
-  audit: 'reports only; `check:pnpm` is the audit that fails the job'
+  audit: 'reports only; `check:pnpm` is the audit that fails the job',
+  'docs:links':
+    'the external URLs, which a job that does not block checks; `docs:links:offline` is the rest'
 }
 
 const { scripts } = JSON.parse(readFile(root, 'package.json'))
@@ -22,7 +24,7 @@ const localScripts = scripts['test:ci'].split(' && ').map((command) => command.r
 describe('pnpm test:ci', () => {
   test('finds the steps of the workflow', () => {
     assert.ok(ciScripts.includes('verify'))
-    assert.ok(ciScripts.length >= 8, `${ciScripts.length} steps found`)
+    assert.ok(ciScripts.length >= 12, `${ciScripts.length} steps found`)
   })
 
   test('runs every script the workflow runs', () => {
