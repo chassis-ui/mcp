@@ -9,6 +9,9 @@
     "name": "Chassis UI",
     "url": "https://www.chassis-ui.com"
   },
+  "contributors": [
+    "Ozgur Gunes <o.gunes@gmail.com>"
+  ],
   "homepage": "https://github.com/chassis-ui/mcp",
   "repository": {
     "type": "git",
