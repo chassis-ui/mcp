@@ -1,211 +1,85 @@
 ---
 name: chassis-create-design
-description: 'Build or update a Figma design (screen, page, view, modal, dialog, drawer, sidebar, panel, dashboard, landing page, or any multi-section layout) using the Chassis UI Figma library. Use when the user wants to create, compose, assemble, or reconnect a Figma view from code, a screenshot, a description, or an existing detached layout. Runs on top of the Figma MCP server skills (`figma-use`, `figma-generate-design`) and adds Chassis-specific component, token, asset-override, and theme-switching conventions. Do NOT use for: single-component fixes, generating code FROM Figma (use `chassis-implement-design`), or pure token/variable edits.'
+description: 'Build or update a Figma design (screen, page, modal, dialog, drawer, panel, dashboard, landing page or any multi-section view) from the Chassis UI Figma library: instances of `cx.components.UI`, bound to the variables and styles of `cx.tokens.MAIN`. Use when the user wants to create, compose, assemble or reconnect a Figma view from code, a screenshot, a description or an existing detached layout. Runs on top of the Figma MCP server skills `figma-use` and `figma-generate-design` and adds how the Chassis library is found, read and composed at run time: component names, props and their defaults, text Assets, slots, text styles, tokens and modes. Do NOT use for: a fix inside a single component, generating code FROM Figma (use `chassis-implement-design`), or token and variable edits.'
 disable-model-invocation: false
 ---
 
-# Build / Update Screens and Views using the Chassis UI Figma Library
+# Build Figma screens with the Chassis UI library
 
-This skill specializes the generic Figma screen-building workflow with **Chassis-specific** rules: the Asset Override Pattern, the Chassis token namespaces, the Chassis component catalog, and the Brand/Theme/App multi-mode system.
+This skill builds and repairs Figma views out of the Chassis UI library: every visible element is an instance of `cx.components.UI`, every color, space and font is a variable or style of `cx.tokens.MAIN`. It adds to Figma's own screen-building skills what is particular to Chassis: where a component keeps its text, what its boolean props default to, which containers take their content in a slot, and how the library is found and read at run time, since nothing in it is written down here.
 
-## ❌ NEVER DO IN CHASSIS WORKFLOWS
+## Required Figma MCP skills
 
-These patterns are drawn from generic Figma Plugin API knowledge and look plausible, but they are **wrong in Chassis**. They cause "unloaded font" errors, detached tokens, and visual corruption. Reject them unconditionally, even if they seem to fix a symptom.
+Load `figma-use` (before any `use_figma` call) and `figma-generate-design` (the workflow this skill overlays) from the Figma MCP server, in that order, then this skill. Pass `skillNames: "figma-use,figma-generate-design"` on every `use_figma` call; it is a logging parameter for Figma's skill names, so this skill's name is not passed. If the Figma tools are deferred, load them in one call of the client's tool search: `select:use_figma,search_design_system,get_libraries,get_metadata,get_screenshot,upload_assets`.
 
-| ❌ Prohibited pattern                                                                                                                | Why it's wrong                                                                                                                                                                                                                                                                                                                                                                                                       | ✅ What to do instead                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `node.setExplicitVariableModeForCollection(collection, modeId)` on **any** node — instances, frames, wrapper frames, pages           | Chassis variable modes (brand, theme, app) are managed by the design team through the published library and Figma file structure. Setting modes programmatically — even on wrapper frames — overrides the intended library context, causes wrong font and color resolution, and produces results that can't be reproduced by designers. This is a design system configuration concern, not a task for the MCP agent. | **Never call `setExplicitVariableModeForCollection` in any Chassis workflow.** If a brand or theme switch is needed, ask the designer to set it manually in Figma.                                                                                                                                                                                                                                                                                                                                                                                 |
-| `textNode.fontName = { family: '...', style: '...' }`                                                                                | Raw font property assignment bypasses the Chassis text style system. It produces hardcoded typography that won't respond to theme or brand changes.                                                                                                                                                                                                                                                                  | Use `importStyleByKeyAsync(styleKey)` + `setTextStyleIdAsync(style.id)`. Never set `fontName`, `fontSize`, `letterSpacing`, or `lineHeight` directly.                                                                                                                                                                                                                                                                                                                                                                                              |
-| `textNode.fontSize = 16` / `.letterSpacing` / `.lineHeight`                                                                          | Same as above — raw typography property assignment.                                                                                                                                                                                                                                                                                                                                                                  | Apply a `font/*` text style. All typography properties are encoded in the style.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Raw `fills` with hardcoded color objects                                                                                             | Hardcoded colors don't respond to theme/mode switching.                                                                                                                                                                                                                                                                                                                                                              | Use `setBoundVariableForPaint` with a `color/context/*` variable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Boolean visibility props left at defaults                                                                                            | All `has-*` / `is-*` / `show-*` props default to `true`. A freshly placed component instance shows every optional decoration.                                                                                                                                                                                                                                                                                        | Explicitly set unwanted props to `false` before Asset overrides.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `figma.createText()` for standalone text in Chassis                                                                                  | Raw text nodes have no Chassis token bindings, no theme response, and no Asset Override system. They look identical at placement time but break on theme switch and diverge from the design system.                                                                                                                                                                                                                  | Always use **Basic Text Asset** (`cx.asset.text`). Resolve its component key at runtime via `search_design_system` (scoped to the file's `libraries_added_to_file` keys — see Step 2a-iii). Import with `importComponentByKeyAsync(resolvedKey)`, create an instance, discover the TEXT property key from `componentProperties` (it starts with `text#` — the `#nodeId` suffix varies per library instance), set it via `setProperties({ [textPropKey]: content })`, then apply a `font/*` style via `setTextStyleIdAsync` on the inner TEXT node. |
-| Hardcoded font family names in `loadFontAsync` calls (e.g. `{ family: 'Archivo Narrow', ... }`, `{ family: 'Helvetica Neue', ... }`) | Chassis text styles map to font families through **typography variables** that resolve based on the active **brand collection mode**. The resolved family can differ across projects using Chassis. Hardcoding any family name silently breaks under a different brand mode.                                                                                                                                         | Resolve font names **at runtime**: `await figma.loadFontAsync(textNode.fontName)` for the "from" font, `await figma.loadFontAsync(style.fontName)` for the "to" font (where `style = await figma.importStyleByKeyAsync(key)`). Never hardcode family names. See [typography.md → Universal recipe](./references/typography.md).                                                                                                                                                                                                                    |
+The skill uses `get_libraries`, `search_design_system`, `use_figma`, `get_metadata`, `get_screenshot` and `upload_assets`. Two tools Figma's skill names may not be offered by the client: `generate_figma_design` (the capture of a running web app) and `html_to_figma`. The skill works without them (Step 1 and Step 5 of the overlay say how).
 
-> **One-line summary:** Insert library components, apply `font/*` text styles (never raw typography), use Basic Text Asset for standalone text, bind Chassis variables for all colors/spacing. Never call `setExplicitVariableModeForCollection` on any node.
+To generate code from Figma instead, stop and use `chassis-implement-design`.
 
-## ⛔ Required Figma MCP Skills
+## Modes
 
-This skill is a **specialization layer** that runs on top of the Figma MCP server. The Figma MCP server provides the canonical screen-building skills — load them **before** doing any work in this skill:
-
-| Order | Skill                               | Why                                                                                                                                                                                                                                                                                                                                |
-| ----- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | `figma-use`                         | **MANDATORY before ANY `use_figma` call.** Plugin API rules: color ranges (0–1), font preloading, page context, `setBoundVariableForPaint` returning new paints, `layoutSizingHorizontal/Vertical = 'FILL'` ordering, returning IDs, error recovery. Skipping causes silent, hard-to-debug failures.                               |
-| 2     | `figma-generate-design`             | **MANDATORY for screen/view work.** Provides the canonical 6-step workflow: Understand Deliverable → Collect Components/Variables/Styles → Create Wrapper Frame → Build Sections → Validate & Transfer Images → Update Existing Views. This skill **does not redefine that workflow** — it overlays Chassis-specific rules on top. |
-| 3     | `chassis-create-design` (this file) | Chassis specialization layer — read after the two above.                                                                                                                                                                                                                                                                           |
-
-**Logging:** Pass `skillNames: "figma-use,figma-generate-design,chassis-create-design"` on every `use_figma` call made under this skill. This is a logging parameter — does not affect execution.
-
-If Figma MCP tools appear as deferred tools, batch-load their schemas in **one** `tool_search` call: e.g. `tool_search query="select:use_figma,get_screenshot,get_metadata,search_design_system,generate_figma_design"`.
-
-## When to Use
-
-When the deliverable is a **composed Figma view** built from Chassis library components — full-page screens, modals, dialogs, drawers, sidebars, panels, dashboards, landing pages, or any multi-section container.
-
-| Mode        | Use when                                                                                              |
+| Mode        | Deliverable                                                                                           |
 | ----------- | ----------------------------------------------------------------------------------------------------- |
-| `build`     | Creating a new screen from scratch, or from code / screenshot / description / live URL                |
-| `reconnect` | Replacing detached layers or local wrappers in an existing view with proper Chassis library instances |
+| `build`     | A new view on a page of the target file, from code, a screenshot, a description or a URL              |
+| `reconnect` | An existing view whose detached layers, local wrappers and raw frames become instances of the library |
 
-## When NOT to Use
+Not for: a fix inside one component (edit it directly), code from Figma (`chassis-implement-design`), token or variable edits (`chassis-tokens`, or Figma itself), importing an icon or an image only (`figma-use`).
 
-- **Single targeted component fix** — work directly on the component
-- **Generating code FROM Figma** — switch to `chassis-implement-design`
-- **Pure variable/token edits** — use Figma directly or the `chassis-tokens` repo
-- **Asset/icon import only** — use `figma-use` directly
+## The library
 
-## Prerequisites
+Three team libraries, added to a file by name:
 
-- Figma MCP server connected with: `use_figma`, `search_design_system`, `get_metadata`, `get_screenshot`, `get_design_context`, `generate_figma_design`
-- Target file URL/key (extract `fileKey` and optional `nodeId` from the URL — convert `-` to `:` in nodeId)
-- Chassis library available to the target file (published or linked)
-- Source: code path, screenshot URL, written description, **or live web URL**
+- `cx.components.UI` holds every component, asset and icon, one page per component, with a docs section on each page.
+- `cx.tokens.MAIN` holds the variables (collections `brand`, `theme`, `app`, `system`), the text styles `font/*` and the effect styles `shadow/*`.
+- `cx.components.DOC` holds the components of the docs frames and is not used in a screen.
 
-## ⚠️ Parallel Workflow with `generate_figma_design` (web sources)
+Keys differ between files and publications, so this skill writes none: a component, variable or style is found by its name, scoped to the libraries of the file, and imported by the key the search returns, in the same session ([components.md](./references/components.md#finding-a-component)). The skill is checked against the team library; a community copy of `cx.components.UI` exists but returns nothing in a scoped search.
 
-When the source is a **live web app / URL**, or when **the source contains images** (whether web or not), follow the parallel workflow defined in the Figma MCP `figma-generate-design` skill ("Parallel Workflow with generate_figma_design" section):
+## The thirteen rules
 
-1. **In parallel:**
-   - Start the Chassis component-instance build via `use_figma` (Steps 3–4 of `figma-generate-design`)
-   - Run `generate_figma_design` to capture a pixel-perfect screenshot of the running web app
-2. **After both complete:** refine the component-instance build to match the screenshot's spacing/sizing, and **transfer images** from the capture by copying `imageHash` values onto your target frames (see `figma-generate-design` Step 5).
-3. **Then delete the `generate_figma_design` capture frame.**
+1. **Everything visible is a library instance, or a frame that holds library instances.** Never `figma.createText()`: a raw text node has no token binding and breaks on a theme switch, so standalone text is an instance of `Basic Text  Asset` ([recipes.md](./references/recipes.md#standalone-text)). A repeated element the library lacks becomes one local component built from library instances, placed as instances and listed in the report; a single missing component is reported as Blocked, not drawn; and a library instance is never detached to fix a missing variant.
+2. **Find by name, import by key, at run time.** `get_libraries` gives the `libraryKey` of each library added to the file; `search_design_system`, scoped with `includeLibraryKeys`, finds a component by its library name ("Solid Button", "Regular Form Field", "Data Table"); its `assetType` says whether `importComponentByKeyAsync` or `importComponentSetByKeyAsync` takes the key. Keys are never written in a skill or copied between files ([components.md](./references/components.md#finding-a-component)).
+3. **Read a component's properties from the library, not from memory.** `componentPropertyDefinitions` of the imported set (never of a variant) and `componentProperties` of a temporary instance give the props with their types and defaults. BOOLEAN, TEXT and INSTANCE_SWAP keys carry an `#id` suffix and are passed whole; VARIANT props are set by bare name, `setProperties({ context: 'primary', size: 'large' })`. Most booleans default to `true`, so a fresh instance shows every decoration: find them by type, since their names vary (`has-icon-start`, `is-dropdown`, bare `icon`, `help`, `label`), and set the unwanted ones to `false` first ([recipes.md](./references/recipes.md#inspect-a-component)).
+4. **Text goes where the component keeps it.** Most text is a nested `Basic Text  Asset` instance named `<Role> Asset` ("Label Asset", "Title Asset", "Body Asset", "Help Asset") with a TEXT property whose key starts with `text#`: set it with `setProperties` on that nested instance, never on the parent. Form labels, input text, check labels and breadcrumb levels are plain TEXT layers with no property: set their `characters`. A few components have a top-level TEXT property. Inspect, never guess ([components.md](./references/components.md#text)).
+5. **Load fonts before appending or editing text.** A fresh instance appended to an auto-layout frame throws `unloaded font` unless the fonts of its text nodes, read with `getStyledTextSegments(['fontName'])`, are loaded first; the same holds before `characters` or a text style. Never a hardcoded family: the family is a `brand` variable and differs by file and mode ([recipes.md](./references/recipes.md#insert-an-instance)).
+6. **Typography is a `font/*` text style**, imported with `importStyleByKeyAsync` and applied with `setTextStyleIdAsync` on the inner TEXT node. Never `fontName`, `fontSize`, `lineHeight` or `letterSpacing` set directly, never a `typography/*` variable bound on production text: the style carries them all and follows the brand ([tokens.md](./references/tokens.md#text-styles)).
+7. **Every other visual value is a variable of `cx.tokens.MAIN`**, found with `search_design_system` (`entity: "variable"`), imported with `importVariableByKeyAsync` and bound with `setBoundVariable`, or `setBoundVariableForPaint`, which returns a new paint to reassign. Context tokens (`color/context/*`, `space/context/*`) before unit or level tokens: only context tokens follow the theme. Shadows are `shadow/*` effect styles. A value no token fits is asked about, never hardcoded ([tokens.md](./references/tokens.md)).
+8. **Containers take their content in a slot.** Nineteen sets (navbar, tabs, segments, button group, accordion, dropdown menu, modal, alert, section, page title, table row, data table, carousels, tooltip, rich notification) have a child node of type `SLOT`: append the content to it and remove its placeholders. `setProperties` does not take a slot ([recipes.md](./references/recipes.md#fill-a-slot)).
+9. **Never set a variable mode.** `setExplicitVariableModeForCollection` works, but it overrides the library context the design team manages and gives results a designer cannot reproduce; the agent may read the modes a frame resolves and asks the designer to switch brand, theme or app. A layer that differs by theme binds its visibility to `figma/switch/theme/mode-n` ([tokens.md](./references/tokens.md#collections-and-modes)).
+10. **Never a component whose name ends in ` - DEPRECATED`** (`Basic Slot @ 0.1 - DEPRECATED`): use the same name without the suffix, and treat an instance of one in an existing screen as a swap candidate.
+11. **Icons are library components only**: `<name>-solid`, `<name>-outline`, `<name>-brand` on the page "Icon", set through an `*-instance` prop or placed as an instance. Never `createNodeFromSvg`; an icon the library lacks is reported ([components.md](./references/components.md#assets)).
+12. **One button size per action group and one form style per form**, and no hidden layer revealed unless a prop shows it: what the design needs is a prop or another component.
+13. **In reconnect mode, one layer at a time.** An instance is swapped with `swapComponent` so its overrides survive; a detached or raw frame is replaced by a new instance at its `x`, `y`, `width` and `height` when the parent is not auto-layout; no frame is converted to auto-layout unless the user asks ([workflow.md](./references/workflow.md#reconnect-mode)).
 
-> **`generate_figma_design` is MANDATORY when the source contains images.** The Plugin API cannot fetch external image URLs — it can only set `IMAGE` fills using `imageHash` values from nodes already in the file. Skipping the capture leaves image frames blank.
+These rules extend those of `figma-use` and `figma-generate-design`, which still apply: colors in the 0–1 range, `return` every created or mutated id, `layoutSizing*` after `appendChild`, the retry contract.
 
-For non-web sources without images (e.g., text-only descriptions, native mobile mocks, internal screenshots already in Figma), the standard `use_figma`-only workflow is fine.
+## Workflow overlay
 
-## 🔑 Core Chassis Rule — Asset Layer Override Pattern
+Follow the six steps of `figma-generate-design` and add, at each step:
 
-Chassis components expose **no top-level text properties**. Text content is set by overriding **nested instances whose name ends in `Asset`** — e.g., `Text Asset`, `Label Asset`, `Title Text Asset`, `Subtitle Asset`, `Description Asset`. These nested instances expose their own `TEXT` properties.
+- **Step 1, understand the deliverable** — note the brand, theme and app modes the view targets; the designer sets them (rule 9). If the source holds content images (photos, avatars, logos): run `generate_figma_design` when the client offers it and the source is a running web app; otherwise plan one `upload_assets` call per image at Step 5. Figma's `html_to_figma` shortcut does not apply: a Chassis view is built from instances.
+- **Step 2, collect components, variables and styles** — 2a-i: the Chassis repositories have no Code Connect files; note it and move on. 2a-ii: an existing Chassis screen in the file is the best inventory of keys. 2a-iii: `get_libraries`, then one scoped `search_design_system` with every component, variable and style the sections need, each by its library name and one intent per query (components.md names them). Read each component once from a temporary instance (rule 3) and keep its prop keys, Asset names, slot and plain text layers in the session notes. Never conclude "no variables" from `getLocalVariableCollectionsAsync()`: the libraries are remote.
+- **Step 3, the wrapper frame** — width from `grid/breakpoint/*` (`2xlarge` 1536 for desktop, `large` 1024 for tablet, `xsmall` 400 for mobile) or the fixed width the source gives a modal or panel; background and padding bound to context tokens at once.
+- **Step 4, build the sections** — batch related sections in one call when the script is safe to retry, as Figma's skill says. Per instance, in this order: import, set variants, load its fonts, append, subtract booleans, set instance swaps, set text, fill slots; then `FILL` only where the design fills (sections, fields, tables; not buttons, badges, chips or text) ([recipes.md](./references/recipes.md#insert-an-instance)). Build a repeated element the library lacks once, as a local component.
+- **Step 5, validate** — one composition screenshot, one more after a fix. Look for placeholder text ("Text", "Button", "Label"), decorations left on (a start icon, a badge and a caret on every button), empty slots and slots still holding their placeholders, clipped Assets, raw values, and the product font. Put images on their nodes from the capture or with `upload_assets`.
+- **Step 6, update or reconnect** — the playbook in [workflow.md](./references/workflow.md#reconnect-mode): inventory, a strategy per layer, one layer at a time, verify.
 
-> **Never assume a Chassis component has `label`, `text`, or `title` props.** Inspect first; if absent, drill into the child `*Asset` instance and call `setProperties()` on **that** instance.
+## Deliverable format
 
-This overrides the default `figma-generate-design` Step 4 pattern of calling `setProperties()` on the top-level instance. See [patterns.md → Asset Override Pattern](./references/patterns.md#asset-override-pattern) for examples.
+| Bucket                | Meaning                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Built**             | New sections or screens made of library instances                                                    |
+| **Swapped**           | Existing instances swapped to the right component or variant                                         |
+| **Composed**          | Sections built from several library instances because no single component fits                       |
+| **Local components**  | Repeated elements the library lacks, built once from library instances and placed as instances       |
+| **Already connected** | Sections that were valid library instances already                                                   |
+| **Blocked**           | What could not be built or connected, each with the exact failure (the missing component, the error) |
 
-## 🔑 Core Chassis Rule — Boolean Visibility Props Default `true`
-
-Almost every Chassis component gates its optional sub-elements (leading icon, trailing icon, badge, dropdown caret, helper text, etc.) behind boolean props (`has-icon-start`, `has-icon-end`, `has-badge`, `is-dropdown`, ...) — and **all of them default to `true`**. A freshly placed instance shows every decoration; you must explicitly set the unwanted ones to `false` to get a minimal instance.
-
-> Forgetting this is the most common reason Chassis instances look heavier than the source design. Always inspect `componentProperties` after placement and subtract what your design doesn't need before applying Asset Overrides.
-
-See [patterns.md → Boolean Visibility Props](./references/patterns.md#boolean-visibility-props--default-true).
-
-## Workflow — Chassis Overlay on `figma-generate-design`
-
-Follow the 6-step workflow defined by the Figma MCP `figma-generate-design` skill. Apply these **Chassis-specific overrides** at each step:
-
-### Step 1 — Understand the Deliverable
-
-- Identify whether the source contains images → trigger parallel `generate_figma_design` capture if yes
-- Identify which Chassis themes/modes the deliverable targets (Brand × Theme × App combinations)
-
-### Step 2 — Collect Components, Variables, Styles
-
-- **2a-i (Code Connect):** check chassis-website / chassis-css for `*.figma.tsx` / `*.figma.ts` files first
-- **2a-ii (existing screens):** inspect any existing Chassis screens in the target file
-- **2a-iii (search_design_system):** **Always call `get_libraries(fileKey)` first and pass the `libraryKey` values from `libraries_added_to_file` as `includeLibraryKeys` to every `search_design_system` call.** This is mandatory — `search_design_system` searches across all libraries accessible to the authenticated user (every team they belong to), not just the ones added to the current file. Scoping by `includeLibraryKeys` ensures results come only from the file's actual linked libraries. Then search by Chassis family names — `button-solid`, `form-regular`, `navbar`, `card`, `modal`, `table`, etc. (full list in [components.md](./references/components.md)). The result includes the `componentKey` — use it directly for `import_components` / `use_figma`. **Never import by component name** (names can collide and change).
-- **2b (variables + text styles):** Chassis variables follow strict namespaces — `color/context/...`, `space/context/...`, `typography/...` etc. See [tokens.md](./references/tokens.md). **Typography is special:** `font/{family}/{size}/{weight}` (e.g. `font/text/medium/normal`) is a **Figma text style**, not a variable — the underlying `typography/*` variables compose into it. Apply the **text style**, not the individual typography variables. See [typography.md](./references/typography.md). **Never** conclude "no variables" or "no styles" from `getLocalVariableCollectionsAsync()` / `getLocalTextStylesAsync()` alone — `search_design_system` (with `includeVariables` / `includeStyles`) is the source of truth for library assets.
-
-### Step 3 — Create the Wrapper Frame First
-
-- Size the wrapper to a Chassis `grid/breakpoint/*` token rather than a pixel literal. Most common page widths: `2xlarge` (desktop), `large` (tablet), `xsmall` (mobile). Modals, drawers, and panels size off `size/context/*` or fixed component widths defined by the source. Adapt to the source.
-- Bind background/spacing to Chassis context tokens immediately so theme switching works for free.
-
-### Step 4 — Build Each Section Inside the Wrapper
-
-- One section per `use_figma` call (mandatory).
-- **Asset overrides instead of top-level `setProperties` for text** — see core rule above.
-- Use Chassis context tokens for paddings/gaps via `setBoundVariable`, not pixel literals.
-- Use `setBoundVariableForPaint` with Chassis color tokens for fills/strokes — capture the returned paint and reassign.
-- **For typography, apply a `font/*` text style** via `importStyleByKeyAsync` + `setTextStyleIdAsync`. `setTextStyleIdAsync` does **not** handle font loading internally — you must call `loadFontAsync` for both the node's current font (`textNode.fontName`) and the style's target font (`style.fontName`) immediately before calling it. Never hardcode font family names — both resolve through brand-variable typography variables. Do **not** set raw font family/size/weight, and do **not** bind individual `typography/*` variables on production text. See [typography.md](./references/typography.md).
-- Don't reveal hidden sub-layers (Back Button, Title Badge, Subtitle Action, Filters row, Aside, Empty states, etc.) unless explicitly required.
-- Don't mix button sizes within one action group; don't mix form styles within one form (regular vs floating vs outline).
-
-### Step 5 — Validate Each Section + Transfer Images
-
-- `get_screenshot` per section, not just the full view, to catch placeholder text and clipped Asset layers.
-- If `generate_figma_design` was used: transfer `imageHash` values into the corresponding Chassis frames, then delete the capture.
-
-### Step 6 — Updating an Existing View / `reconnect` Mode
-
-- Inventory layers as `library-instance` / `detached` / `local-wrapper` / `raw-frame`.
-- Preserve `x`, `y`, `width`, `height` explicitly when replacing inside **non-auto-layout** parents.
-- Use `instance.swapComponent(newVariant)` rather than delete-and-recreate so prop overrides survive.
-- Do **not** convert frames to auto-layout unless the user explicitly asks for structural cleanup.
-
-Detailed Chassis procedures, including the full Reconnect Mode playbook, are in [workflow.md](./references/workflow.md).
-
-## Design Tokens (Chassis namespaces)
-
-| Family                | Pattern                                                | Kind                                                  |
-| --------------------- | ------------------------------------------------------ | ----------------------------------------------------- |
-| Colors                | `color/context/{context}/{role}-{emphasis}`            | variable                                              |
-| Typography (applied)  | `font/{family}/{size}/{weight}`                        | **text style** (composed of `typography/*` variables) |
-| Typography (raw vars) | `typography/{property}/{...}`                          | variable — only used **inside** text styles           |
-| Spacing               | `space/context/{context}` or `space/unit/{unit}`       | variable                                              |
-| Sizing                | `size/context/{context}` or `size/unit/{unit}`         | variable                                              |
-| Radius                | `borderRadius/context/{context}`                       | variable                                              |
-| Border width          | `borderWidth/context/{context}`                        | variable                                              |
-| Opacity               | `opacity/context/{context}` or `opacity/level/{level}` | variable                                              |
-| Shadow                | `shadow/context/{size}`                                | **effect style** (composed of shadow variables)       |
-
-**Always prefer `context` tokens over `unit`/`level` tokens** — context tokens swap correctly across themes/modes; unit tokens do not. Full reference: [tokens.md](./references/tokens.md). **For typography, always apply text styles** — see [typography.md](./references/typography.md).
-
-## Component Catalog
-
-Chassis ships documented component families covering Actions, Forms, Navigation, Surfaces, Feedback, Data, and Communication. See [components.md](./references/components.md) for the full catalog. Resolve `componentKey`s at runtime via `search_design_system`.
-
-Families with non-trivial composition rules:
-
-- **Buttons** (solid, smooth, outline, link, group) — see [patterns.md → Buttons](./references/patterns.md#buttons)
-- **Forms** (regular, floating, outline, form-check — each ships a bare input + a wrapper field) — see [patterns.md → Forms](./references/patterns.md#forms)
-- **Tables** (cell → row → table compose-up) — see [patterns.md → Tables](./references/patterns.md#tables)
-
-## Theme & Mode Awareness
-
-Chassis supports multi-theme designs via three Figma variable collections — **Brand**, **Theme**, **App**. When building, always use **context tokens** rather than raw color values so that theme switches work automatically without any code changes.
-
-- Use **context** tokens (`color/context/...`, `space/context/...`) — they resolve correctly under any active mode.
-- Use Chassis **switch variables** (`figma/switch/theme/mode-1`, etc.) to toggle layer visibility for theme-conditional content (logos, illustrations).
-- **Never call `setExplicitVariableModeForCollection`** to switch themes programmatically. Brand, Theme, and App mode configuration is the designer's responsibility — set it manually in Figma.
-
-See [patterns.md → Themes & Modes](./references/patterns.md#themes--modes).
-
-## Chassis-Specific Critical Rules
-
-1. **Asset Override Pattern for ALL text** — never assume top-level text props on Chassis components.
-2. **Boolean visibility props default to `true`** — explicitly set `has-*` / `is-*` props to `false` for sub-elements your design doesn't need; otherwise instances arrive with every decoration visible.
-3. **Prefer `componentKey` over name** when importing — resolve at runtime via `search_design_system`. Names can collide and change.
-4. **Don't reveal hidden sub-layers** unless explicitly required.
-5. **Preserve `x`/`y`/`width`/`height`** when replacing inside non-auto-layout parents.
-6. **Don't convert frames to auto-layout** without explicit user request.
-7. **Never use components named `… @ x.x`** — the `@ x.x` suffix marks a deprecated-but-still-published version. Use the same-named component without the suffix. See [components.md → Deprecated / Avoid](./references/components.md#deprecated--avoid).
-8. **One section per `use_figma` call.**
-9. **No raw colors / spacing / type / shadows** — always bind a Chassis variable, apply a `font/*` text style for typography, or apply a `shadow/context/*` effect style for shadows (never raw box-shadow values). If none fits, ask the user before hardcoding.
-10. **Don't mix button sizes within an action group; don't mix form styles within a form.**
-11. **`generate_figma_design` is mandatory when the source contains images** — the Plugin API cannot fetch image URLs.
-
-These extend (do not replace) the rules in `figma-use` and `figma-generate-design`. Extended anti-patterns: [patterns.md → Anti-patterns](./references/patterns.md#anti-patterns).
-
-## Deliverable Format
-
-| Bucket                | Meaning                                                               |
-| --------------------- | --------------------------------------------------------------------- |
-| **Built**             | New sections/screens created using Chassis library components         |
-| **Swapped**           | Existing instances swapped to the correct Chassis variant             |
-| **Composed**          | Sections rebuilt from Chassis primitives (no single component fits)   |
-| **Already connected** | Sections already on valid Chassis library instances                   |
-| **Blocked**           | Sections that could not be connected — include the exact failure mode |
-
-If everything is blocked, say so plainly with the specific failure reason.
+If everything is blocked, say so plainly with the reason.
 
 ## References
 
-- [tokens.md](./references/tokens.md) — Complete Chassis token system reference
-- [typography.md](./references/typography.md) — Text styles vs typography variables, and how to apply them
-- [components.md](./references/components.md) — Full Chassis component catalog
-- [patterns.md](./references/patterns.md) — Asset overrides, buttons, forms, tables, themes, anti-patterns
-- [workflow.md](./references/workflow.md) — Detailed Chassis Build & Reconnect playbooks
-
-**Required Figma MCP skills (loaded from the Figma MCP server):** `figma-use`, `figma-generate-design`.
+- [components.md](./references/components.md) — the three libraries, how to find and read a component at run time, the conventions that hold across the library (text Assets and plain text layers, slots, booleans, variants), the components of every page, and how buttons, forms, tables, navigation, cards and dialogs compose
+- [recipes.md](./references/recipes.md) — the Plugin API snippets in today's call shapes, each once: insert and inspect an instance, subtract booleans, set text, standalone text, text styles, slots, variables and effect styles, local components, images, swap and replace
+- [tokens.md](./references/tokens.md) — the variables, text styles and effect styles of `cx.tokens.MAIN` by namespace, the collections and modes, and how each kind is applied
+- [workflow.md](./references/workflow.md) — the build checklist, the reconnect playbook, multi-theme validation, the quality checklist, the failure modes and their fixes

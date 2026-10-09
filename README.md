@@ -107,7 +107,7 @@ Restart Claude Code. `/chassis-create-design` and `/chassis-implement-design` wi
 
 ### `chassis-create-design`
 
-Guides agents through building or updating a composed view in Figma using the Chassis UI library.
+Guides agents through building or updating a composed view in Figma with the Chassis UI library: instances of `cx.components.UI`, bound to the variables and styles of `cx.tokens.MAIN`.
 
 Use when:
 
@@ -117,9 +117,9 @@ Use when:
 
 Key behaviours:
 
-- Discovers components via design system library search and Code Connect files
-- Assembles views section-by-section using design system tokens instead of hardcoded values
-- Applies Chassis UI's **Asset layer override pattern** — many components expose no top-level text property; text must be set on nested `*Asset` child instances
+- Finds every component, variable and style by name in the libraries of the file and imports it by key at run time; nothing is hardcoded
+- Reads a component's props, text Assets, slots and plain text layers from the library before placing it, and subtracts the boolean decorations the design does not show
+- Sets text where the component keeps it (a nested `*Asset` instance, a plain text layer, a slot), applies `font/*` text styles and binds context tokens, and never sets a variable mode
 - Supports two modes: **build** (new screen from scratch) and **reconnect** (repair detached layers in an existing frame)
 
 ### `chassis-implement-design`
@@ -155,7 +155,7 @@ server/                           # MCP server: resources, prompts, tools
 skills/
   chassis-create-design/
     SKILL.md                      # Workflow skill — design screens in Figma with Chassis UI
-    references/                   # Component catalog, tokens, patterns, typography, workflow
+    references/                   # The library and its components, recipes, tokens, workflow
   chassis-implement-design/
     SKILL.md                      # Workflow skill — implement Figma designs as Chassis CSS HTML
     references/                   # css-classes (generated), components, tokens, patterns, workflow

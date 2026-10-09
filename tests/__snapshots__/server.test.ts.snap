@@ -23,37 +23,31 @@ exports[`server > lists its prompts 1`] = `
 exports[`server > lists its resources 1`] = `
 [
   {
-    "description": "Build or update a Figma design (screen, page, view, modal, dialog, drawer, sidebar, panel, dashboard, landing page, or any multi-section layout) using the Chassis UI Figma library. Use when the user wants to create, compose, assemble, or reconnect a Figma view from code, a screenshot, a description, or an existing detached layout. Runs on top of the Figma MCP server skills (\`figma-use\`, \`figma-generate-design\`) and adds Chassis-specific component, token, asset-override, and theme-switching conventions. Do NOT use for: single-component fixes, generating code FROM Figma (use \`chassis-implement-design\`), or pure token/variable edits.",
+    "description": "Build or update a Figma design (screen, page, modal, dialog, drawer, panel, dashboard, landing page or any multi-section view) from the Chassis UI Figma library: instances of \`cx.components.UI\`, bound to the variables and styles of \`cx.tokens.MAIN\`. Use when the user wants to create, compose, assemble or reconnect a Figma view from code, a screenshot, a description or an existing detached layout. Runs on top of the Figma MCP server skills \`figma-use\` and \`figma-generate-design\` and adds how the Chassis library is found, read and composed at run time: component names, props and their defaults, text Assets, slots, text styles, tokens and modes. Do NOT use for: a fix inside a single component, generating code FROM Figma (use \`chassis-implement-design\`), or token and variable edits.",
     "mimeType": "text/markdown",
     "name": "chassis-create-design",
     "uri": "chassis://skills/chassis-create-design",
   },
   {
-    "description": "Chassis Component Catalog",
+    "description": "The Chassis UI library in Figma",
     "mimeType": "text/markdown",
     "name": "chassis-create-design/references/components",
     "uri": "chassis://skills/chassis-create-design/references/components",
   },
   {
-    "description": "Chassis Design Patterns",
+    "description": "Plugin API recipes for the Chassis library",
     "mimeType": "text/markdown",
-    "name": "chassis-create-design/references/patterns",
-    "uri": "chassis://skills/chassis-create-design/references/patterns",
+    "name": "chassis-create-design/references/recipes",
+    "uri": "chassis://skills/chassis-create-design/references/recipes",
   },
   {
-    "description": "Chassis Design Tokens — Complete Reference",
+    "description": "Chassis tokens in Figma",
     "mimeType": "text/markdown",
     "name": "chassis-create-design/references/tokens",
     "uri": "chassis://skills/chassis-create-design/references/tokens",
   },
   {
-    "description": "Typography in Chassis",
-    "mimeType": "text/markdown",
-    "name": "chassis-create-design/references/typography",
-    "uri": "chassis://skills/chassis-create-design/references/typography",
-  },
-  {
-    "description": "Chassis Design Workflow — Detailed Procedures",
+    "description": "Chassis build and reconnect workflow",
     "mimeType": "text/markdown",
     "name": "chassis-create-design/references/workflow",
     "uri": "chassis://skills/chassis-create-design/references/workflow",
@@ -139,9 +133,8 @@ exports[`server > lists its tools 1`] = `
           "description": "Reference file to fetch",
           "enum": [
             "chassis-create-design/references/components",
-            "chassis-create-design/references/patterns",
+            "chassis-create-design/references/recipes",
             "chassis-create-design/references/tokens",
-            "chassis-create-design/references/typography",
             "chassis-create-design/references/workflow",
             "chassis-implement-design/references/components",
             "chassis-implement-design/references/css-classes",
