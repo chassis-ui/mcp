@@ -94,7 +94,7 @@ exports[`server > lists its resources 1`] = `
 exports[`server > lists its tools 1`] = `
 [
   {
-    "description": "Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.",
+    "description": "Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": false,
@@ -109,7 +109,7 @@ exports[`server > lists its tools 1`] = `
     "name": "chassis_create_design",
   },
   {
-    "description": "Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.",
+    "description": "Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": false,
@@ -124,7 +124,7 @@ exports[`server > lists its tools 1`] = `
     "name": "chassis_implement_design",
   },
   {
-    "description": "Fetch one reference file of a Chassis UI skill by name, without its frontmatter. The skill tools list the names and what each file holds.",
+    "description": "Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it. The skill tools list the names, what each file holds and its sections.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": false,
@@ -142,6 +142,10 @@ exports[`server > lists its tools 1`] = `
             "chassis-implement-design/references/tokens",
             "chassis-implement-design/references/workflow",
           ],
+          "type": "string",
+        },
+        "section": {
+          "description": "A heading of the file, or the anchor of a link \`file.md#anchor\`: returns that section, with its subsections and the introduction of the file, instead of the whole file. The skill tools list the sections of each file",
           "type": "string",
         },
       },

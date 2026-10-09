@@ -81,7 +81,7 @@ The server is not an npm package: the hosted server is the only one, and it alwa
 
 Once connected, the server exposes:
 
-- **Tools** — `chassis_create_design` and `chassis_implement_design` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`; `full: true` returns the instructions with every reference inline
+- **Tools** — `chassis_create_design` and `chassis_implement_design` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`, a whole file or one section of it (`section`: a heading or the anchor of a link); `full: true` returns the instructions with every reference inline
 - **Prompts** — `chassis-create-design` and `chassis-implement-design` load a skill; `chassis-ui` is a one-shot command to build or reconnect a Figma screen using the Chassis UI library
 - **Resources** — every skill and reference file, readable by your agent on demand
 

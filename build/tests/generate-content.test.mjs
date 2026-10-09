@@ -39,11 +39,40 @@ const TRICKY = [
   ''
 ].join('\n')
 
+// A reference with sections: a heading of the text of the title, a heading in a code block,
+// the same heading twice, a link and closing hashes in a heading
+const FIRST = [
+  '# First',
+  '',
+  'What the file is.',
+  '',
+  '## First',
+  '',
+  '| a | b |',
+  '| - | - |',
+  '| `x` | y |',
+  '',
+  '### Same',
+  '',
+  '```md',
+  '## Not a heading',
+  '```',
+  '',
+  '## Second — `code` and [a link](./other.md) ##',
+  '',
+  '### Same',
+  '',
+  '#### Deep',
+  '',
+  'The end.',
+  ''
+].join('\n')
+
 const FILES = {
   'package.json': JSON.stringify({ name: 'fixture', version: '9.8.7' }),
   'prompts/chassis-ui.prompt.md': '---\nmode: agent\n---\n\n# Prompt\n',
   'skills/one/SKILL.md': TRICKY,
-  'skills/one/references/first.md': '# First\n\n| a | b |\n| - | - |\n| `x` | y |\n',
+  'skills/one/references/first.md': FIRST,
   'skills/two/SKILL.md': '# Two\n',
   // Not Markdown: left out
   'skills/one/notes.txt': 'Not a skill file',
@@ -137,6 +166,46 @@ describe('generate-content', () => {
       generated.RESOURCES.map(({ summary }) => summary),
       [undefined, 'The first reference, with a table', undefined]
     )
+  })
+
+  // Every heading below level one that is not in a code block, with the anchor GitHub gives
+  // it: numbered when the text was used before, the title of the file included
+  test('lists the sections of a reference, and none for a skill', () => {
+    assert.deepEqual(
+      generated.RESOURCES.map(({ sections }) =>
+        sections?.map(({ title, anchor, level }) => ({ title, anchor, level }))
+      ),
+      [
+        undefined,
+        [
+          { title: 'First', anchor: 'first-1', level: 2 },
+          { title: 'Same', anchor: 'same', level: 3 },
+          {
+            title: 'Second — `code` and [a link](./other.md)',
+            anchor: 'second--code-and-a-link',
+            level: 2
+          },
+          { title: 'Same', anchor: 'same-1', level: 3 },
+          { title: 'Deep', anchor: 'deep', level: 4 }
+        ],
+        undefined
+      ]
+    )
+  })
+
+  // From its heading to the next heading of the same level or a higher one, or to the end
+  test('gives each section the offsets of its text, subsections included', () => {
+    const [, { sections }] = generated.RESOURCES
+    const cut = (anchor) => {
+      const { start, end } = sections.find((section) => section.anchor === anchor)
+      return FIRST.slice(start, end)
+    }
+
+    assert.equal(cut('first-1'), FIRST.slice(FIRST.indexOf('## First'), FIRST.indexOf('## Second')))
+    assert.equal(cut('same'), '### Same\n\n```md\n## Not a heading\n```\n\n')
+    assert.equal(cut('second--code-and-a-link'), FIRST.slice(FIRST.indexOf('## Second')))
+    assert.equal(cut('same-1'), FIRST.slice(FIRST.lastIndexOf('### Same')))
+    assert.equal(cut('deep'), '#### Deep\n\nThe end.\n')
   })
 
   test('types the registry as a tuple of literals', () => {

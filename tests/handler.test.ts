@@ -139,6 +139,29 @@ describe('POST', () => {
     expect(result?.content?.[0].text).toMatch(/^# /)
   })
 
+  test('answers a tool call for one section of a reference', async () => {
+    const call = async (id: number, args: Record<string, unknown>) => {
+      const response = await post({
+        jsonrpc: '2.0',
+        id,
+        method: 'tools/call',
+        params: { name: 'chassis_get_reference', arguments: args }
+      })
+
+      expect(response.status).toBe(200)
+      return (await message(response)).result?.content?.[0].text ?? ''
+    }
+    const name = 'chassis-implement-design/references/tokens'
+    const file = await call(32, { name })
+    const section = await call(33, { name, section: 'tokens.md#typography' })
+
+    expect(section).toMatch(/^# /)
+    expect(section).toContain('\n## Typography\n')
+    expect(section.match(/^## /gm)).toHaveLength(1)
+    expect(file).toContain(section.slice(section.indexOf('## Typography')).trim())
+    expect(section.length).toBeLessThan(file.length / 2)
+  })
+
   // The skill tools through the handler: the index by default, the bundle with full: true
   test('answers a skill tool with the index, and with the bundle when asked', async () => {
     const call = async (id: number, args: Record<string, unknown>) => {
