@@ -1,0 +1,147 @@
+name: CI
+
+on:
+  push:
+    # A commit reaches `main` only after these checks passed on it, so they run on `develop`
+    # first. Their results belong to the commit, so pushing the same commit to `main` does not
+    # run them again. A push to `main` is a production deploy of mcp.chassis-ui.com.
+    branches: [develop]
+  pull_request:
+    # Contributors open pull requests against `develop`
+    branches: [develop, main]
+  # Runs the checks again on a commit, on the branch the run is started from
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request supersedes the running one. A push to `develop` always
+# runs to the end: its results are what a merge into `main` relies on.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # The lint, format and type checks on every Node.js version the server supports
+  check:
+    name: Check (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      # The prepare script writes server/content.generated.ts, which the type check needs
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      # The whole repository, the skills among them; .prettierignore lists what is left out
+      - name: Prettier
+        run: pnpm lint:prettier
+
+      - name: Type check
+        run: pnpm typecheck
+
+  # skills/chassis-implement-design/references/css-classes.md is committed and generated
+  # from the installed @chassis-ui/css. This job generates it again and fails when the
+  # result differs from the commit: the catalog was edited by hand, or @chassis-ui/css was
+  # bumped without `pnpm generate`. server/content.generated.ts is generated in the same
+  # run and is not committed, so it cannot differ.
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate
+        run: pnpm generate
+
+      - name: Compare with the commit
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            git diff --stat
+            echo "::error::Generated files differ from the commit. Run \`pnpm generate\` and commit the result."
+            exit 1
+          fi
+
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          # The audit installs nothing: the automatic cache of setup-node finds no pnpm
+          # store to save, and its post step fails the job
+          package-manager-cache: false
+
+      # Blocking: the runtime dependencies, the MCP SDK and zod with what they install, are
+      # what the deployed function runs
+      - name: Audit runtime dependencies
+        run: pnpm check:pnpm
+
+      # Reports only: the lint and build tooling is never deployed
+      - name: Audit all dependencies
+        run: pnpm audit
+        continue-on-error: true
+
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: moderate
