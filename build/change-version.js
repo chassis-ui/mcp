@@ -31,8 +31,7 @@ import { promisify } from 'node:util'
 const FILES = [
   '.github/plugin/plugin.json',
   '.claude-plugin/plugin.json',
-  '.cursor-plugin/plugin.json',
-  'server/index.ts'
+  '.cursor-plugin/plugin.json'
 ]
 
 const SEMVER_RE = /^\d+\.\d+\.\d+$/
