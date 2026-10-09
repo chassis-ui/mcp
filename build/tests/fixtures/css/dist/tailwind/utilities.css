@@ -1,0 +1,9 @@
+@utility d-flex {
+  display: flex;
+}
+@utility p-sm {
+  padding: 0.5rem;
+}
+@utility p-md {
+  padding: 1rem;
+}

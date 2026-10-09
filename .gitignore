@@ -1,4 +1,6 @@
 dist/
+# The fixture package of the build tests has a dist/ of its own
+!build/tests/fixtures/css/dist/
 
 # Claude Code
 .claude/

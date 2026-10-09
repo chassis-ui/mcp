@@ -51,10 +51,10 @@ export default defineConfig([
       'no-console': 'off'
     }
   },
-  // server/ and api/ — the TypeScript sources of the deployed function
+  // server/ and api/ are the TypeScript sources of the deployed function, tests/ their tests
   ...tseslint.configs.recommended.map((config) => ({
     ...config,
-    files: ['server/**/*.ts', 'api/**/*.ts']
+    files: ['server/**/*.ts', 'api/**/*.ts', 'tests/**/*.ts', 'vitest.config.ts']
   })),
   {
     files: ['server/**/*.ts', 'api/**/*.ts'],

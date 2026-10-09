@@ -9,6 +9,6 @@
     "outDir": "dist",
     "types": ["node"]
   },
-  "include": ["server/**/*", "api/**/*"],
+  "include": ["server/**/*", "api/**/*", "tests/**/*", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,0 +1,58 @@
+/*! A fixture for build/tests/generate-css-classes.test.mjs. .comment-class { } */
+:root {
+  --cx-breakpoint-xs: 0;
+  --cx-breakpoint-sm: 576px;
+  --cx-breakpoint-md: 768px;
+  --cx-breakpoint-lg: 992px;
+  --cx-breakpoint-xl: 1200px;
+  --cx-breakpoint-2xl: 1400px;
+  --cx-space-zero: 0;
+  --cx-space-sm: 0.5rem;
+  --cx-space-md: 1rem;
+}
+
+/* Display: one class with every breakpoint, one with print, one with a single breakpoint */
+.d-flex { display: flex; }
+.d-none { display: none; }
+.d-block { display: block; }
+@media (min-width: 576px) { .sm\:d-flex { display: flex; } }
+@media (min-width: 768px) { .md\:d-flex { display: flex; } .md\:d-block { display: block; } }
+@media (min-width: 992px) { .lg\:d-flex { display: flex; } }
+@media (min-width: 1200px) { .xl\:d-flex { display: flex; } }
+@media (min-width: 1400px) { .\32 xl\:d-flex { display: flex; } }
+@media print { .print\:d-none { display: none; } }
+
+/* Families that collapse into one template */
+.p-sm { padding: 0.5rem; }
+.p-md { padding: 1rem; }
+.p-lg { padding: 1.5rem; }
+.fg-primary, .fg-danger { color: red; }
+.opacity-50 { opacity: 0.5; }
+.opacity-90 { opacity: 0.9; }
+.col-span-1 { grid-column: span 1; }
+.col-span-2 { grid-column: span 2; }
+
+/* An escaped slash, and a class that is alone in its template */
+.w-1\/2 { width: 50%; }
+.gap-md { gap: 1rem; }
+
+/* A string and a URL that hold braces and dots */
+.caret::after { content: "{ .string-class }"; background: url(data:image/svg+xml,.url-class{}); }
+
+/* Components */
+.button { display: inline-flex; }
+.button-label, .button-icon { flex: none; }
+.button.primary, .button.danger { color: white; }
+.button.outline:not(.disabled) { border: 1px solid; }
+.button.disabled { opacity: 0.5; }
+.button-group > .button { margin: 0; }
+.card { display: block; }
+.card-body { padding: 1rem; }
+.card.card-sm .card-body { padding: 0.5rem; }
+.modal.show .modal-dialog { transform: none; }
+
+/* Left out, or left over */
+.cx-backdrop { position: fixed; }
+.is-open { display: block; }
+.active { font-weight: bold; }
+.mystery-thing { color: inherit; }
