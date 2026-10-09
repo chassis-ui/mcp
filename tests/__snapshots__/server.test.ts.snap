@@ -59,7 +59,7 @@ exports[`server > lists its resources 1`] = `
     "uri": "chassis://skills/chassis-implement-design",
   },
   {
-    "description": "Components — Figma family → Chassis CSS markup",
+    "description": "Components — Figma component → Chassis CSS markup",
     "mimeType": "text/markdown",
     "name": "chassis-implement-design/references/components",
     "uri": "chassis://skills/chassis-implement-design/references/components",

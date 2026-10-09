@@ -1,47 +1,52 @@
-# Components — Figma family → Chassis CSS markup
+# Components — Figma component → Chassis CSS markup
 
-The emit target for each Chassis Figma component. Variants become space-separated modifiers (`{root} {color} {style} {size} {state}`); `*Asset` children become the text of the elements shown. Snippets are the canonical structure from the Chassis CSS docs for `@chassis-ui/css` 0.7. The full list of subparts and modifiers per component is in css-classes.md → Components.
+The emit target for each component of the Chassis UI Figma library (`cx.components.UI`). An instance is named after its component set (`Solid Button`, `Regular Form Field`) unless the designer renamed the layer; [patterns.md](./patterns.md#reading-the-figma-output) says how to tell the component then. Variants become space-separated modifiers (`{root} {color} {style} {size} {state}`); the text of the `<Role> Asset` children and of the plain text layers becomes the text of the elements shown. Snippets are the canonical structure from the Chassis CSS docs for `@chassis-ui/css` 0.7. The full list of subparts and modifiers per component is in css-classes.md → Components.
 
-## Figma family → CSS
+## Figma component → CSS
 
-| Figma family                    | Chassis CSS                                                                                                                                                   |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `button-solid`                  | `button {ctx}`                                                                                                                                                |
-| `button-smooth`                 | `button {ctx} smooth`                                                                                                                                         |
-| `button-outline`                | `button {ctx} outline`                                                                                                                                        |
-| `button-link`                   | `button link` (color via `fg-{ctx}` when needed)                                                                                                              |
-| `button-group`                  | `button-group`                                                                                                                                                |
-| `floating-button`               | compose: `button primary lg icon-only position-fixed bottom-0 end-0 m-lg rounded-circle shadow-lg`                                                            |
-| `close-button`                  | `close-button`                                                                                                                                                |
-| `form-regular`                  | `form-field` + `form-label` + `form-input` + `form-help`                                                                                                      |
-| `form-floating`                 | `form-floating`                                                                                                                                               |
-| `form-outline`                  | no CSS counterpart; use `form-regular` markup and flag                                                                                                        |
-| `form-check`                    | `form-check` + `check-input`; `role="switch"` for switches                                                                                                    |
-| `dropdown`                      | `menu` opened by `data-cx-toggle="menu"`; selection → `combobox`                                                                                              |
-| `date-picker`                   | `form-input` with `data-cx-toggle="datepicker"`                                                                                                               |
-| `navbar`, `mobile-nav-top`      | `navbar`                                                                                                                                                      |
-| `mobile-nav-bottom`             | compose: `nav nav-segments` in `position-fixed bottom-0 w-100`                                                                                                |
-| `breadcrumb`                    | `breadcrumb`                                                                                                                                                  |
-| `tab`                           | `nav nav-tabs` / `nav-segments` / `nav-underline` + Tab plugin                                                                                                |
-| `pagination`                    | `pagination`                                                                                                                                                  |
-| `card`                          | `card`                                                                                                                                                        |
-| `section`, `page`               | compose: `<section>` / `<main>` with `container`, spacing, `font-heading`                                                                                     |
-| `accordion`                     | `accordion` with `<details>`                                                                                                                                  |
-| `modal`                         | `<dialog class="modal dialog">`                                                                                                                               |
-| `list`                          | `list` + `list-item`                                                                                                                                          |
-| `alert` (inline message)        | `notification {ctx}` — the CSS `alert` is a confirm dialog                                                                                                    |
-| `mobile-alert`, confirm dialogs | `<dialog class="alert dialog">`                                                                                                                               |
-| `notification` (transient)      | `toast`                                                                                                                                                       |
-| `message` (chat bubble)         | compose: `d-flex`, `rounded-xl`, `context`                                                                                                                    |
-| `tooltip`                       | `data-cx-toggle="tooltip"`; richer → `popover`                                                                                                                |
-| `progress`                      | `progress` + `progress-bar`; loading → `spinner`, placeholders → `skeleton`                                                                                   |
-| `table`                         | `table`                                                                                                                                                       |
-| `chart`, `story`, `comment`     | compose from primitives and flag as Composed                                                                                                                  |
-| `badge`                         | `badge {ctx}`                                                                                                                                                 |
-| `chip`                          | `chip {ctx}`                                                                                                                                                  |
-| `carousel`                      | `carousel`                                                                                                                                                    |
-| avatar (asset)                  | `avatar`                                                                                                                                                      |
-| CSS-only, not in Figma          | `drawer`, `stepper`, `nav-overflow`, `collapse`, `input-group`, `input-adorn`, `combobox`, `form-otp`, `chip-input`, `strength`, `toast-container`, scrollspy |
+| Figma component                                                                 | Chassis CSS                                                                                                                                     |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Solid Button`, `Solid Icon-Button`                                             | `button {ctx}`; an Icon-Button adds `icon-only`                                                                                                 |
+| `Smooth Button`, `Smooth Icon-Button`                                           | `button {ctx} smooth`                                                                                                                           |
+| `Outline Button`, `Outline Icon-Button`                                         | `button {ctx} outline`                                                                                                                          |
+| `Link Button`, `Link Icon-Button`                                               | `button link` (color via `fg-{ctx}` when needed)                                                                                                |
+| `Button Group`, `Button Group Item`, `Icon-Button Group Item`                   | `button-group`                                                                                                                                  |
+| `Basic Common Toggle`, `Icon-Only Common Toggle`                                | `button` with `data-cx-toggle="button"` and `aria-pressed`                                                                                      |
+| `Floating Button`, `Floating Icon-Button`                                       | compose: `button primary lg icon-only position-fixed bottom-0 end-0 m-lg rounded-circle shadow-lg`                                              |
+| `Close Button`                                                                  | `close-button`                                                                                                                                  |
+| `Regular Form Field` (`Form Label`, `Regular Form Input`, `Form Help`)          | `form-field` + `form-label` + `form-input` + `form-help`                                                                                        |
+| `Floating Form Field`, `Floating Form Input`                                    | `form-floating`                                                                                                                                 |
+| `Outline Form Field`, `Outline Form Input`                                      | no CSS counterpart; use the markup of the regular field and flag                                                                                |
+| `Form Check`, `Check Input`                                                     | `form-check` + `check-input`, a checkbox or a radio by `type`                                                                                   |
+| `Basic Switch`, `Material Switch`, `Cupertino Switch`                           | `form-check` + `check-input` with `role="switch"`                                                                                               |
+| `Dropdown Menu`, `Dropdown Item`, `Dropdown Button`                             | `menu` opened by `data-cx-toggle="menu"`; a `Dropdown Menu` with `type=searchable` → `combobox`                                                 |
+| `Date Picker`                                                                   | `form-input` with `data-cx-toggle="datepicker"`                                                                                                 |
+| `Navbar`, `Nav Link`, `Mobile Top Navigation`                                   | `navbar`                                                                                                                                        |
+| `Mobile Bottom Navigation`                                                      | compose: `nav nav-segments` in `position-fixed bottom-0 w-100`                                                                                  |
+| `Large Breadcrumb`, `Small Breadcrumb`                                          | `breadcrumb`                                                                                                                                    |
+| `Nav Tabs` (`Regular Nav Tab Item`, `Fancy Nav Tab Item`)                       | `nav nav-tabs` / `nav-underline` + Tab plugin                                                                                                   |
+| `Nav Segments`, `Nav Segment Item`                                              | `nav nav-segments` + Tab plugin                                                                                                                 |
+| The pagination sets (`Simple Pagination`, `Advanced Pagination`, …)             | `pagination`                                                                                                                                    |
+| The Progress Flows (`Large Chip Progress Flow`, `Small Thumb Progress Flow`, …) | `stepper` + `stepper-item`                                                                                                                      |
+| `Full-bleed Card`, `Contained Card`                                             | `card`                                                                                                                                          |
+| `Section Block`, `Section Header`, `Section Footer`, `Page Title`               | compose: `<section>` / `<main>` with `container`, spacing and the text style of the heading                                                     |
+| `Accordion`, `Accordion Item`                                                   | `accordion` with `<details>`                                                                                                                    |
+| `Modal Window`, `Modal Screen`                                                  | `<dialog class="modal dialog">`                                                                                                                 |
+| The sets of the page "List" (`Common List Item`, `List Header`, …)              | `list` + `list-item`                                                                                                                            |
+| `Alert Window`, `Alert Screen` and their `Mobile` forms                         | `<dialog class="alert dialog">`: a confirm dialog with buttons, not an inline message                                                           |
+| `Notification`, `Rich Notification`                                             | `notification {ctx}`, the inline message; `style=solid` → `solid`                                                                               |
+| `Chat Message`                                                                  | compose: `d-flex`, `rounded-xl`, `context`                                                                                                      |
+| `Tooltip`                                                                       | `data-cx-toggle="tooltip"`; with a title or slot content → `popover`                                                                            |
+| The progress bars and indicators (`Progress Bar - 10 Segments`, …)              | `progress` + `progress-bar`; the spinner sets → `spinner`; `Text Skeleton Asset`, `Shape Skeleton Asset` → `skeleton`                           |
+| `Data Table`, `Table Row` and the `Table … Cell`s                               | `table`                                                                                                                                         |
+| The sets of the pages "Chart", "Story" and "Comment"                            | compose from primitives and flag as Composed                                                                                                    |
+| `Solid Badge`, `Smooth Badge`, `Outline Badge`                                  | `badge {ctx}`, with `smooth` or `outline`                                                                                                       |
+| `Solid Chip`, `Smooth Chip`, `Outline Chip`                                     | `chip {ctx}`, with `smooth` or `outline`                                                                                                        |
+| `Card Carousel`, `Small Carousel`, `Hero Carousel`                              | `carousel`                                                                                                                                      |
+| `Common Avatar` (an asset)                                                      | `avatar`                                                                                                                                        |
+| CSS-only, no Figma component                                                    | `toast`, `toast-container`, `drawer`, `nav-overflow`, `collapse`, `input-group`, `input-adorn`, `form-otp`, `chip-input`, `strength`, scrollspy |
+
+A component the table does not name has no CSS counterpart: compose it from primitives and report it as Composed.
 
 ## Buttons
 
@@ -149,7 +154,7 @@ Static validation states: `is-valid` / `is-invalid` on the control. Range: `<inp
 ### Selection and special inputs
 
 ```html
-<!-- Combobox (Figma dropdown with selection) -->
+<!-- Combobox (Figma Dropdown Menu, type=searchable) -->
 <div
   class="form-input combobox"
   data-cx-toggle="combobox"
@@ -201,7 +206,7 @@ Static validation states: `is-valid` / `is-invalid` on the control. Range: `<inp
 </div>
 ```
 
-## Menu (Figma dropdown)
+## Menu (Figma Dropdown Menu)
 
 ```html
 <button
@@ -328,7 +333,7 @@ Below the `{bp}:navbar-expand` breakpoint the links live in the drawer; above it
 </div>
 ```
 
-Nav styles: plain `nav`, `nav-tabs`, `nav-segments` (Figma segment control), `nav-underline`; `flex-column` for vertical; sizes `sm` / `lg`; `nav-fill`, `nav-justified`. Overflowing navs: wrap in `<div class="nav-overflow" data-cx-toggle="nav-overflow">`.
+Nav styles: plain `nav`, `nav-tabs`, `nav-segments` (Figma `Nav Segments`), `nav-underline`; `flex-column` for vertical; sizes `sm` / `lg`; `nav-fill`, `nav-justified`. Overflowing navs: wrap in `<div class="nav-overflow" data-cx-toggle="nav-overflow">`.
 
 ```html
 <nav aria-label="breadcrumb">
@@ -419,7 +424,7 @@ Pagination modifiers: `bordered`, `grouped`, `sm`, `lg`. Stepper: vertical by de
 The three regions are direct children of the `<dialog>`; there is no `modal-dialog` or `modal-content`. Sizes `sm` `md` `lg` `xl`, `fullscreen` (and `max-md:fullscreen`), `scrollable`. A link trigger uses `href="#confirm"` instead of `data-cx-target`. Static backdrop: `data-cx-backdrop="static"`, no Escape: `data-cx-keyboard="false"`.
 
 ```html
-<!-- Alert: a decision-forcing dialog, not an inline message -->
+<!-- Alert (Figma Alert Window): a decision-forcing dialog, not an inline message -->
 <dialog
   class="alert dialog"
   id="delete"
@@ -551,7 +556,7 @@ Modifiers: `striped`, `striped-columns`, `bordered`, `borderless`, `hoverable`, 
 ## Feedback
 
 ```html
-<!-- Inline message (Figma "alert") -->
+<!-- Inline message (Figma Notification) -->
 <div class="notification success fade show" role="status">
   <svg class="icon notification-icon" aria-hidden="true">
     <use href="#check-circle-solid"></use>
@@ -568,7 +573,7 @@ Modifiers: `striped`, `striped-columns`, `bordered`, `borderless`, `hoverable`, 
   <p>The upload failed.</p>
 </div>
 
-<!-- Transient toast (Figma "notification") -->
+<!-- Transient toast (no Figma component) -->
 <div class="toast-container position-fixed bottom-0 end-0 p-md">
   <div class="toast" role="status">
     <div class="toast-header">
@@ -724,7 +729,7 @@ Controls are ordinary buttons with `data-cx-slide`; `carousel-fade`, `carousel-a
 
 ## Icons
 
-Chassis Icons (`@chassis-ui/icons`) ship an SVG sprite, an icon font and single SVGs; names are `{name}-{style}` with `outline` or `solid`. Chassis CSS styles any of them through `.icon`:
+Chassis Icons (`@chassis-ui/icons`) ship an SVG sprite, an icon font and single SVGs; names are `{name}-{style}` with `outline`, `solid` or, for a logo, `brand`. Chassis CSS styles any of them through `.icon`:
 
 ```html
 <svg class="icon icon-lg icon-primary" aria-hidden="true">
@@ -736,11 +741,11 @@ Chassis Icons (`@chassis-ui/icons`) ship an SVG sprite, an icon font and single 
 </svg>
 ```
 
-Size: `icon-{size}` (`3xs` … `4xl`) or `icon-adaptive`; color: `icon-{ctx}`, `icon-main` / `icon-subtle` / `icon-slight`, `{ctx}-icon-main`; both cascade from an ancestor. Icons that mirror in RTL take `directional-icon`. A Figma `Icon Asset` names the glyph; resolve it to a Chassis Icons name, and fall back to the downloaded SVG only for icons outside the set.
+Size: `icon-{size}` (`3xs` … `4xl`) or `icon-adaptive`; color: `icon-{ctx}`, `icon-main` / `icon-subtle` / `icon-slight`, `{ctx}-icon-main`; both cascade from an ancestor. Icons that mirror in RTL take `directional-icon`. In Figma an icon is an instance of a glyph component of the library, named in the same form (`pen-solid`, `chevron-down-solid`). The layer carries that name unless the component names it by its role ("Icon", "Icon Start", "Icon End", "Input Icon", "Help Icon"); then the glyph is the one the screenshot shows. `Placeholder Icon` is a placeholder, not a glyph: ask which icon is meant. The size and the fill of a glyph are not in the code block: their variables are in `get_variable_defs`. Resolve the glyph to a Chassis Icons name, and fall back to the downloaded SVG only for icons outside the set. The glyph variables of Figma go to `6xlarge`; `icon-{size}` ends at `4xl`.
 
 ## Composition rules
 
 - One color per root; one size per `button-group`; one field style per form.
-- Hidden Figma sub-layers (Back Button, Title Badge, Filters row, Empty state) are omitted, not hidden.
+- Hidden Figma layers (the back button of a modal header, the chip of a page title, a part a boolean turned off or the designer hid) are omitted, not hidden.
 - Figma components with no CSS counterpart are composed from primitives and reported as Composed.
 - `<button type="button">` for actions, `<a href>` for navigation, `<dialog>` for overlays.
