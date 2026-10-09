@@ -8,12 +8,36 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createServer } from '../server/index.js'
 import { RESOURCES } from '../server/content.generated.js'
-import { body, heading, read, summary, version } from './helpers.js'
+import {
+  body,
+  heading,
+  introduction,
+  read,
+  sectionLinks,
+  sections,
+  summary,
+  version
+} from './helpers.js'
 
 const SKILLS = ['chassis-create-design', 'chassis-implement-design']
 const REFERENCES = RESOURCES.filter((resource) => resource.name.includes('/references/'))
 
+// The reference whose file has that name in the skill of a path
+function referenceOf(path: string, file: string) {
+  const [, skill] = path.split('/')
+  return REFERENCES.find((reference) => reference.path === `skills/${skill}/references/${file}`)
+}
+
+// A heading that another section of the file has too is told apart by its anchor
+function repeated(title: string, all: { title: string }[]): boolean {
+  return all.filter((other) => other.title === title).length > 1
+}
+
 const client = new Client({ name: 'chassis-mcp-tests', version: '0.0.0' })
+
+function escape(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
 // The text of a result that holds one text block
 function text(result: Awaited<ReturnType<Client['callTool']>>): string {
@@ -104,7 +128,28 @@ describe.each(SKILLS)('%s', (skill) => {
     }
   })
 
-  // SKILL.md of chassis-create-design is 29 KB by itself; the index adds about 1 KB
+  // Under each reference its level-two sections with their sizes, and after a colon the
+  // level-three sections of each: what an agent chooses a section from
+  test('the index lists the sections of each reference', async () => {
+    const result = text(await client.callTool({ name: tool, arguments: {} }))
+
+    expect(result).toContain('`section`')
+    for (const { path } of references) {
+      const all = sections(read(path))
+
+      expect(all.length).toBeGreaterThan(0)
+      for (const { title, anchor, level, text: own } of all) {
+        const label = repeated(title, all) ? `${title} (#${anchor})` : title
+        const size = (own.length / 1024).toFixed(1)
+
+        if (level === 2) expect(result).toMatch(new RegExp(`^  - ${escape(label)} \\(`, 'm'))
+        if (level === 2 && size !== '0.0') expect(result).toContain(`  - ${label} (${size} KB)`)
+        if (level === 3) expect(result).toMatch(new RegExp(`[:;] ${escape(label)}(;|$)`, 'm'))
+      }
+    }
+  })
+
+  // SKILL.md of chassis-create-design is 14 KB by itself; the index adds about 3 KB
   test('the index response is under 40 KB', async () => {
     const result = text(await client.callTool({ name: tool, arguments: {} }))
 
@@ -170,6 +215,132 @@ describe('chassis_get_reference', () => {
     expect(result.isError).toBe(true)
     expect(text(result)).toContain('Invalid arguments for tool chassis_get_reference')
     expect(text(result)).toContain(REFERENCES[0].name)
+  })
+
+  // The introduction of the file, the headings the section is inside, then the section with
+  // its subsections
+  test.each(REFERENCES)('returns each section of $name by its anchor', async ({ name, path }) => {
+    const file = read(path)
+
+    for (const { anchor, ancestors, text: own } of sections(file)) {
+      const result = await client.callTool({
+        name: 'chassis_get_reference',
+        arguments: { name, section: anchor }
+      })
+
+      expect(result.isError, anchor).toBeFalsy()
+      expect(text(result), anchor).toBe(
+        `${[introduction(file).trim(), ...ancestors, own.trim()].join('\n\n')}\n`
+      )
+    }
+  })
+
+  // By the heading as it is written, in another case, with its hashes, without its
+  // punctuation, and by the anchor as a link carries it
+  test.each(REFERENCES)('returns a section of $name by its heading', async ({ name, path }) => {
+    const all = sections(read(path))
+    const file = path.slice(path.lastIndexOf('/') + 1)
+    const call = async (section: string) =>
+      client.callTool({ name: 'chassis_get_reference', arguments: { name, section } })
+
+    for (const { title, anchor, level } of all.filter(({ title }) => !repeated(title, all))) {
+      const byAnchor = text(await call(anchor))
+
+      for (const section of [
+        title,
+        title.toUpperCase(),
+        `${'#'.repeat(level)} ${title}`,
+        title.replace(/[^\p{L}\p{N} ]+/gu, ' '),
+        `#${anchor}`,
+        `${file}#${anchor}`
+      ]) {
+        const result = await call(section)
+
+        expect(result.isError, section).toBeFalsy()
+        expect(text(result), section).toBe(byAnchor)
+      }
+    }
+  })
+
+  // An agent passes the anchor of a link it reads in a skill
+  test('returns a section for every link of the skills that names one', async () => {
+    const links = RESOURCES.flatMap(({ path }) =>
+      sectionLinks(read(path)).map((link) => ({ ...link, from: path }))
+    )
+
+    expect(links.length).toBeGreaterThan(10)
+    for (const { file, anchor, from } of links) {
+      const reference = referenceOf(from, file)
+      const result = await client.callTool({
+        name: 'chassis_get_reference',
+        arguments: { name: reference?.name, section: `${file}#${anchor}` }
+      })
+      const section = sections(read(reference?.path ?? '')).find((s) => s.anchor === anchor)
+
+      expect(result.isError, `${from}: ${file}#${anchor}`).toBeFalsy()
+      expect(text(result)).toContain(section?.text.trim())
+    }
+  })
+
+  test('a section is smaller than its file', async () => {
+    for (const { name, path } of REFERENCES) {
+      const [{ anchor }] = sections(read(path))
+      const result = await client.callTool({
+        name: 'chassis_get_reference',
+        arguments: { name, section: anchor }
+      })
+
+      expect(text(result).length, name).toBeLessThan(body(read(path)).length)
+    }
+  })
+
+  test.each(['', '  '])('returns the whole file for the section "%s"', async (section) => {
+    const { name, path } = REFERENCES[0]
+    const result = await client.callTool({
+      name: 'chassis_get_reference',
+      arguments: { name, section }
+    })
+
+    expect(result.isError).toBeFalsy()
+    expect(text(result)).toBe(body(read(path)))
+  })
+
+  test('answers a section the file does not have with an error that lists its sections', async () => {
+    for (const { name, path } of REFERENCES) {
+      const result = await client.callTool({
+        name: 'chassis_get_reference',
+        arguments: { name, section: 'No such section' }
+      })
+
+      expect(result.isError, name).toBe(true)
+      expect(text(result)).toContain(`\`${path.slice(path.lastIndexOf('/') + 1)}\``)
+      expect(text(result)).toContain('"No such section"')
+      for (const { title, level } of sections(read(path))) {
+        if (level === 2) expect(text(result), name).toContain(`  - ${title}`)
+      }
+    }
+  })
+
+  // "Forms" is a list of components and a way to compose them in the same file. The anchor
+  // of a link is never ambiguous; a heading can be, and the first is not a safe guess
+  test('answers a heading the file has twice with an error that lists the anchors', async () => {
+    const twice = REFERENCES.flatMap(({ name, path }) => {
+      const all = sections(read(path))
+      return all.filter(({ title }) => repeated(title, all)).map((section) => ({ name, section }))
+    })
+
+    // The files of today have such headings; without one this test says nothing
+    expect(twice.length).toBeGreaterThan(0)
+    for (const { name, section } of twice) {
+      const result = await client.callTool({
+        name: 'chassis_get_reference',
+        arguments: { name, section: section.title }
+      })
+
+      expect(result.isError, section.title).toBe(true)
+      expect(text(result)).toContain(`\`${section.anchor}\``)
+      expect(text(result)).not.toContain(section.text.trim())
+    }
   })
 
   // A skill is not a reference: the skill tools return it

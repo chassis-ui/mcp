@@ -31,18 +31,113 @@ function isReference(resource: Resource): resource is Reference {
   return 'summary' in resource
 }
 
+// A section of a reference, as the generator writes it: a heading below level one, the anchor
+// GitHub gives it, and the offsets of its text in the file, subsections included
+interface Section {
+  title: string
+  anchor: string
+  level: number
+  start: number
+  end: number
+}
+
+function sectionsOf(reference: Reference): readonly Section[] {
+  return reference.sections
+}
+
+function fileOf(reference: Reference): string {
+  return reference.path.slice(reference.path.lastIndexOf('/') + 1)
+}
+
+// A heading and an anchor compare equal whatever their case, dashes and punctuation
+function normalize(value: string): string {
+  return value.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '')
+}
+
+// A heading names its section unless another heading of the file has the same text; then only
+// the anchor does, and the lists show it
+function label(section: Section, all: readonly Section[]): string {
+  const same = all.filter((other) => normalize(other.title) === normalize(section.title))
+  return same.length > 1 ? `${section.title} (#${section.anchor})` : section.title
+}
+
+// The level-two sections of a reference, one per line with its size, each followed by the
+// names of its level-three sections: what an agent chooses a section from
+function sectionLines(reference: Reference): string[] {
+  const all = sectionsOf(reference)
+
+  return all
+    .filter((section) => section.level === 2)
+    .map((section) => {
+      const size = Math.max(0.1, (section.end - section.start) / 1024).toFixed(1)
+      const inner = all
+        .filter((s) => s.level === 3 && s.start > section.start && s.end <= section.end)
+        .map((s) => label(s, all))
+      const subsections = inner.length > 0 ? `: ${inner.join('; ')}` : ''
+
+      return `  - ${label(section, all)} (${size} KB)${subsections}`
+    })
+}
+
+// The sections a value of the `section` input names: the one with that anchor, else every
+// one whose heading or anchor reads the same. What is before a `#` is dropped, so a link
+// `file.md#anchor` and a heading written with its hashes both work
+function findSections(reference: Reference, wanted: string): Section[] {
+  const all = sectionsOf(reference)
+  const query = wanted.slice(wanted.lastIndexOf('#') + 1).trim()
+  const exact = all.filter((section) => section.anchor === query)
+  if (exact.length > 0) return exact
+
+  const key = normalize(query)
+  if (key === '') return []
+  return all.filter(
+    (section) => normalize(section.title) === key || normalize(section.anchor) === key
+  )
+}
+
+// The sections a section is inside, from the outermost
+function ancestorsOf(reference: Reference, section: Section): Section[] {
+  return sectionsOf(reference).filter(
+    (other) =>
+      other.level < section.level && other.start < section.start && other.end >= section.end
+  )
+}
+
+// The heading a section is under: of the section around it, or of the file
+function parentOf(reference: Reference, section: Section): string {
+  return ancestorsOf(reference, section).at(-1)?.title ?? reference.description
+}
+
+// One section of a reference, under the headings it is inside and after the introduction of
+// its file: the level-one heading and the text before the first section, which says how the
+// file is read (the placeholders of the class catalog, the rules every recipe follows)
+function sectionText(reference: Reference, section: Section): string {
+  const file = text(reference.path)
+  const first = sectionsOf(reference)[0]
+  const parts = [
+    stripFrontmatter(file.slice(0, first.start)).trim(),
+    ...ancestorsOf(reference, section).map((s) => `${'#'.repeat(s.level)} ${s.title}`),
+    file.slice(section.start, section.end).trim()
+  ]
+
+  return `${parts.filter((part) => part !== '').join('\n\n')}\n`
+}
+
 // What the skill tools return unless asked for the bundle: SKILL.md, then an index of its
-// references with what chassis_get_reference needs. The references are what a task may need,
-// not what every task needs, and together they are several times the size of the instructions
+// references with what chassis_get_reference needs, the sections of each file included. The
+// references are what a task may need, not what every task needs, and together they are
+// several times the size of the instructions
 function buildSkillIndex(skill: string): string {
   const instructions = stripFrontmatter(text(`skills/${skill}/SKILL.md`))
   const references = RESOURCES.filter(isReference).filter((r) =>
     r.name.startsWith(`${skill}/references/`)
   )
   const lines = references.map((r) => {
-    const file = r.path.slice(r.path.lastIndexOf('/') + 1)
     const size = Math.max(1, Math.round(text(r.path).length / 1024))
-    return `- \`${file}\` (${size} KB) — ${r.summary}. Title "${r.description}". Name \`${r.name}\``
+    const line = `- \`${fileOf(r)}\` (${size} KB) — ${r.summary}. Title "${r.description}". Name \`${r.name}\``
+    const sections = sectionLines(r)
+
+    return sections.length > 0 ? `${line}. Sections:\n${sections.join('\n')}` : line
   })
 
   return [
@@ -50,6 +145,7 @@ function buildSkillIndex(skill: string): string {
     '---',
     '## Fetching the references',
     'The instructions above link to the files of `./references/`. They are not included here: when the instructions send you to one, call `chassis_get_reference` with the name given below, and read what it returns before you go on.',
+    'To read one part of a file, also pass `section`: a heading of the file, or the anchor of a link, so a link `file.md#anchor` in the instructions is fetched as `section: "anchor"` of that file. A section comes with its subsections, under the introduction of its file. The sections of each file are listed under it with their sizes; after a colon, the subsections, which can be fetched the same way.',
     lines.join('\n')
   ].join('\n\n')
 }
@@ -142,12 +238,13 @@ export function createServer(): McpServer {
   )
 
   // Tools. A skill tool returns the instructions and an index of the references; the
-  // references come one at a time from chassis_get_reference, or all at once with full: true
+  // references come one at a time from chassis_get_reference, whole or by section, or all at
+  // once with full: true
   server.registerTool(
     'chassis_create_design',
     {
       description:
-        'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.',
+        'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.',
       inputSchema: FULL
     },
     async ({ full }) => ({
@@ -164,7 +261,7 @@ export function createServer(): McpServer {
     'chassis_implement_design',
     {
       description:
-        'Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.',
+        'Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.',
       inputSchema: FULL
     },
     async ({ full }) => ({
@@ -181,18 +278,44 @@ export function createServer(): McpServer {
     'chassis_get_reference',
     {
       description:
-        'Fetch one reference file of a Chassis UI skill by name, without its frontmatter. The skill tools list the names and what each file holds.',
-      inputSchema: { name: z.enum(REFERENCE_NAMES).describe('Reference file to fetch') }
+        'Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it. The skill tools list the names, what each file holds and its sections.',
+      inputSchema: {
+        name: z.enum(REFERENCE_NAMES).describe('Reference file to fetch'),
+        section: z
+          .string()
+          .optional()
+          .describe(
+            'A heading of the file, or the anchor of a link `file.md#anchor`: returns that section, with its subsections and the introduction of the file, instead of the whole file. The skill tools list the sections of each file'
+          )
+      }
     },
-    async ({ name }) => {
-      const resource = RESOURCES.find((r) => r.name === name)
+    async ({ name, section }) => {
+      const resource = RESOURCES.filter(isReference).find((r) => r.name === name)
       if (!resource) {
         return {
           content: [{ type: 'text', text: `Unknown reference: ${name}` }],
           isError: true
         }
       }
-      return { content: [{ type: 'text', text: stripFrontmatter(text(resource.path)) }] }
+      if (section === undefined || section.trim() === '') {
+        return { content: [{ type: 'text', text: stripFrontmatter(text(resource.path)) }] }
+      }
+
+      const found = findSections(resource, section)
+      if (found.length === 1) {
+        return { content: [{ type: 'text', text: sectionText(resource, found[0]) }] }
+      }
+
+      // No section, or a heading the file has more than once: the answer says what to ask for
+      const file = fileOf(resource)
+      const problem =
+        found.length === 0
+          ? `\`${file}\` has no section "${section}". Its sections:\n${sectionLines(resource).join('\n')}`
+          : `\`${file}\` has ${found.length} sections "${section}". Pass the anchor of one:\n${found
+              .map((s) => `  - \`${s.anchor}\`, in "${parentOf(resource, s)}"`)
+              .join('\n')}`
+
+      return { content: [{ type: 'text', text: problem }], isError: true }
     }
   )
 

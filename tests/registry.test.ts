@@ -4,7 +4,7 @@
 
 import { describe, expect, test } from 'vitest'
 import { CONTENT, RESOURCES, VERSION } from '../server/content.generated.js'
-import { heading, markdownFiles, read, summary, version } from './helpers.js'
+import { heading, markdownFiles, read, sections, summary, version } from './helpers.js'
 
 const skills = markdownFiles('skills')
 const prompts = markdownFiles('prompts')
@@ -105,6 +105,41 @@ describe('resource registry', () => {
       } else {
         expect(carried, path).toBe(summary(read(`skills/${path.split('/')[1]}/SKILL.md`), path))
       }
+    }
+  })
+
+  // Every heading below level one, with the anchor of a link `file.md#anchor` and the offsets
+  // the server cuts the section out with. A skill has none: its tool returns it whole
+  test('carries the sections of each reference, where they are in the file', () => {
+    for (const resource of RESOURCES) {
+      const { path } = resource
+      const file = read(path)
+      const carried = (resource as { sections?: readonly Record<string, unknown>[] }).sections
+
+      if (path.endsWith('/SKILL.md')) {
+        expect(carried, path).toBeUndefined()
+        continue
+      }
+
+      const expected = sections(file)
+      expect(
+        carried?.map(({ title, anchor, level }) => ({ title, anchor, level })),
+        path
+      ).toEqual(expected.map(({ title, anchor, level }) => ({ title, anchor, level })))
+      expect(
+        carried?.map(({ start, end }) => file.slice(start as number, end as number)),
+        path
+      ).toEqual(expected.map(({ text }) => text))
+    }
+  })
+
+  // The anchor is what chassis_get_reference tells two sections of the same heading apart by
+  test('gives the sections of a reference unique anchors', () => {
+    for (const resource of RESOURCES) {
+      const { sections: carried = [] } = resource as { sections?: readonly { anchor: string }[] }
+      const anchors = carried.map((section) => section.anchor)
+
+      expect(new Set(anchors).size, resource.path).toBe(anchors.length)
     }
   })
 

@@ -2,11 +2,13 @@
 // server/content.generated.ts: the text of every file, the registry of the resources the server
 // derives its resources, prompts and tools from, and the version. The Vercel function reads
 // nothing from disk at runtime, and a file of skills/ cannot be left out of the server: the
-// registry is made from the same walk as the content.
+// registry is made from the same walk as the content. The registry also holds where each section
+// of a reference starts and ends, so the server can return one section without parsing Markdown.
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import GithubSlugger from 'github-slugger'
 import { parse as parseYaml } from 'yaml'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -105,6 +107,47 @@ function summarize(reference, skill, content) {
   )
 }
 
+/**
+ * The sections of a reference: every heading below level one, with the anchor GitHub gives it
+ * (the one a link `file.md#anchor` of a skill carries, and build/check-links.js checks) and
+ * the offsets of its text in the file, from its heading to the next heading of the same level
+ * or a higher one. So a section holds its subsections. A heading inside a code block is not one
+ * @param {string} content - The file
+ * @returns {{ title: string, anchor: string, level: number, start: number, end: number }[]}
+ */
+function sections(content) {
+  const slugger = new GithubSlugger()
+  const headings = []
+  let fence = null
+  let offset = 0
+
+  for (const line of content.split('\n')) {
+    const marker = line.match(/^(```|~~~)/)?.[1]
+    const heading = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/)
+
+    if (marker) {
+      if (fence === null) fence = marker
+      else if (fence === marker) fence = null
+    } else if (fence === null && heading) {
+      headings.push({
+        title: heading[2],
+        // The level-one heading too: a later heading of the same text gets a numbered anchor
+        anchor: slugger.slug(heading[2].replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')),
+        level: heading[1].length,
+        start: offset
+      })
+    }
+    offset += line.length + 1
+  }
+
+  return headings
+    .map((heading, index) => {
+      const next = headings.slice(index + 1).find((other) => other.level <= heading.level)
+      return { ...heading, end: next ? next.start : content.length }
+    })
+    .filter((heading) => heading.level > 1)
+}
+
 const skillPaths = collectMd('skills').sort(registryOrder)
 const paths = [PROMPT, ...skillPaths]
 const content = Object.fromEntries(paths.map((p) => [p, readFileSync(join(ROOT, p), 'utf-8')]))
@@ -124,10 +167,14 @@ const resources = skillPaths.map((path) => {
     path
   }
 
-  // A reference also carries the line its SKILL.md gives it
+  // A reference also carries the line its SKILL.md gives it, and its sections
   if (name.includes('/references/')) {
     const skill = `skills/${path.split('/')[1]}/SKILL.md`
-    return { ...resource, summary: summarize(path, skill, content[skill]) }
+    return {
+      ...resource,
+      summary: summarize(path, skill, content[skill]),
+      sections: sections(content[path])
+    }
   }
 
   return resource
@@ -150,8 +197,10 @@ export const VERSION = '${version}'
 
 // Every Markdown file of skills/, in the order of the skill bundles: a SKILL.md, then its
 // references. The description is the frontmatter description of a skill and the level-one
-// heading of a reference; a reference also has the summary its SKILL.md gives it. Typed as a
-// tuple of literals so the enum of chassis_get_reference can be made from the names.
+// heading of a reference; a reference also has the summary its SKILL.md gives it, and its
+// sections: each heading below level one with its anchor, its level and the offsets of its text
+// in the file. Typed as a tuple of literals so the enum of chassis_get_reference can be made
+// from the names.
 export const RESOURCES = [
 ${resourceEntries.join(',\n')}
 ] as const
