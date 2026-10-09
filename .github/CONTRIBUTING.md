@@ -112,6 +112,10 @@ it with the files on disk.
 - The handler is stateless: every request gets a new server and a new transport, and there is no
   session. Test a change through the handler, with `pnpm dev` or in `tests/handler.test.ts`, and
   not only through `createServer()` in memory: the handler is what Vercel runs.
+- Besides the protocol, the handler answers a browser (a `GET` without `text/event-stream` in
+  `Accept`) with a page, `GET /health` with `{ "ok": true, "version": "<version>" }`, and a
+  failure with a JSON-RPC error after a `console.error`. `tests/handler.test.ts` pins each, and
+  `pnpm dev` serves `/`, `/health` and `/mcp`.
 - The names, descriptions and inputs of the tools, prompts and resources are what every client is
   shown. `tests/__snapshots__/server.test.ts.snap` holds them; a change to that file is a change
   for every agent that uses the server. Update it with `pnpm test -u` and review the difference.

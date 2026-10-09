@@ -109,6 +109,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 ## Server conventions
 
 - The handler is stateless: `api/index.ts` builds a new `McpServer` and a new transport for every request, with no session id. The SDK binds one transport to one server, so do not share either between requests. What they serve is built once, when `server/index.ts` loads.
+- `api/index.ts` answers a `GET` without `text/event-stream` in `Accept` with an HTML page (no external asset, nothing of Chassis), `GET /health` with `{ "ok": true, "version": "<version>" }`, a `GET` that opens the event stream with 405 (the server sends no server-initiated messages, so a stream would only hold a function open), and a failure with a JSON-RPC error `-32603` after a `console.error`. On Vercel it uses the body the runtime parsed into `req.body`; locally it reads the stream. `vercel.json` rewrites `/`, `/health` and `/mcp` to the function, which sees the path the client asked for.
 - Verify a change through the handler (`pnpm dev`, or `tests/handler.test.ts`), not only through `createServer()` in memory: the handler is what Vercel runs.
 - Imports between modules use the `.js` extension (`./resources.js`), which `tsc` and `tsx` resolve to the `.ts` file.
 - `console.log` is a lint error in `server/` and `api/`: stdout belongs to the protocol on a stdio transport. Use `console.error`.
