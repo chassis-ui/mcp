@@ -56,15 +56,16 @@ export function readFile(dir, file) {
  * Runs the copy of a script in a fixture with Node.js
  * @param {string} dir - The directory of the fixture
  * @param {string} script - The script, from the root of the fixture
- * @param {Record<string, string | undefined>} [env] - Environment variables to add
+ * @param {{ args?: string[], env?: Record<string, string | undefined> }} [options] - Its
+ *   arguments and the environment variables to add
  * @returns {Promise<{ status: number, stdout: string, stderr: string }>} Never rejects on a
  *   failing exit code
  */
-export function runScript(dir, script, env = {}) {
+export function runScript(dir, script, { args = [], env = {} } = {}) {
   return new Promise((resolve, reject) => {
     execFile(
       process.execPath,
-      [path.join(dir, script)],
+      [path.join(dir, script), ...args],
       { cwd: dir, env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: undefined, ...env } },
       (error, stdout, stderr) => {
         if (error && typeof error.code !== 'number') {
