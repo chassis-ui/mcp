@@ -7,7 +7,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createServer } from '../server/index.js'
-import { RESOURCES } from '../server/resources.js'
+import { RESOURCES } from '../server/content.generated.js'
 import { body, heading, read, version } from './helpers.js'
 
 const SKILLS = ['chassis-create-design', 'chassis-implement-design']

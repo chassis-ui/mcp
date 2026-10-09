@@ -19,13 +19,12 @@ prompts/
   chassis-ui.prompt.md        # the /chassis-ui prompt
 server/
   index.ts                    # createServer(): the resources, prompts and tools
-  resources.ts                # the list of resources, written by hand
-  content.generated.ts        # generated, not committed
+  content.generated.ts        # generated, not committed: the Markdown and the resource registry
   dev.ts                      # serves the handler locally (pnpm dev)
 api/
   index.ts                    # the HTTP handler Vercel deploys
 build/
-  generate-content.js         # skills/ and prompts/ into server/content.generated.ts
+  generate-content.js         # skills/ and prompts/ into server/content.generated.ts, with the registry
   generate-css-classes.js     # @chassis-ui/css into references/css-classes.md
   sync-version-refs.js        # the version of package.json into the plugin manifests
   release-notes.js            # the CHANGELOG entry of a version, for the GitHub release
@@ -73,7 +72,7 @@ Run the checks of the area you changed, and report the ones that fail.
 | Area changed                              | Run                                                                                                                                                |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `skills/`, `prompts/`                     | `pnpm lint:prettier`, `pnpm lint:skills`, `pnpm docs:links:offline`, `pnpm lint:spell`, `pnpm test`; a changeset                                   |
-| A file added to or removed from `skills/` | the row above after updating `server/resources.ts`, then `pnpm test -u` and a look at the snapshot                                                 |
+| A file added to or removed from `skills/` | the row above, then `pnpm test -u` and a look at the snapshot: the registry is generated from the files                                            |
 | `server/`, `api/`                         | `pnpm lint`, `pnpm typecheck`, `pnpm test`; add a test for a change of behavior, and a changeset                                                   |
 | `build/`                                  | `pnpm lint`, `pnpm build:test`, `pnpm verify`; add a test in `build/tests/` for a change of behavior                                               |
 | `@chassis-ui/css` in `package.json`       | `pnpm install`, `pnpm generate`, commit the new `css-classes.md`, `pnpm verify`                                                                    |
@@ -83,19 +82,19 @@ Run the checks of the area you changed, and report the ones that fail.
 
 ## Generated files
 
-- `server/content.generated.ts` holds the text of every Markdown file of `skills/` and `prompts/` and the version of `package.json`, as a module, so the function reads nothing from disk at runtime. `build/generate-content.js` writes it on `pnpm install`, `pnpm build` and before the tests. Git ignores it. `pnpm dev` does not write it: after a change to a skill, run `pnpm build`.
+- `server/content.generated.ts` holds the text of every Markdown file of `skills/` and `prompts/`, the registry of resources (`RESOURCES`) and the version of `package.json`, as a module, so the function reads nothing from disk at runtime. `build/generate-content.js` writes it on `pnpm install`, `pnpm build` and before the tests. Git ignores it. `pnpm dev` does not write it: after a change to a skill, run `pnpm build`.
 - `skills/chassis-implement-design/references/css-classes.md` is written by `build/generate-css-classes.js` from the compiled stylesheet of the `@chassis-ui/css` development dependency, and is **committed**. Never edit it. Change the generator or bump the dependency, run `pnpm generate`, and commit the result with the change; the Verify job of CI fails when they differ. `CHASSIS_CSS_DIR` points the generator at a checkout of `chassis-css/packages/css` instead of `node_modules`.
 
 ## How the server finds a file
 
-Two lists name the Markdown files, and they must agree:
+`build/generate-content.js` walks `skills/` once and writes two things into `server/content.generated.ts` from that walk, so they cannot disagree:
 
-- `CONTENT` in `server/content.generated.ts`, keyed by path (`skills/chassis-create-design/SKILL.md`). The generator walks `skills/`, and adds `prompts/chassis-ui.prompt.md` by name.
-- `RESOURCES` in `server/resources.ts`, written by hand: `name`, `uri`, `description` and `path` for every file of `skills/`. The name is the path without `skills/` and `.md`, and a `SKILL.md` has the name of its directory. The URI is `chassis://skills/<name>`.
+- `CONTENT`, the text of every Markdown file of `skills/` and of `prompts/chassis-ui.prompt.md`, keyed by path with forward slashes on every platform (`skills/chassis-create-design/SKILL.md`).
+- `RESOURCES`, one entry per file of `skills/` with `name`, `uri`, `description` and `path`, in the order of the skill bundles: the skills by name, and within a skill `SKILL.md` before its references by path. The name is the path without `skills/` and `.md`, and a `SKILL.md` has the name of its directory. The URI is `chassis://skills/<name>`. The description is the frontmatter `description` of a skill and the level-one heading of a reference; a file with neither fails the generator, and so the build.
 
-The server derives the rest from `RESOURCES`: a skill bundle (what `chassis_create_design`, `chassis_implement_design` and the two skill prompts return) is every resource whose name is the skill or starts with `<skill>/`, in the order of the list, without frontmatter; `chassis_get_reference` offers the names that contain `/references/`.
+The server derives the rest from `RESOURCES`: a skill bundle (what `chassis_create_design`, `chassis_implement_design` and the two skill prompts return) is every resource whose name is the skill or starts with `<skill>/`, in the order of the list, without frontmatter, built once when `server/index.ts` loads; `chassis_get_reference` offers the names that contain `/references/`.
 
-To add a reference file: add the Markdown file to `skills/<skill>/references/`, add its entry to `RESOURCES` in the position it should have in the bundle, mention it in the `SKILL.md` where an agent needs it, and run `pnpm test -u`. `tests/registry.test.ts` fails while a file of `skills/` has no entry. A second prompt file needs a line in `build/generate-content.js` and a `registerPrompt` in `server/index.ts`.
+To add a reference file: add the Markdown file to `skills/<skill>/references/` with one level-one heading, mention it in the `SKILL.md` where an agent needs it, and run `pnpm test -u`: the next `pnpm build` or test run puts it in the registry, and the snapshot gains it. `tests/registry.test.ts` compares the registry with the files on disk. A second prompt file needs a line in `build/generate-content.js` and a `registerPrompt` in `server/index.ts`.
 
 ## Skill and prompt conventions
 
@@ -109,7 +108,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/`, 
 
 ## Server conventions
 
-- The handler is stateless: `api/index.ts` builds a new `McpServer` and a new transport for every request, with no session id. The SDK binds one transport to one server, so do not share either between requests.
+- The handler is stateless: `api/index.ts` builds a new `McpServer` and a new transport for every request, with no session id. The SDK binds one transport to one server, so do not share either between requests. What they serve is built once, when `server/index.ts` loads.
 - Verify a change through the handler (`pnpm dev`, or `tests/handler.test.ts`), not only through `createServer()` in memory: the handler is what Vercel runs.
 - Imports between modules use the `.js` extension (`./resources.js`), which `tsc` and `tsx` resolve to the `.ts` file.
 - `console.log` is a lint error in `server/` and `api/`: stdout belongs to the protocol on a stdio transport. Use `console.error`.

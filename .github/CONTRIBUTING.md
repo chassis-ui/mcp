@@ -100,11 +100,12 @@ them.
 - Both skills need the Figma MCP server in the agent's session. The plugin installs it with the
   Chassis server.
 
-To add a reference file, add the Markdown file to `skills/<skill>/references/`, add its entry to
-[`server/resources.ts`](../server/resources.ts) (the name is the path without `skills/` and
+To add a reference file, add the Markdown file to `skills/<skill>/references/` with one level-one
+heading (its title is the description of the resource; the name is the path without `skills/` and
 `.md`), mention it in the `SKILL.md` where the agent needs it, and run `pnpm test -u` to add it to
-the snapshot. The tests of `tests/registry.test.ts` fail while a file of `skills/` is missing
-from the server.
+the snapshot. The registry of resources is generated from the files of `skills/` together with
+their content, by `build/generate-content.js`, and the tests of `tests/registry.test.ts` compare
+it with the files on disk.
 
 ## Changing the server
 
