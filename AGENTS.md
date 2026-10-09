@@ -29,6 +29,8 @@ build/
   generate-css-classes.js     # @chassis-ui/css into references/css-classes.md
   sync-version-refs.js        # the version of package.json into the plugin manifests
   release-notes.js            # the CHANGELOG entry of a version, for the GitHub release
+  validate-skills.js          # the frontmatter, file names, headings and tables of the skills
+  check-links.js              # the links of every Markdown file
   tests/                      # node --test: each build script on files of its own
 tests/                        # Vitest: the server in memory, the handler over HTTP
 .claude-plugin/               # plugin.json and marketplace.json for Claude Code
@@ -53,13 +55,16 @@ Package manager is **pnpm** (pinned in `package.json`), with Node.js 22.12 or la
 - `pnpm generate` — writes `css-classes.md` and `server/content.generated.ts`
 - `pnpm lint` — ESLint, with typescript-eslint's recommended rules on `server/`, `api/` and `tests/`
 - `pnpm lint:prettier` — Prettier over the whole repository; `pnpm format` writes
+- `pnpm lint:skills` — the frontmatter of the skills and prompts, the reference files they name, one level-one heading in each file, well-formed tables, and the `@chassis-ui/css` version in the banner of `css-classes.md`
+- `pnpm docs:links:offline` — the relative links and heading anchors of every Markdown file; `pnpm docs:links` also requests the external URLs
+- `pnpm lint:spell` — cspell over the Markdown files; a word of the project goes into `.cspell.json`
 - `pnpm typecheck` — `tsc --noEmit` over `server/`, `api/` and `tests/`
 - `pnpm test` — Vitest (`tests/`): the registry, the contract of the server through the SDK client in memory, the handler over HTTP. `pnpm test -u` updates the snapshot
 - `pnpm build:test` — `node --test` (`build/tests/`): each build script on files of its own, never on the repository
 - `pnpm verify` — `pnpm generate`, then fails when `css-classes.md` differs from the commit
 - `pnpm check:pnpm` — `pnpm audit --prod`, failing on a moderate advisory
 - `pnpm changeset` — writes a changeset; `pnpm changeset --empty` writes one that releases nothing
-- `pnpm test:ci` — every check of `.github/workflows/ci.yml` except the changeset check and the dependency review, in one run. A test in `build/tests/` fails when the workflow runs a script that `test:ci` does not
+- `pnpm test:ci` — every check of `.github/workflows/ci.yml` except the changeset check, the external links and the dependency review, in one run. A test in `build/tests/` fails when the workflow runs a script that `test:ci` does not
 
 ## Before a task is done
 
@@ -67,14 +72,14 @@ Run the checks of the area you changed, and report the ones that fail.
 
 | Area changed                              | Run                                                                                                                                                |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `skills/`, `prompts/`                     | `pnpm lint:prettier`, `pnpm test`; a changeset                                                                                                     |
+| `skills/`, `prompts/`                     | `pnpm lint:prettier`, `pnpm lint:skills`, `pnpm docs:links:offline`, `pnpm lint:spell`, `pnpm test`; a changeset                                   |
 | A file added to or removed from `skills/` | the row above after updating `server/resources.ts`, then `pnpm test -u` and a look at the snapshot                                                 |
 | `server/`, `api/`                         | `pnpm lint`, `pnpm typecheck`, `pnpm test`; add a test for a change of behavior, and a changeset                                                   |
 | `build/`                                  | `pnpm lint`, `pnpm build:test`, `pnpm verify`; add a test in `build/tests/` for a change of behavior                                               |
 | `@chassis-ui/css` in `package.json`       | `pnpm install`, `pnpm generate`, commit the new `css-classes.md`, `pnpm verify`                                                                    |
 | `package.json`, `pnpm-lock.yaml`          | `pnpm install --frozen-lockfile`, `pnpm test:ci`                                                                                                   |
 | `.github/workflows/`                      | `actionlint`, and `pnpm build:test`: a script `ci.yml` runs is part of `test:ci`. A job name is also in the ruleset of `main` and in `release.yml` |
-| README or other Markdown                  | `pnpm lint:prettier`                                                                                                                               |
+| README or other Markdown                  | `pnpm lint:prettier`, `pnpm docs:links`, `pnpm lint:spell`                                                                                         |
 
 ## Generated files
 
@@ -94,7 +99,8 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/`, 
 
 ## Skill and prompt conventions
 
-- A skill is `skills/<name>/SKILL.md` with the frontmatter `name` (the directory name), `description` (what it does, when to use it and when not to, in one string: an agent picks a skill by it) and `disable-model-invocation`. Its reference files are in `skills/<name>/references/`, without frontmatter, each with one level-one heading.
+- A skill is `skills/<name>/SKILL.md` with the frontmatter `name` (the directory name), `description` (what it does, when to use it and when not to, in one string of at most 1024 characters: an agent picks a skill by it) and `disable-model-invocation`. Its reference files are in `skills/<name>/references/`, without frontmatter, each with one level-one heading. `SKILL.md` names every reference file, and no file of a skill names a Markdown file the skill does not have. `pnpm lint:skills` checks all of this.
+- Inside a table cell, write a pipe as `\|`, in a code span too: an unescaped pipe ends the cell, and a row with more cells than its header is not a table.
 - The prompt file has the frontmatter `mode` and `description`.
 - Both skills run on top of the Figma MCP server and its skills. They name its tools (`use_figma`, `get_design_context`, `search_design_system`); a skill must not assume a tool the Figma server does not have.
 - An agent follows a skill word for word. Change the meaning of a skill only when the task is about the skill, and say in the summary what an agent will now do differently. A change that only formats (Prettier, a link, a table) must leave every sentence as it was.
