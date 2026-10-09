@@ -168,11 +168,12 @@ For each replacement (one at a time):
 4. Set TEXT property on the asset instance (not parent)
 ```
 
-### Section-Level Theme Switch *(designer action — not the agent)*
+### Section-Level Theme Switch _(designer action — not the agent)_
 
 > **This is a manual Figma action performed by the designer, not a programmatic step.** The agent must never call `setExplicitVariableModeForCollection` for any reason. If a theme or brand switch is needed, ask the designer to do it.
 
 Designer steps in Figma:
+
 ```
 1. Select section frame
 2. Open Appearance panel → Apply variable mode

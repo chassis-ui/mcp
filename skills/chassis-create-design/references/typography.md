@@ -56,6 +56,7 @@ await textNode.setTextStyleIdAsync(style.id)
 ```
 
 This recipe works unchanged for:
+
 - Manually created text nodes (`figma.createText()` — current font is always Inter Regular)
 - Text nodes inside Basic Text Asset instances (current font is whatever the library carries in the active brand mode)
 - Any other component's inner text nodes

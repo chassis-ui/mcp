@@ -129,13 +129,13 @@ button.setProperties({
 
 ### Component details
 
-| Property         | Value                                                                    |
-| ---------------- | ------------------------------------------------------------------------ |
-| Library          | `cx.asset.text`                                                          |
-| Component key    | **Resolve at runtime** via `search_design_system({ query: 'cx.asset.text', includeComponents: true, includeLibraryKeys: [...] })` — the key differs per team's Chassis library instance |
-| Import with      | `importComponentByKeyAsync(resolvedKey)` (it is a single component, not a set) |
-| Text property    | **Discover at runtime** from `inst.componentProperties` — the logical name is `text` but the full key includes a `#nodeId` suffix that differs per library instance. Find it with: `Object.keys(inst.componentProperties).find(k => k.startsWith('text') && inst.componentProperties[k].type === 'TEXT')` |
-| Default font     | Library-carried; resolved by active brand mode — read via `textNode.fontName`, never hardcode |
+| Property      | Value                                                                                                                                                                                                                                                                                                     |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Library       | `cx.asset.text`                                                                                                                                                                                                                                                                                           |
+| Component key | **Resolve at runtime** via `search_design_system({ query: 'cx.asset.text', includeComponents: true, includeLibraryKeys: [...] })` — the key differs per team's Chassis library instance                                                                                                                   |
+| Import with   | `importComponentByKeyAsync(resolvedKey)` (it is a single component, not a set)                                                                                                                                                                                                                            |
+| Text property | **Discover at runtime** from `inst.componentProperties` — the logical name is `text` but the full key includes a `#nodeId` suffix that differs per library instance. Find it with: `Object.keys(inst.componentProperties).find(k => k.startsWith('text') && inst.componentProperties[k].type === 'TEXT')` |
+| Default font  | Library-carried; resolved by active brand mode — read via `textNode.fontName`, never hardcode                                                                                                                                                                                                             |
 
 ### Procedure
 
