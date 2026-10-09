@@ -27,13 +27,16 @@ api/
 build/
   generate-content.js         # skills/ and prompts/ into server/content.generated.ts
   generate-css-classes.js     # @chassis-ui/css into references/css-classes.md
-  change-version.js           # the version, in package.json and the plugin manifests
-  tests/                      # node --test: the generators on files of their own
+  sync-version-refs.js        # the version of package.json into the plugin manifests
+  release-notes.js            # the CHANGELOG entry of a version, for the GitHub release
+  tests/                      # node --test: each build script on files of its own
 tests/                        # Vitest: the server in memory, the handler over HTTP
 .claude-plugin/               # plugin.json and marketplace.json for Claude Code
 .cursor-plugin/               # plugin.json for Cursor
 .github/plugin/               # a third plugin.json
 .mcp.json                     # the MCP servers the plugin installs
+.changeset/                   # the changesets of the next version
+CHANGELOG.md                  # written by the version step
 ```
 
 This repo is part of a multi-repo ecosystem (`chassis-tokens`, `chassis-css`, `chassis-react`, `chassis-icons`, `chassis-assets`, `chassis-figma`, `chassis-website`). The skills describe `chassis-css` and the Chassis UI Figma library; when a skill and the framework disagree, the framework is right.
@@ -52,25 +55,26 @@ Package manager is **pnpm** (pinned in `package.json`), with Node.js 22.12 or la
 - `pnpm lint:prettier` — Prettier over the whole repository; `pnpm format` writes
 - `pnpm typecheck` — `tsc --noEmit` over `server/`, `api/` and `tests/`
 - `pnpm test` — Vitest (`tests/`): the registry, the contract of the server through the SDK client in memory, the handler over HTTP. `pnpm test -u` updates the snapshot
-- `pnpm build:test` — `node --test` (`build/tests/`): each generator on files of its own, never on the repository
+- `pnpm build:test` — `node --test` (`build/tests/`): each build script on files of its own, never on the repository
 - `pnpm verify` — `pnpm generate`, then fails when `css-classes.md` differs from the commit
 - `pnpm check:pnpm` — `pnpm audit --prod`, failing on a moderate advisory
-- `pnpm test:ci` — every check of `.github/workflows/ci.yml` except the dependency review, in one run. A test in `build/tests/` fails when the workflow runs a script that `test:ci` does not
+- `pnpm changeset` — writes a changeset; `pnpm changeset --empty` writes one that releases nothing
+- `pnpm test:ci` — every check of `.github/workflows/ci.yml` except the changeset check and the dependency review, in one run. A test in `build/tests/` fails when the workflow runs a script that `test:ci` does not
 
 ## Before a task is done
 
 Run the checks of the area you changed, and report the ones that fail.
 
-| Area changed                              | Run                                                                                                  |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `skills/`, `prompts/`                     | `pnpm lint:prettier`, `pnpm test`                                                                    |
-| A file added to or removed from `skills/` | the row above after updating `server/resources.ts`, then `pnpm test -u` and a look at the snapshot   |
-| `server/`, `api/`                         | `pnpm lint`, `pnpm typecheck`, `pnpm test`; add a test for a change of behavior                      |
-| `build/`                                  | `pnpm lint`, `pnpm build:test`, `pnpm verify`; add a test in `build/tests/` for a change of behavior |
-| `@chassis-ui/css` in `package.json`       | `pnpm install`, `pnpm generate`, commit the new `css-classes.md`, `pnpm verify`                      |
-| `package.json`, `pnpm-lock.yaml`          | `pnpm install --frozen-lockfile`, `pnpm test:ci`                                                     |
-| `.github/workflows/`                      | `actionlint`, and `pnpm build:test`: a script `ci.yml` runs is part of `test:ci`                     |
-| README or other Markdown                  | `pnpm lint:prettier`                                                                                 |
+| Area changed                              | Run                                                                                                                                                |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `skills/`, `prompts/`                     | `pnpm lint:prettier`, `pnpm test`; a changeset                                                                                                     |
+| A file added to or removed from `skills/` | the row above after updating `server/resources.ts`, then `pnpm test -u` and a look at the snapshot                                                 |
+| `server/`, `api/`                         | `pnpm lint`, `pnpm typecheck`, `pnpm test`; add a test for a change of behavior, and a changeset                                                   |
+| `build/`                                  | `pnpm lint`, `pnpm build:test`, `pnpm verify`; add a test in `build/tests/` for a change of behavior                                               |
+| `@chassis-ui/css` in `package.json`       | `pnpm install`, `pnpm generate`, commit the new `css-classes.md`, `pnpm verify`                                                                    |
+| `package.json`, `pnpm-lock.yaml`          | `pnpm install --frozen-lockfile`, `pnpm test:ci`                                                                                                   |
+| `.github/workflows/`                      | `actionlint`, and `pnpm build:test`: a script `ci.yml` runs is part of `test:ci`. A job name is also in the ruleset of `main` and in `release.yml` |
+| README or other Markdown                  | `pnpm lint:prettier`                                                                                                                               |
 
 ## Generated files
 
@@ -109,7 +113,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/`, 
 ## The plugin files
 
 - `.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` are the manifests of the Claude Code and Cursor plugins, with the same content: they point at `./skills/` and `./.mcp.json`. `.claude-plugin/marketplace.json` lists the plugin for `/plugin marketplace add chassis-ui/mcp`, which installs from the default branch, `main`.
-- `.github/plugin/plugin.json` is a third manifest with its own `homepage` and `author`, and without `skills`, `mcpServers` and `logo`. The three are separate files on purpose; only `version` is the same in all of them, and `build/change-version.js` writes it.
+- `.github/plugin/plugin.json` is a third manifest with its own `homepage` and `author`, and without `skills`, `mcpServers` and `logo`. The three are separate files on purpose; only `version` is the same in all of them, and `build/sync-version-refs.js` writes it in the version step.
 - `.mcp.json` is the list of MCP servers the plugin installs for its users. It points at production. Do not point it at localhost; to try a local server, add it to your own client under another name (see CONTRIBUTING.md).
 
 ## Formatting
@@ -122,10 +126,12 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/`, 
 
 Conventional Commits style, with an imperative, lower-case summary: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `build:`, `ci:`, `chore:` (e.g. `refactor: take the server version from package.json`). `deps` is the scope of a dependency change.
 
-Never commit, merge or push without being asked. CI runs on `develop` and on pull requests only. **Pushing `main` is a release**: Vercel deploys it to `https://mcp.chassis-ui.com/mcp`, and the plugin installs from it. The version is bumped on `develop` with `pnpm change-version`.
+Add a changeset (`pnpm changeset`) to a change of what users get, and an empty one (`pnpm changeset --empty`) to a change of `server/`, `api/`, `skills/`, `prompts/`, a generator or a plugin file that releases nothing; CI's Changeset job fails without it. While the version is `0.x`, a breaking change is a `minor` whose text starts with `**Breaking:**`. CONTRIBUTING.md says which bump a change needs.
+
+Never commit, merge or push without being asked. CI runs on `develop` and on pull requests only. **Pushing `main` is a release**: Vercel deploys it to `https://mcp.chassis-ui.com/mcp`, the plugin installs from it, and `release.yml` creates the tag and the GitHub release when the version is new and the CI jobs passed on that commit. `main` only moves forward to a commit of `develop` (`git push origin develop:main`), never by a merge commit. The version is made on `develop` with `pnpm changeset:version`.
 
 ## Do not edit
 
 - Generated: `server/content.generated.ts`, `skills/chassis-implement-design/references/css-classes.md` (see [Generated files](#generated-files)).
-- Written by `pnpm change-version`: `version` in `package.json` and in the three plugin manifests.
+- Written by the version step (`pnpm changeset:version`): `CHANGELOG.md`, `version` in `package.json` and in the three plugin manifests. It also removes the changesets it used.
 - Written by Vitest: `tests/__snapshots__/` (`pnpm test -u`).

@@ -135,37 +135,89 @@ Branch names aren't templated; name yours descriptively (for example `fix/toolti
   tests of the server and the tests of the build scripts, on Node.js 22 and 24), Verify (the
   class catalog matches a fresh run of its generator), Audit (`pnpm check:pnpm`, which is
   `pnpm audit --prod` and fails on a moderate advisory in what the server runs; the audit of the
-  tooling is reported and doesn't fail) and Dependency Review on a pull request. One command
-  runs all of them but the dependency review locally:
+  tooling is reported and doesn't fail), Changeset, and Dependency Review on a pull request.
+  One command runs all of them but the changeset check and the dependency review locally:
 
   ```sh
   pnpm test:ci
   ```
 
+- **A changeset** for anything that changes what users get: the server, a skill, a reference,
+  a prompt or the plugin files. CI fails a pull request or a push to `develop` that changes
+  `server/`, `api/`, `skills/`, `prompts/`, a generator or a plugin file without one; for such a
+  change that releases nothing, such as a refactor, add an empty changeset (see
+  [Changesets](#changesets)). A pull request that only touches the docs, the tests or the tooling
+  doesn't need one.
 - **The regenerated catalog** committed with any change to `@chassis-ui/css` or its generator.
 - **A test** for a change of behavior in `server/`, `api/` or `build/`.
 - **A trial with an agent** for a change to a skill, a reference or a prompt.
 
+## Changesets
+
+A changeset is a Markdown file in [`.changeset/`](../.changeset/) that names the version bump and
+the text of the CHANGELOG entry. Write one with:
+
+```sh
+pnpm changeset
+```
+
+Pick the bump, then write the entry: what changed for someone who uses the server or the plugin,
+and what they have to change, if anything. Commit the file with your change. The bump follows
+semver, with the names and inputs of the tools, prompts and resources, and what a skill produces,
+as the public API:
+
+- **major**: a tool, prompt or resource is renamed or removed, or its input changes; a skill
+  starts to produce what an existing project cannot use (markup for a new major version of
+  Chassis CSS, for example). While the version is `0.x`, use **minor** for these and start the
+  entry with `**Breaking:**`.
+- **minor**: a new tool, prompt, resource, skill or reference; a skill that covers more.
+- **patch**: a corrected instruction, class or token name; a fix in the server.
+
+For a change that releases nothing, add an empty changeset instead:
+
+```sh
+pnpm changeset --empty
+```
+
 ## Releases
 
-A release is a version commit on `develop` that reaches `main`.
+A release is a version commit on `develop` that reaches `main`. The checks of a commit run once,
+on `develop`; pushing the same commit to `main` doesn't run them again.
 
-1. On `develop`, a maintainer bumps the version:
+1. On `develop`, a maintainer runs `pnpm changeset:version`. It removes the changesets, bumps the
+   version in `package.json`, writes the entry of [`CHANGELOG.md`](../CHANGELOG.md) and copies the
+   version into the three plugin manifests. The maintainer reviews the result, commits it and
+   pushes `develop`.
+2. CI runs on that commit. The Changeset job skips the push, since it changes the version.
+3. When CI has passed, the maintainer pushes the same commit to `main`:
 
    ```sh
-   pnpm change-version --patch
+   git push origin develop:main
    ```
 
-   (`--minor` and `--major` likewise; `--dry-run` shows what would change.) It writes the new
-   version to `package.json` and to the three plugin manifests. The server reads its version
-   from `package.json` at build time.
+   The ruleset of `main` requires the checks `Check (Node 22)`, `Check (Node 24)` and `Verify`
+   on the commit, and blocks a force push and a deletion. A merge commit made for `main` would
+   have no checks, so `main` only ever moves forward to a commit of `develop`.
 
-2. The maintainer commits the result, pushes `develop` and waits for CI to pass on that commit.
-3. The maintainer merges `develop` into `main` and pushes `main`. Vercel builds and deploys the
-   function, and the plugin marketplace serves the new skills, since Claude Code installs the
-   plugin from the default branch.
+4. The push is the release, in three parts that don't wait for each other:
+   - **Vercel** builds `main` and serves it at `https://mcp.chassis-ui.com/mcp`.
+   - **The plugin** is installed from `main`, so Claude Code gets the new skills on the next
+     update of the marketplace.
+   - **`.github/workflows/release.yml`** reads the version and stops when the tag `v<version>`
+     exists: a push to `main` without a new version releases nothing. Otherwise it reads the
+     check-runs of the commit by name, stops unless `Check (Node 22)`, `Check (Node 24)` and
+     `Verify` passed on it, and creates the tag and the GitHub release `v<version>` with the
+     CHANGELOG entry as its body.
 
-There is no changelog and no tag yet.
+`develop` and `main` are at the same commit after a release, so nothing is merged back.
+
+A version without a CHANGELOG entry gets no GitHub release, though Vercel deploys it: don't
+push a version to `main` that `pnpm changeset:version` didn't make. A version with a prerelease
+part (`0.2.0-next.0`) is marked as a prerelease.
+
+The job names `Check (Node 22)`, `Check (Node 24)` and `Verify` are the required checks of the
+ruleset of `main`, and they are in the `REQUIRED` list of `release.yml`. Rename a job in
+`ci.yml`, the ruleset and `release.yml` together.
 
 ## Using the issue tracker
 

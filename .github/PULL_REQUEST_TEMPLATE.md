@@ -19,6 +19,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md#what-a-pull-request-needs-before-merge) fo
 behind each of these.
 
 - [ ] `pnpm test:ci` passes locally
+- [ ] **Changeset** (`pnpm changeset`) if the server, a skill, a reference, a prompt or a plugin
+      file changed, saying what a user has to change; an empty one (`pnpm changeset --empty`) if
+      the change releases nothing
 - [ ] **`css-classes.md` regenerated** with `pnpm generate` and committed, if `@chassis-ui/css`
       or `build/generate-css-classes.js` changed; never edited by hand
 - [ ] **`server/resources.ts` updated**, if a file was added to or removed from `skills/`
