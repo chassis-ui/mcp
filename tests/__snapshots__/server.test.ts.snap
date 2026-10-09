@@ -1,0 +1,149 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`server > lists its prompts 1`] = `
+[
+  {
+    "arguments": undefined,
+    "description": "One-shot Chassis Figma design build or reconnect",
+    "name": "chassis-ui",
+  },
+  {
+    "arguments": undefined,
+    "description": "Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library.",
+    "name": "chassis-create-design",
+  },
+  {
+    "arguments": undefined,
+    "description": "Load the chassis-implement-design skill: implement Figma designs into code using Chassis UI CSS.",
+    "name": "chassis-implement-design",
+  },
+]
+`;
+
+exports[`server > lists its resources 1`] = `
+[
+  {
+    "description": "Skill: build or update Figma screens using the Chassis UI library",
+    "mimeType": "text/markdown",
+    "name": "chassis-create-design",
+    "uri": "chassis://skills/chassis-create-design",
+  },
+  {
+    "description": "Chassis component catalog reference for Figma design",
+    "mimeType": "text/markdown",
+    "name": "chassis-create-design/references/components",
+    "uri": "chassis://skills/chassis-create-design/references/components",
+  },
+  {
+    "description": "Chassis layout and composition patterns for Figma design",
+    "mimeType": "text/markdown",
+    "name": "chassis-create-design/references/patterns",
+    "uri": "chassis://skills/chassis-create-design/references/patterns",
+  },
+  {
+    "description": "Chassis design token namespaces reference",
+    "mimeType": "text/markdown",
+    "name": "chassis-create-design/references/tokens",
+    "uri": "chassis://skills/chassis-create-design/references/tokens",
+  },
+  {
+    "description": "Chassis typography reference for Figma design",
+    "mimeType": "text/markdown",
+    "name": "chassis-create-design/references/typography",
+    "uri": "chassis://skills/chassis-create-design/references/typography",
+  },
+  {
+    "description": "Chassis design workflow reference",
+    "mimeType": "text/markdown",
+    "name": "chassis-create-design/references/workflow",
+    "uri": "chassis://skills/chassis-create-design/references/workflow",
+  },
+  {
+    "description": "Skill: implement Figma designs into code using Chassis UI CSS",
+    "mimeType": "text/markdown",
+    "name": "chassis-implement-design",
+    "uri": "chassis://skills/chassis-implement-design",
+  },
+  {
+    "description": "Chassis component reference for code implementation",
+    "mimeType": "text/markdown",
+    "name": "chassis-implement-design/references/components",
+    "uri": "chassis://skills/chassis-implement-design/references/components",
+  },
+  {
+    "description": "Chassis CSS class reference",
+    "mimeType": "text/markdown",
+    "name": "chassis-implement-design/references/css-classes",
+    "uri": "chassis://skills/chassis-implement-design/references/css-classes",
+  },
+  {
+    "description": "Chassis implementation patterns reference",
+    "mimeType": "text/markdown",
+    "name": "chassis-implement-design/references/patterns",
+    "uri": "chassis://skills/chassis-implement-design/references/patterns",
+  },
+  {
+    "description": "Chassis token-to-CSS mapping reference",
+    "mimeType": "text/markdown",
+    "name": "chassis-implement-design/references/tokens",
+    "uri": "chassis://skills/chassis-implement-design/references/tokens",
+  },
+  {
+    "description": "Chassis implementation workflow reference",
+    "mimeType": "text/markdown",
+    "name": "chassis-implement-design/references/workflow",
+    "uri": "chassis://skills/chassis-implement-design/references/workflow",
+  },
+]
+`;
+
+exports[`server > lists its tools 1`] = `
+[
+  {
+    "description": "Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the full skill instructions and all reference files.",
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+    },
+    "name": "chassis_create_design",
+  },
+  {
+    "description": "Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the full skill instructions and all reference files.",
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+    },
+    "name": "chassis_implement_design",
+  },
+  {
+    "description": "Fetch a specific Chassis UI reference file by name.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Reference file to fetch",
+          "enum": [
+            "chassis-create-design/references/components",
+            "chassis-create-design/references/patterns",
+            "chassis-create-design/references/tokens",
+            "chassis-create-design/references/typography",
+            "chassis-create-design/references/workflow",
+            "chassis-implement-design/references/components",
+            "chassis-implement-design/references/css-classes",
+            "chassis-implement-design/references/patterns",
+            "chassis-implement-design/references/tokens",
+            "chassis-implement-design/references/workflow",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "name",
+      ],
+      "type": "object",
+    },
+    "name": "chassis_get_reference",
+  },
+]
+`;
