@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { CONTENT } from './content.generated.js'
+import { CONTENT, VERSION } from './content.generated.js'
 import { RESOURCES } from './resources.js'
 
 function stripFrontmatter(content: string): string {
@@ -18,7 +18,7 @@ function buildSkillBundle(skillPrefix: string): string {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: 'chassis-ui',
-    version: '0.1.5'
+    version: VERSION
   })
 
   // Resources
