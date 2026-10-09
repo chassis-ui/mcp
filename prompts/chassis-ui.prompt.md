@@ -1,55 +1,26 @@
 ---
 mode: agent
-description: One-shot Chassis Figma design build or reconnect. Wraps the chassis-create-design skill with a parameterized invocation for screens, modals, drawers, dashboards, and other multi-section views.
+description: One-shot Chassis Figma design build or reconnect. Loads the Figma skills and the chassis-create-design skill, collects the inputs, and runs the skill's workflow for screens, modals, drawers, dashboards and other multi-section views.
 ---
 
 # /chassis-ui
 
-Build or reconnect a Figma view using the Chassis UI library.
+Build or reconnect a Figma view with the Chassis UI library.
 
-## Inputs (collect any missing values before starting)
+## Inputs (collect any missing value before starting)
 
-- **mode**: `build` (new) | `reconnect` (existing detached/wrapped layers)
-- **target file URL**: Figma file containing (or to contain) the design — extract `fileKey` and optional `nodeId` from the URL
-- **source**:
-  - For `build`: a code path, screenshot URL, written description, or live web URL
-  - For `reconnect`: the existing frame/page node within the target file
-- **theme set** (optional): which Brand / Theme / App combinations to design for (default: current file defaults)
-- **scope** (optional): a single section name, list of sections, or "full screen"
+- **mode**: `build` (a new view) or `reconnect` (an existing view with detached or hand-built layers)
+- **target file URL**: the Figma file that holds, or will hold, the design; `fileKey` and an optional `nodeId` come from it
+- **source**: for `build`, a code path, a screenshot, a written description or a live web URL; for `reconnect`, the frame or page to fix
+- **modes** (optional): the brand, theme and app modes the view is for; the designer sets them in Figma
+- **scope** (optional): one section, a list of sections, or the full screen
 
 ## Procedure
 
-1. **MANDATORY** — load these skills in order, before any tool call:
-   1. `figma-use` (from the Figma MCP server) — Plugin API rules; required before every `use_figma` call.
-   2. `figma-generate-design` (from the Figma MCP server) — canonical screen-building workflow.
-   3. [`chassis-create-design`](../skills/chassis-create-design/SKILL.md) — Chassis specialization layer.
-2. Confirm prerequisites (Figma MCP server connected, target file accessible, Chassis library available).
-3. Follow the `figma-generate-design` 6-step workflow with the Chassis overrides defined in `chassis-create-design`.
-4. **Parallel `generate_figma_design` capture** — run when the source is a live web URL OR when the source contains images. The Plugin API cannot fetch image URLs, so the capture is the only way to land images. Refine the component-instance build against the capture, transfer `imageHash` values, then delete the capture frame.
-5. Validate every section with `get_screenshot` before moving to the next.
-6. Pass `skillNames: "figma-use,figma-generate-design,chassis-create-design"` on every `use_figma` call (logging only).
-7. Close with the deliverable report (Built / Swapped / Composed / Already connected / Blocked).
-
-## Hard rules (non-negotiable)
-
-- **Load `figma-use` before any `use_figma` call** — skipping causes silent, hard-to-debug failures
-- **`generate_figma_design` is mandatory when the source contains images** — Plugin API cannot fetch image URLs
-- **Asset Override Pattern** for all text — never assume top-level `label` / `text` / `title` props on Chassis components
-- **No raw colors / spacing / type** — only Chassis variables; ask before hardcoding
-- **Prefer Chassis `context` tokens** over `unit`/`level` tokens — context tokens swap correctly across themes
-- **`componentKey` over name** when importing — resolve at runtime via `search_design_system`
-- **Preserve x/y/width/height** when replacing inside non-auto-layout parents
-- **One section per `use_figma` call** — never rewrite a whole screen in one call
-- **Don't convert frames to auto-layout** unless explicitly asked
-- **Return all created/mutated node IDs** from every `use_figma` call
-- **Never use deprecated `Dropdown Button @ 0.2`** — use `Dropdown Button` (`b5c9294f0d6576fd0dbc60c4bcb3feae193f3b18`)
-
-## Quick references
-
-- [tokens.md](../skills/chassis-create-design/references/tokens.md) — colors, type, spacing, sizing, radius, borders, opacity
-- [components.md](../skills/chassis-create-design/references/components.md) — full component catalog
-- [patterns.md](../skills/chassis-create-design/references/patterns.md) — Asset overrides, buttons, forms, tables, themes, anti-patterns
-- [workflow.md](../skills/chassis-create-design/references/workflow.md) — phased build/reconnect playbooks
+1. Load, in this order and before any tool call: `figma-use` and `figma-generate-design` from the Figma MCP server, then [`chassis-create-design`](../skills/chassis-create-design/SKILL.md). Its rules and its overlay on Figma's workflow govern the work; this prompt adds nothing to them.
+2. Confirm the Figma MCP server is connected, the target file is accessible, and `cx.components.UI` and `cx.tokens.MAIN` are among the libraries of the file (`get_libraries`).
+3. Follow the six steps of `figma-generate-design` with the skill's overlay, and fetch the skill's reference files as the steps need them: the library and its components, the recipes, the tokens, the workflow.
+4. Close with the skill's report: Built, Swapped, Replaced, Composed, Local components, Already connected, Blocked.
 
 ## Example invocations
 
@@ -62,6 +33,6 @@ Build or reconnect a Figma view using the Chassis UI library.
 
 ## When NOT to use this prompt
 
-- Single-component fixes — work on the component directly
-- Generating code FROM Figma — use a `chassis-implement-design` workflow instead
-- Pure variable / token edits — use Figma directly or the `chassis-tokens` repo
+- A fix inside a single component: work on the component directly
+- Generating code FROM Figma: use the `chassis-implement-design` skill
+- Token or variable edits: use Figma directly or the `chassis-tokens` repository

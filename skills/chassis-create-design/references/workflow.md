@@ -1,268 +1,106 @@
-# Chassis Design Workflow — Detailed Procedures
+# Chassis build and reconnect workflow
 
-Step-by-step playbooks for the two entry modes. Use the checklists; do not skip steps.
+What the SKILL.md does not say: the order of a build, the reconnect playbook, how a multi-theme view is checked, the quality checklist, and the failures with their fixes.
 
-## Build Mode — New Screen from Scratch
+## Build mode
 
-### Phase 1: Prepare
+1. **Source and target.** The source is code, a screenshot, a description or a URL; ask when it is unclear which. The target is a file URL (`fileKey`, and a `nodeId` with `-` turned into `:` when a frame is named) and a page; a user without a file gets one through `create_new_file`, which adds the team libraries.
+2. **Modes.** Note which brand, theme and app modes the view is for. The designer sets them; a view for several themes is checked in each (below).
+3. **Sections.** List them top to bottom (navbar, page title, hero, cards, form, table, footer; a modal or drawer is a deliverable of its own) and, per section, the components by their library name ([components.md → The pages](./components.md#the-pages)). A gap is settled before building: compose from library instances, build a local component for a repeated element, or flag it as Blocked.
+4. **One discovery pass.** `get_libraries`, then `search_design_system` with every component of the list in one call and the variables and styles in another (at most six to a call), then one inspection per component ([recipes.md → Inspect a component](./recipes.md#inspect-a-component)). Keep in the session notes, per component: its key and `assetType`, the prop keys with their types and defaults, the Asset names and their text keys, the slot names, the plain text layers.
+5. **Wrapper, then sections**, in retry-safe batches; per instance the order of [recipes.md → Insert an instance](./recipes.md#insert-an-instance). Return every created id.
+6. **One screenshot**, a targeted fix, one more screenshot.
+7. **Report** in the seven buckets of the SKILL.md.
 
-1. **Confirm the source of truth.** Ask the user (or infer from context):
-   - Source code in a repo? → read the relevant page/component files
-   - Screenshot? → request via attachment or fetch
-   - Written description? → ask clarifying questions about layout/sections
+## Reconnect mode
 
-2. **Confirm the target file.**
-   - User-provided Figma URL → extract `fileKey` and (optional) `nodeId`
-   - If no node specified, plan to create a new top-level frame
+An existing view, made library-true one layer at a time.
 
-3. **Load required tools.**
-   - Verify Figma MCP is connected
-   - If `use_figma` will be called, load the `figma-use` skill first
+### Inventory
 
-4. **Confirm theme/mode targets.**
-   - Single theme (e.g., web/light only)? Note the active modes.
-   - Multi-theme? List all brand × theme × app combinations to validate.
+Walk the frame and tag each visible layer:
 
-### Phase 2: Plan Sections
+| Tag                | Meaning                                                                 |
+| ------------------ | ----------------------------------------------------------------------- |
+| `library-instance` | An instance of `cx.components.UI`, on the current component: leave      |
+| `deprecated`       | An instance of a ` - DEPRECATED` component or a wrong variant: swap     |
+| `detached`         | Was a library instance, since detached: replace                         |
+| `local-wrapper`    | A local component or frame around a library instance: unwrap or replace |
+| `raw-frame`        | Hand-built, no component behind it: replace, compose, or block          |
 
-5. **Decompose the screen into sections.** Typical section types:
-   - Header / navbar
-   - Hero
-   - Feature blocks / cards
-   - Forms
-   - Data tables / lists
-   - Footer
-   - Modals / drawers (treat as separate sub-deliverables)
+For each layer that is not a library instance, name the library component it stands for by its structure and intent (a row of labeled fields is a form, not a card), and read that component once ([recipes.md → Inspect a component](./recipes.md#inspect-a-component)). What matches nothing is Blocked; a repeated raw element becomes a local component (rule 1).
 
-6. **List sections in build order.** Top to bottom for pages; outer to inner for nested layouts.
+### Plan
 
-7. **For each section, list candidate components.** Cross-reference [components.md](./components.md). Note any gaps where no library component fits — flag for user before building.
+Order the work outer to inner, so an inner replacement is not redone when its container changes. Per layer, the strategy:
 
-### Phase 3: Build Section-by-Section
+| Strategy    | When                                                          | How                                                                                                                                |
+| ----------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Swap**    | An instance of the wrong variant or of a deprecated component | `swapComponent`, then the variants; overrides survive                                                                              |
+| **Replace** | A detached or raw layer one library component stands for      | A new instance at the same index and, in a non-auto-layout parent, the same `x`, `y`, `width`, `height`; then remove the old layer |
+| **Compose** | Several library components stand for it                       | Replace with a frame of instances                                                                                                  |
+| **Skip**    | A valid library instance                                      | Nothing                                                                                                                            |
+| **Block**   | No library component stands for it                            | Report with the reason                                                                                                             |
 
-For each section in order:
+Before a Replace or Compose, capture from the old layer: position and size, every text, and the variant intent (size, context, state), to re-apply on the new instance.
 
-8. **Discover.** Run `search_design_system` with the component family name. Confirm `componentKey`.
+### Replace, one at a time
 
-9. **Verify variant coverage.** Read the component's variants table. Confirm the variants you need (`size`, `context`, `state`, `has-*`) exist.
+For each planned layer: the recipe in [recipes.md → Swap and replace](./recipes.md#swap-and-replace), then the text through the Assets or plain layers, the variants and booleans, the slot content. One layer per call where the old layer must stay until the new one is right; never a bulk replacement. A frame is not converted to auto-layout unless the user asked for that cleanup.
 
-10. **Verify token coverage.** Every color, font, spacing, sizing, radius, border, shadow, and opacity decision in the section must map to a Chassis variable or style. Cross-reference [tokens.md](./tokens.md). If anything doesn't fit, ask the user before hardcoding.
+### Verify
 
-11. **Plan the section frame.**
-    - Use auto-layout where appropriate for the section's flow
-    - Set spacing using `space/context/*` tokens
-    - Set padding using same scale
+Walk the frame again: every visible layer is `library-instance`, a local component made of them, or listed as Blocked. One screenshot against the original (or the design the original came from). A view for several themes goes through the check below.
 
-12. **Place component instances.** For each instance:
-    - Import via `componentKey`
-    - Set explicit position if parent is **not** auto-layout (preserve `x`, `y`, `width`, `height`)
-    - Set variants
-    - Inspect `componentProperties` for `has-*` / `is-*` / `show-*` keys — **all default to `true`**. Set the unwanted ones to `false` **before** Asset overrides, otherwise the instance arrives showing every decoration. See [Boolean Visibility Props](./patterns.md#boolean-visibility-props--default-true).
-    - Set `*-instance` swap props (icons, etc.) for the boolean props you keep `true`
+### Report
 
-13. **Override Asset text.** For each text content:
-    - Locate the nested `*Asset` layer ([Asset Override Pattern](./patterns.md#asset-override-pattern))
-    - Set the TEXT property on the asset, not the parent
-    - If no `*Asset` exists for a role you need → wrong component, reconsider
+Swapped (count and list), Replaced (count and list), Composed, Local components, Already connected (count), Blocked (each with the exact failure: "no library component for a radial slider").
 
-14. **Validate the section visually.** Compare against the source. Adjust before moving on.
+## Multi-theme validation
 
-15. **Move to next section.** Repeat 8–14.
+The agent never sets a mode (rule 9). To see the view in another brand, theme or app mode, ask the designer to apply the mode in the Appearance panel of the page (deselect everything, then the page panel), of the wrapper frame, or of one instance; `resolvedVariableModes` on the frame confirms which modes are in force ([recipes.md → Read the modes](./recipes.md#read-the-modes)). In each mode look for a color that did not change (a raw fill, a unit token, a `createText` node), low contrast in dark, and a layout broken by the longer or wider text of another brand's font. Fix at the token level, never by overriding an instance per mode. A layer that must differ by theme binds its visibility to a switch variable ([tokens.md → Collections and modes](./tokens.md#collections-and-modes)).
 
-### Phase 4: Multi-Theme Validation (if applicable)
+## Quality checklist
 
-16. **Ask the designer to switch the screen frame to each target mode** in Figma (Theme: Dark, Brand: B, etc.) — this is a manual action in the Appearance panel, not a programmatic step.
+Before the report:
 
-17. **Inspect each section** in the alternate mode. Watch for:
-    - Hardcoded colors that don't invert
-    - Insufficient contrast in dark mode
-    - Layout breaks from text length differences across brand fonts
+- [ ] Every text is a text Asset, a plain text layer of a component or a `Basic Text  Asset` instance; nothing from `createText()`
+- [ ] Every instance had its booleans subtracted: no decoration the design does not show
+- [ ] Every slot is filled and its placeholders removed
+- [ ] Every color, padding, gap, size, radius, border and opacity of the agent's own frames is bound to a `*/context/*` variable, or the value was approved
+- [ ] Every text node has one `font/*` style and no raw font value or `typography/*` binding
+- [ ] Every shadow is a `shadow/*` effect style
+- [ ] No component named ` - DEPRECATED`; every icon a library icon
+- [ ] One button size per action group; one form style per form; no hidden layer without a prop revealed; every part hidden by an override is in the report
+- [ ] Positions preserved in non-auto-layout parents; no frame converted to auto-layout unasked (reconnect)
+- [ ] No variable mode set by a script
+- [ ] The screenshot shows no placeholder text, no clipped Asset, no empty image, the product font
+- [ ] The report has the seven buckets, and every blocked item its reason
 
-18. **Fix issues at the token level**, not by overriding instances.
+## Failure modes
 
-### Phase 5: Report
+| Error or symptom                                                                           | Cause                                                                                                             | Fix                                                                                        |
+| ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `in appendChild: unloaded font "…"`                                                        | The instance was appended before its fonts were loaded                                                            | `loadFontsOf(instance)`, then append; remove the instance the failed call left on the page |
+| `Could not find a component property with name: 'text'` (or `has-badge`)                   | A BOOLEAN, TEXT or INSTANCE_SWAP key without its `#id`                                                            | Read the key from `componentProperties` and pass it whole                                  |
+| A variant is not applied; `set.children.find(c => c.name === 'size=small')` is `undefined` | A variant's name lists all its props                                                                              | `instance.setProperties({ size: 'small' })`                                                |
+| `setProperties` rejects the slot property                                                  | A slot is a node, not a value                                                                                     | `findOne(n => n.type === 'SLOT')`, then `appendChild`                                      |
+| `FILL can only be set on children of auto-layout frames`                                   | Sizing set before `appendChild`, or the parent is not auto-layout                                                 | Append first; `FILL` only where the design fills                                           |
+| The search for text returns `chassis-app-icon-square`                                      | The query was `cx.asset.text`                                                                                     | Query "Basic Text Asset"                                                                   |
+| "No variables" or "no styles" in the file                                                  | `getLocalVariableCollectionsAsync()` sees local ones only                                                         | `search_design_system` with `entity: "variable"` or `"style"`                              |
+| `componentPropertyDefinitions` throws                                                      | Read on a variant component                                                                                       | Read it on the set                                                                         |
+| Every button shows an icon, a badge and a caret                                            | Booleans left at their defaults                                                                                   | Subtract by type ([recipes.md → Insert an instance](./recipes.md#insert-an-instance))      |
+| The label did not change                                                                   | Text set on the parent, or on the wrong Asset                                                                     | Find `<Role> Asset`, set its `text#…` key                                                  |
+| Text unchanged after a theme switch                                                        | A raw fill, or a `createText()` node                                                                              | Bind `color/context/*`; use `Basic Text  Asset`                                            |
+| The wrong font family in the screenshot                                                    | A hardcoded family, or the file is in another brand mode                                                          | Load the fonts read from the nodes; ask the designer which brand the file should be in     |
+| `The node with id X does not exist`                                                        | A `detachInstance()` changed the ids inside                                                                       | Find the nodes again from a stable parent                                                  |
+| A section built outside the wrapper cannot be moved in                                     | `appendChild` across calls on a top-level node fails silently                                                     | Create the wrapper first, build inside it                                                  |
+| `counterAxisAlignItems` or `primaryAxisAlignItems` rejects `'FLEX_END'`                    | A CSS value; the API takes `'MIN'`, `'MAX'`, `'CENTER'`, `'BASELINE'` (and `'SPACE_BETWEEN'` on the primary axis) | `counterAxisAlignItems = 'MAX'` for bottom alignment in a horizontal layout                |
 
-19. **Produce the deliverable summary** using the format in [SKILL.md → Deliverable Format](../SKILL.md#deliverable-format):
-    - **Built**: list each new section
-    - **Blocked**: any sections / elements that couldn't be built — include exact failure mode
+## Recovering when stuck
 
----
+An action that fails once is diagnosed, not retried as it was: does the component have that prop (read it), is the parent auto-layout, is the Asset name right, were the fonts loaded. `safeToRetryWithoutCanvasRead` on the error says whether the canvas must be read first. The same failure twice: stop and report it in Blocked with the message, instead of building around it.
 
-## Reconnect Mode — Existing Screen with Detached Layers
+## Session notes
 
-### Phase 1: Inventory
-
-1. **Walk the existing frame.** For each visible top-level layer, classify:
-
-| Tag                | Meaning                                                  |
-| ------------------ | -------------------------------------------------------- |
-| `library-instance` | Already a valid Chassis component instance — leave alone |
-| `detached`         | Was a Chassis instance, since detached                   |
-| `local-wrapper`    | Locally-defined component wrapping a Chassis primitive   |
-| `raw-frame`        | Hand-built frame, not derived from any component         |
-
-2. **For each non-library layer, hypothesize the matching Chassis component.** Match by visual + structural intent, not by exact appearance.
-
-3. **List anything you cannot match.** These are blocked items — not your job to invent custom components.
-
-### Phase 2: Plan Replacements
-
-4. **Order replacements outer-to-inner.** Replacing an outer container before its children avoids re-doing inner work.
-
-5. **For each replacement, decide the strategy.**
-
-| Strategy    | When                                                              |
-| ----------- | ----------------------------------------------------------------- |
-| **Swap**    | A library component matches 1:1 → replace and re-apply props/text |
-| **Compose** | No single component fits, but multiple primitives compose to it   |
-| **Skip**    | Already a valid library instance                                  |
-| **Block**   | No mapping possible → report                                      |
-
-6. **For each Swap / Compose**, capture:
-   - Original `x`, `y`, `width`, `height` (only matters in non-auto-layout parents)
-   - Original text content (for re-application via Assets)
-   - Original variant intent (size, context, state)
-
-### Phase 3: Replace Section-by-Section
-
-For each replacement (one at a time):
-
-7. **Import the replacement component(s)** via `componentKey`.
-
-8. **Place at original position.** If parent is not auto-layout, set `x`, `y`, `width`, `height` explicitly to match the original.
-
-9. **Re-apply text** via the Asset Override Pattern.
-
-10. **Re-apply variants and props.**
-
-11. **Delete the original layer.** Verify the new instance occupies the visual space correctly.
-
-12. **Validate visually.** Compare against the original (or the source-of-truth design if more recent).
-
-13. **Move to next.** Never bulk-replace.
-
-### Phase 4: Verify Integrity
-
-14. **Walk the frame again** using the inventory taxonomy. Confirm everything is now `library-instance` or explicitly Blocked.
-
-15. **Run multi-theme validation** if the screen targets multiple themes (see Build Phase 4).
-
-### Phase 5: Report
-
-16. **Produce the deliverable summary**:
-    - **Swapped**: count + list
-    - **Composed**: count + list
-    - **Already connected**: count
-    - **Blocked**: each item with exact failure mode (e.g., "No library component for radial slider control")
-
----
-
-## Common Procedures
-
-### Overriding Asset Text
-
-```
-1. Get instance node ID
-2. Inspect children — find layer named "*Asset"
-3. Get nested asset instance node ID
-4. Set TEXT property on the asset instance (not parent)
-```
-
-### Section-Level Theme Switch _(designer action — not the agent)_
-
-> **This is a manual Figma action performed by the designer, not a programmatic step.** The agent must never call `setExplicitVariableModeForCollection` for any reason. If a theme or brand switch is needed, ask the designer to do it.
-
-Designer steps in Figma:
-
-```
-1. Select section frame
-2. Open Appearance panel → Apply variable mode
-3. Set Brand / Theme / App as needed
-4. Validate visual integrity
-```
-
-### Session Context — Capture and Hand Off Discovered Keys
-
-Component keys, text style keys, and variable IDs are resolved at runtime via `search_design_system` and `get_metadata`. These lookups take several tool calls. Once discovered, they should be captured and carried forward so they aren't re-discovered from scratch in the next session or context window.
-
-**During a build session — after each component or style key is confirmed:**
-
-Record it immediately in your working notes:
-
-```
-# Discovered keys (file: <fileKey>)
-cx.comp.navbar          → <componentKey>  (variant: size=small)
-cx.comp.tab             → <componentKey>  (variant: variant=top)
-cx.asset.text           → <componentKey>  (textPropKey: text#<nodeId>)
-font/display/small/mass → <styleKey>
-font/text/medium/normal → <styleKey>
-color/context/default/bg-main → <variableId>
-```
-
-> **Keys are always team-specific.** Never copy example keys from docs — always resolve at runtime via `search_design_system` scoped to the file's linked libraries.
-
-**At the end of each session (or when approaching context limit) — emit a session context block:**
-
-```json
-{
-  "_chassisSessionContext": true,
-  "fileKey": "<fileKey>",
-  "pageId": "<pageNodeId>",
-  "wrapperId": "<wrapperNodeId>",
-  "builtSections": ["navbar"],
-  "pendingSections": ["page-header", "tab-bar", "filter-row", "table"],
-  "discoveredKeys": {
-    "components": {
-      "navbar":    { "key": "<key>", "variant": "size=small" },
-      "tab":       { "key": "<key>", "variant": "variant=top" }
-    },
-    "textStyles": {
-      "font/display/small/mass": "<key>",
-      "font/text/medium/mass":   "<key>"
-    },
-    "colorVariables": {
-      "color/context/default/bg-main": "<variableId>"
-    }
-  }
-}
-
-```
-
-Paste this block at the top of your next session message. A new context window can use these keys directly without re-running `search_design_system` discovery calls.
-
-**On session resume — if a session context block is present:**
-
-1. Parse the `discoveredKeys` map
-2. Verify the wrapper node still exists (`get_metadata` on `wrapperId`)
-3. Skip discovery for any component/style already in the map — use the key directly
-4. Proceed to the first item in `pendingSections`
-
-> **Why this matters:** Context window limits are a build constraint, not an exception. Treating session continuity as a first-class concern prevents multi-session builds from re-discovering the same 15 keys every time.
-
-### Recovering When Stuck
-
-If you cannot complete an action after one attempt:
-
-1. **Don't retry the same approach** — diagnose first
-2. Check the component actually has the variant/prop you're trying to set
-3. Check the parent frame is the right kind (auto-layout vs. absolute)
-4. Check the Asset layer naming matches `*Asset` exactly
-5. If still stuck after diagnosis, **stop and report** — don't bulk-edit through the failure
-
----
-
-## Quality Checklist (run before declaring done)
-
-- [ ] Every text is set via an Asset layer, not a parent prop
-- [ ] Boolean visibility props (`has-*` / `is-*` / `show-*`) explicitly subtracted to match design intent (defaults are `true`)
-- [ ] Every color is a `color/context/*` token (or explicitly user-approved literal)
-- [ ] Every spacing is a `space/context/*` or `space/unit/*` token
-- [ ] Every text node has a `font/*` **text style** applied (single chip in the Typography panel) — not raw values, not loose `typography/*` variable bindings
-- [ ] Every shadow is a `shadow/context/*` **effect style** — not a raw `effects` object
-- [ ] No deprecated `… @ x.x`-named components in use
-- [ ] Button sizes are consistent within each action group
-- [ ] One form style throughout each form
-- [ ] Multi-theme combinations validated (if applicable)
-- [ ] Original positions preserved in non-auto-layout parents
-- [ ] Deliverable summary written using the Built/Swapped/Composed/Already connected/Blocked format
-- [ ] Session context block emitted (if build is incomplete or context limit is near) — see [Session Context — Capture and Hand Off Discovered Keys](#session-context--capture-and-hand-off-discovered-keys)
+Keys, property keys and Asset names are per file and publication, so they are resolved by name once per session and kept in the session's notes, with the wrapper id and the sections done and pending, for the calls that follow. They are not copied into another file's session or into a skill: the next session resolves them again by name.
