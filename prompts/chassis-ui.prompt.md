@@ -37,7 +37,7 @@ Build or reconnect a Figma view using the Chassis UI library.
 - **Asset Override Pattern** for all text — never assume top-level `label` / `text` / `title` props on Chassis components
 - **No raw colors / spacing / type** — only Chassis variables; ask before hardcoding
 - **Prefer Chassis `context` tokens** over `unit`/`level` tokens — context tokens swap correctly across themes
-- **`componentKey` over name** when importing — resolve via `fileKey` from `component-keys.md` + `get_metadata`
+- **`componentKey` over name** when importing — resolve at runtime via `search_design_system`
 - **Preserve x/y/width/height** when replacing inside non-auto-layout parents
 - **One section per `use_figma` call** — never rewrite a whole screen in one call
 - **Don't convert frames to auto-layout** unless explicitly asked
@@ -50,7 +50,6 @@ Build or reconnect a Figma view using the Chassis UI library.
 - [components.md](../skills/chassis-create-design/references/components.md) — full component catalog
 - [patterns.md](../skills/chassis-create-design/references/patterns.md) — Asset overrides, buttons, forms, tables, themes, anti-patterns
 - [workflow.md](../skills/chassis-create-design/references/workflow.md) — phased build/reconnect playbooks
-- [component-keys.md](../skills/chassis-create-design/references/component-keys.md) — slug → fileKey resolution
 
 ## Example invocations
 
