@@ -1,41 +1,67 @@
 # Chassis Implementation Patterns
 
-## Asset extraction
+## Reading the Figma output
 
-Chassis Figma components expose no top-level text property. Text, images and icons live in nested instances whose name ends in `Asset` (`Title Text Asset`, `Label Asset`, `Description Asset`, `Icon Asset`, `Image Asset`).
-
-1. Walk the instance's children for `*Asset` layers; read TEXT, image hash or icon name.
-2. Pick the semantic element from the asset's role and the parent component.
-3. Put the content inside that element. The Asset layer itself never becomes a DOM node.
-4. If the screenshot shows text that no `*Asset` child carries, drill down with `get_metadata`; the text sits in a deeper instance.
-
-| Asset role                       | Target                                                                                               |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Title / Heading                  | `<h1>`–`<h6>` by outline; `<h3 class="card-title">` in a card, `<h2 class="modal-title">` in a modal |
-| Subtitle                         | `<p class="card-subtitle">` in a card; `<p class="font-lead">` under a page title                    |
-| Label (form)                     | `<label class="form-label" for="…">`                                                                 |
-| Label (button, badge, chip, tab) | the element's own text                                                                               |
-| Description / Body               | `<p>`                                                                                                |
-| Helper                           | `<div class="form-help">`                                                                            |
-| Action                           | text of the `<button>` or `<a>`                                                                      |
-| Icon                             | `<svg class="icon">` or `<i class="icon cx-{name}-{style}">`, see components.md                      |
-| Image                            | `<img>`; `<picture>` when theme-conditional                                                          |
+`get_design_context` returns a React and Tailwind code block, a screenshot and the text styles of the node. What a Chassis design shows in it:
 
 ```text
-Card / Vertical (instance)
-├─ Image Asset
-├─ Title Text Asset   TEXT="Roadmap update"
-├─ Subtitle Asset     TEXT="Q2 highlights"
-├─ Description Asset  TEXT="What shipped this quarter…"
-└─ Action Asset       TEXT="Read more"
+<div className="bg-[var(--color\/button\/primary\/bg-idle,#1273e0)] px-[var(--space\/button\/medium-padding-x,12px)] rounded-[var(--borderradius\/button\/medium,2px)] …" data-node-id="16:158" data-name="Sign in button">
+  <div className="…" data-name="Label Frame">
+    <div className="…" data-name="Label Asset">
+      <p className="… text-[color:var(--color\/button\/primary\/fg-idle,white)] …">Sign in</p>
+```
+
+- **The variable of a property** is in its class: `gap-[var(--space\/context\/medium,16px)]` is `space/context/medium` on the gap, with the resolved value after the comma. The name is lower-cased there (`--borderradius\/…`); `get_variable_defs` lists the same variables as `{ "borderRadius/button/medium": "2" }`, with their exact names. A class with a bare value (`gap-[16px]`) is a property with no variable, with two exceptions that the code block never shows as bound: a width, height or minimum size (`size-[20px]` on an icon whose size is `size/icon/glyph/small`) and the fill of a glyph, which is an `<img>` there. Find those in `get_variable_defs`, called on the smallest top-level node that holds them. The variables on the layers inside an instance are the component's own, unit tokens included (`space/unit/8` in a `Form Help`): its class applies them.
+- **The component** of an instance is its `data-name`, which is the name of the component set (`Solid Button`, `Regular Form Field`) unless the designer renamed the layer ("Sign in button"). A renamed instance is told by the layers inside it, which keep their names ("Label Frame" › "Label Asset" is a button; "Field Label", "Field Input" and "Field Help" are a `Regular Form Field`), and by its component-scoped variables (`color/button/*`, `space/form-input/*`). An instance that the code block turns into a function of its own (`DataTable`, `TableRow`, `CheckInput`) has no `data-name` on its root: the name of the function is the component. What such a function renders when nothing is passed to it (`{children || …}`, `{tableBody || …}`) is the default content of the component in the library, not of this design; the design's content is what the call passes.
+- **The variants** of an instance are not listed. Read them from what the instance shows: the style from the component (`Outline Button`), the context, state and size from its variables (`color/button/primary/bg-idle` is `context=primary` and `state=idle`, `space/button/medium-padding-x` is `size=medium`; the states are `idle`, `hover`, `press`, `disabled`; an `Outline Button` has no color variables of its own and binds `color/context/default/base-color`), and the rest (an active `Nav Link`, a checked box) from the screenshot. An instance that is a function in the code block has its variants as the defaults of its props (`type = "head"`, `checked = "True"`).
+- **The text style** of a text is not on it: its classes name the typography variables of the base text component, which stay `…/text/medium` when the style is overridden, with the real value after the comma (`text-[length:var(--typography\/fontsize\/text\/medium,32px)]`). The styles in use are listed after the code ("These styles are contained in the design") and in `get_variable_defs`, each with its parts (`font/context/heading`: size `typography/fontSize/text/3xlarge`, which is `32`). Match a text's size and weight to one of them.
+- **A slot** (`Navbar`, `Section Block`, `Data Table`, `Table Row`, `Modal Window` and others take their content in one) comes with the instance that owns it: `<slot>` in `get_metadata`, a `data-name` such as `content` or `table-body` in the code. Fetch the instance that owns the slot; a node inside a slot fetched by its own id can come back without its children.
+- **Hidden layers** are not in the code block; `get_metadata` marks them `hidden="true"`. `get_metadata` gives the tree only (`<frame>`, `<instance>`, `<slot>`, names, positions and sizes) and stops at an instance without slot content; call it with the instance's id to see one level further.
+
+## Asset extraction
+
+Most text of a Chassis Figma component is not a property of the component: it sits in a nested instance of a text component, named after its role and ending in `Asset` ("Label Asset", "Title Asset", "Body Asset", "Help Asset"). Some text is a plain text layer instead: "Label Text" in the "Field Label" of a form field, "Input Text" in its "Input Asset", "Check Text" in a `Form Check`, "Level 1" to "Level 4" and "Current" in a breadcrumb.
+
+1. Walk the instance for `<Role> Asset` layers and plain text layers; read the text of each.
+2. Pick the semantic element from the role and the parent component.
+3. Put the content inside that element. Neither the Asset layer nor the frames around it ("Label Frame", "Asset Frame") become DOM nodes.
+4. If the screenshot shows text that no layer of the response carries, drill down with `get_metadata`; the text sits in a deeper instance.
+
+A `Basic Text  Asset` that the designer placed on a frame is a text on its own: renamed, it shows as a layer with nothing but a text in it.
+
+| Layer                         | In                                                      | Target                                                                                               |
+| ----------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| "Title Asset"                 | cards, alerts, accordion items, modal headers, tooltips | `<h1>`–`<h6>` by outline; `<h3 class="card-title">` in a card, `<h2 class="modal-title">` in a modal |
+| "Title Text Asset"            | `Page Title`                                            | `<h1>`–`<h6>` by outline, usually the `<h1>` of the page                                             |
+| "Subtitle Asset"              | modal headers, `Page Title`                             | `<p>` under the title, with the class of its text style                                              |
+| "Category Asset"              | cards                                                   | `<p>` above the title, with the class of its text style (`font-label`)                               |
+| "Body Asset"                  | cards, alerts, accordion items                          | `<p>`                                                                                                |
+| "Label Asset"                 | buttons, badges, chips, tab and segment items           | the element's own text                                                                               |
+| "Text Asset"                  | `Nav Link`, `Table Head Cell`                           | the element's own text                                                                               |
+| "Action 1", "Action 2"        | the footer of a card                                    | text of the `<button>` or `<a>`                                                                      |
+| "Label Text" in "Field Label" | form fields                                             | `<label class="form-label" for="…">`                                                                 |
+| "Input Text" in "Input Asset" | form inputs                                             | the `placeholder` when its color is `…/fg-inactive`, else the `value`                                |
+| "Help Asset"                  | `Form Help`                                             | `<div class="form-help">`                                                                            |
+| "Check Text" in "Check Asset" | `Form Check`                                            | the text of the `<label class="form-check">`                                                         |
+| An icon instance              | any component                                           | `<svg class="icon">` or `<i class="icon cx-{name}-{style}">`, see components.md                      |
+| "Media Placeholder"           | cards                                                   | `<img>`; `<picture>` when theme-conditional                                                          |
+| A text asset on its own       | a frame of the designer                                 | `<h1>`–`<h6>` by outline or `<p>`, with the class of its text style                                  |
+
+```text
+Contained Card (instance)
+├─ Media Placeholder
+├─ Category Asset   "Product"
+├─ Title Asset      "Roadmap update"
+├─ Body Asset       "What shipped this quarter…"
+└─ Action 1         "Read more"
 ```
 
 ```html
 <div class="card">
   <img class="card-image-top" src="/assets/roadmap.jpg" alt="" />
   <div class="card-body">
+    <p class="font-label">Product</p>
     <h3 class="card-title">Roadmap update</h3>
-    <p class="card-subtitle">Q2 highlights</p>
     <p>What shipped this quarter…</p>
     <a href="#" class="button primary sm me-auto">Read more</a>
   </div>
@@ -44,20 +70,21 @@ Card / Vertical (instance)
 
 ## Variants → modifiers
 
-Figma variant props become space-separated classes on the root, in the order `{root} {color} {style} {size} {state}`. States that HTML expresses are attributes, not classes.
+Figma variant props become space-separated classes on the root, in the order `{root} {color} {style} {size} {state}`. The style of a button, badge or chip is its component (`Solid`, `Smooth`, `Outline`, `Link`), not a prop. States that HTML expresses are attributes, not classes.
 
-| Figma                                                 | Markup                                            |
-| ----------------------------------------------------- | ------------------------------------------------- |
-| `Button / context=primary`                            | `button primary`                                  |
-| `Button / context=primary, style=outline, size=small` | `button primary outline sm`                       |
-| `Button / state=disabled`                             | `button primary` + `disabled`                     |
-| `Badge / context=success`                             | `badge success`                                   |
-| `Card / size=large`                                   | `card lg`                                         |
-| `Card / context=warning`                              | `card context warning`                            |
-| `Tab / state=active`                                  | `nav-link active` + `aria-selected="true"`        |
-| `has-icon=false`, `has-subtitle=false`                | omit the child element; there is no `has-*` class |
+| Figma                                                              | Markup                                              |
+| ------------------------------------------------------------------ | --------------------------------------------------- |
+| `Solid Button`, `context=primary`                                  | `button primary`                                    |
+| `Outline Button`, `context=primary, size=small`                    | `button primary outline sm`                         |
+| `Solid Button`, `context=primary, state=disabled`                  | `button primary` + `disabled`                       |
+| `Solid Badge`, `context=success`                                   | `badge success`                                     |
+| `Contained Card`, `size=large`                                     | `card lg`                                           |
+| `Notification`, `context=danger, style=solid`                      | `notification danger solid`                         |
+| A tab item, `is-active=true`                                       | `nav-link active` + `aria-selected="true"`          |
+| `Nav Link` or `Nav Segment Item`, `state=active`                   | `nav-link active` + `aria-current="page"` on a link |
+| A boolean that is `false` (`has-icon-start`, `has-header`, `help`) | omit the child element; there is no class for it    |
 
-Which components take the color directly and which need `context` is in the Components table of css-classes.md ("Direct color").
+Most sets carry the color in `context`. `Common Avatar` and `Strip Badge` call it `semantic`, `Form Check` shows it as `state=primary`, and the cards have none. Boolean names vary (`has-*` and `is-*` on most sets, bare `icon`, `help`, `label` on the forms). Which components take the color directly and which need `context` is in the Components table of css-classes.md ("Direct color").
 
 ## The context class
 
@@ -92,7 +119,7 @@ Inside it, `fg-main`, `bg-even`, `border-subtle`, `icon-subtle` and the componen
 
 ### Columns → the grid
 
-Figma column layouts, constraints and breakpoint variants map to CSS Grid. `grid` is twelve tracks with the breakpoint's gutter; items span tracks.
+Figma column layouts and constraints map to CSS Grid. `grid` is twelve tracks with the breakpoint's gutter; items span tracks.
 
 ```html
 <div class="container">
@@ -110,11 +137,11 @@ Figma column layouts, constraints and breakpoint variants map to CSS Grid. `grid
 - A grid inside a component that should respond to its own width uses `@md:col-span-6` and sits inside a `contains-inline` ancestor (or a `grid contained`).
 - `container` centers and pads to the page margin; `container fluid` is full width; `container lg` is full width until `lg`. A grid does not need a container.
 
-Figma width variants named by breakpoint (`screen-small`, `screen-medium`, `screen-large`) are mobile-first: the smallest variant is the unprefixed layout, each larger one adds a prefixed class.
+The library has no width variants and no breakpoint modes. When the design has frames of the same view at several widths, they are mobile-first: the narrowest frame is the unprefixed layout, each wider one adds a prefixed class.
 
 ### Sections and pages
 
-Figma `Page` and `Section` components have no CSS class. Compose: `<main class="container py-3xl">`, `<section class="py-2xl">` with a `<h2 class="font-heading">`, and a `grid` or `vstack` inside. Mobile navs (`mobile-nav-top`, `mobile-nav-bottom`) are a `navbar` at the top, or a `nav nav-segments` in a `position-fixed bottom-0 w-100` wrapper at the bottom.
+`Page Title`, `Section Block`, `Section Header` and `Section Footer` have no CSS class. Compose: `<main class="container py-3xl">`, `<section class="py-2xl">` with an `<h2>` in the class of its text style, and a `grid` or `vstack` inside. The mobile navs are a `navbar` at the top (`Mobile Top Navigation`), or a `nav nav-segments` in a `position-fixed bottom-0 w-100` wrapper at the bottom (`Mobile Bottom Navigation`).
 
 ## Theming
 
@@ -135,7 +162,7 @@ The nearest attribute wins. Colors are `light-dark()` tokens, so every class fol
 
 ### Theme-conditional assets
 
-A layer gated by `figma/switch/theme/mode-*` (a dark-mode logo, an illustration) becomes conditional markup:
+A layer gated by `figma/switch/theme/mode-*` (a dark-mode logo, an illustration) becomes conditional markup; `mode-1` shows in light and `mode-2` in dark:
 
 ```html
 <!-- Follows the attribute and the system preference -->
@@ -198,7 +225,7 @@ Markup written with the Chassis names renders the same in both modes. Reach for 
 ```html
 <!-- ❌ long names, old breakpoints, old grid, Bootstrap parts -->
 <div class="row">
-  <div class="col-12 col-medium-6 p-medium rounded-round">…</div>
+  <div class="col-12 col-medium-6 p-medium rounded-2xlarge">…</div>
 </div>
 <button class="btn btn-primary btn-lg">…</button>
 <div class="card">
@@ -207,7 +234,7 @@ Markup written with the Chassis names renders the same in both modes. Reach for 
 
 <!-- ✅ -->
 <div class="grid">
-  <div class="col-span-full md:col-span-6 p-md rounded-full">…</div>
+  <div class="col-span-full md:col-span-6 p-md rounded-2xl">…</div>
 </div>
 <button class="button primary lg">…</button>
 <div class="card">
@@ -217,7 +244,7 @@ Markup written with the Chassis names renders the same in both modes. Reach for 
 
 ```html
 <!-- ❌ Asset wrapper kept; hyphenated modifiers; raw values -->
-<div class="title-text-asset">Heading</div>
+<div class="title-asset">Heading</div>
 <span class="badge-success-smooth">New</span>
 <p style="color:#0a84ff; margin-top:24px">…</p>
 

@@ -10,22 +10,22 @@
 
 ## Phase 2 — Discover
 
-6. `get_metadata` for the node tree; mark sections and Chassis instances versus raw frames.
-7. `get_code_connect_map`; a mapped node is emitted verbatim.
-8. `get_variable_defs` for the node; build the variable → class lookup with tokens.md, translating long size names to short ones.
-9. `get_design_context` per section; drill further when the output truncates.
-10. `get_screenshot` for the whole view and per section.
+6. `get_metadata` for the node tree; mark sections, Chassis instances (`<instance>`), raw frames (`<frame>`), slots (`<slot>`) and hidden layers (`hidden="true"`).
+7. `get_code_connect_map`; a mapped node is emitted verbatim. When the tool answers that the plan has no Code Connect, nothing is mapped: go on.
+8. `get_variable_defs` for the node (a top-level node id, not one inside an instance); build the variable → class lookup with tokens.md, translating long size names to short ones.
+9. `get_design_context` per section, at the frame or instance that owns a slot and not at a node inside one; when the response is sparse or metadata only, one call per visible child.
+10. The screenshot that comes with each call is the visual target; `get_screenshot` for the whole view, and for a section whose call returned none.
 
 ## Phase 3 — Translate
 
 For each section, top to bottom, outer to inner:
 
-11. **Component**: find the Figma family in components.md; emit its markup; variants → modifiers (`{root} {color} {style} {size}`); `has-*=false` → omit the child.
-12. **Text**: lift every `*Asset` TEXT into the semantic element; never a wrapper.
+11. **Component**: find the Figma component in components.md by its name (patterns.md → Reading the Figma output when the layer was renamed); emit its markup; variants → modifiers (`{root} {color} {style} {size}`, the style from the component's name); a boolean that is `false` → omit the child.
+12. **Text**: lift the text of every `<Role> Asset` and plain text layer into the semantic element; never a wrapper.
 13. **Styles**: for the properties the component does not already own, add the token classes. Padding, font and color of a `button`, `card-body`, `notification` are built in: do not repeat them.
-14. **Layout**: auto-layout → `d-flex gap-{size}` / `vstack` / `hstack`; columns → `grid` + `col-span-*`; breakpoint variants → `sm:` … `2xl:` prefixes, mobile-first.
+14. **Layout**: auto-layout → `d-flex gap-{size}` / `vstack` / `hstack`; columns → `grid` + `col-span-*`; frames of the same view at other widths → `sm:` … `2xl:` prefixes, mobile-first.
 15. **Behavior**: `data-cx-toggle`, `data-cx-target`, `data-cx-dismiss`, `data-cx-placement`, plus the ids and ARIA the component's snippet shows.
-16. **Icons**: Chassis Icons references; a non-Chassis icon falls back to the downloaded SVG and is flagged.
+16. **Icons**: Chassis Icons references, by the glyph's name (`pen-solid`) or, for a layer named by its role, by what the screenshot shows; a non-Chassis icon falls back to the downloaded SVG and is flagged. Other images are downloaded as the response of `get_design_context` says.
 17. **Check the section** against its screenshot; adjust by choosing another token class.
 
 ## Phase 4 — Themes
@@ -41,7 +41,7 @@ Grep the output; every hit is a defect unless flagged in the summary.
 | JSX leak                      | `className=`                                                                                                                                                                                                                          |
 | Tailwind colors               | `\b(text\|bg\|border)-(gray\|slate\|zinc\|neutral\|stone\|red\|orange\|amber\|yellow\|lime\|green\|emerald\|teal\|cyan\|sky\|blue\|indigo\|violet\|purple\|fuchsia\|pink\|rose)-\d`                                                   |
 | Numeric spacing or size       | `\b(p\|px\|py\|pt\|pb\|ps\|pe\|m\|mx\|my\|mt\|mb\|ms\|me\|gap\|space-[xy]\|w\|h)-\d+\b` (except `w-25` `w-50` `w-75` `w-100` `h-*` percentages and `w-{n}/12`)                                                                        |
-| Long size names               | `-(2x\|3x\|4x\|5x\|6x)?(small\|medium\|large)\b`, `rounded-round`                                                                                                                                                                     |
+| Long size names               | `-(2x\|3x\|4x\|5x\|6x)?(small\|medium\|large)\b`                                                                                                                                                                                      |
 | Old breakpoint forms          | `\b(small\|medium\|large\|xlarge\|2xlarge):`, `-(sm\|md\|lg\|xl\|xxl)-\d`, `d-(sm\|md\|lg)-`                                                                                                                                          |
 | Removed grid                  | `class="[^"]*\b(row\|col(-\d+)?\|offset-\|g-\|gx-\|gy-\|row-cols-)`                                                                                                                                                                   |
 | Bootstrap / old Chassis parts | `\b(btn\|card-content\|card-text\|card-img\|form-control\|form-select\|form-check-input\|form-text\|dropdown\|modal-dialog\|modal-content\|offcanvas\|list-group\|page-item\|page-link\|nav-pills\|font-h[1-6]\|alert-dismissible)\b` |
@@ -60,13 +60,13 @@ Summary with the CSS mode, then Implemented / Reused / Composed / Iconified / Fl
 
 ## Component mode
 
-`get_design_context` → `get_code_connect_map` (verbatim if mapped) → `get_variable_defs` → family in components.md → modifiers → Asset text → token classes → `data-cx-*` → screenshot check.
+`get_design_context` → `get_code_connect_map` (verbatim if mapped) → `get_variable_defs` → component in components.md → modifiers → Asset and layer text → token classes → `data-cx-*` → screenshot check.
 
 ## Failure modes
 
 | Symptom                                 | Cause                                               | Fix                                                                      |
 | --------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------ |
-| Empty text                              | Read the instance, not its `*Asset` children        | Walk the tree for `*Asset`, lift TEXT                                    |
+| Empty text                              | Read the instance, not the layers inside it         | Walk the tree for `<Role> Asset` and plain text layers, lift the text    |
 | Class has no effect                     | Not a Chassis class                                 | Look it up in css-classes.md; translate long names; drop Bootstrap forms |
 | Everything one track wide               | Items without `col-span-*`                          | `col-span-full` for the mobile layout                                    |
 | Modal shows in the page flow            | `<div class="modal">`                               | `<dialog class="modal dialog">` and the Dialog plugin                    |
@@ -76,5 +76,6 @@ Summary with the CSS mode, then Implemented / Reused / Composed / Iconified / Fl
 | Dark mode does not switch               | Raw colors, or `prefers-color-scheme` only          | Token classes; `data-cx-theme` on `<html>`                               |
 | `@md:` class does nothing               | No query container                                  | `contains-inline` on an ancestor, or `grid contained`                    |
 | Tailwind mode: class missing at runtime | Name built from parts                               | Literal class in source, or the safelist                                 |
-| `get_design_context` truncated          | Section too large                                   | `get_metadata`, then per-subsection context                              |
-| Icon blank                              | Download failed                                     | Chassis Icons reference by name                                          |
+| `get_design_context` sparse             | Section too large                                   | `get_metadata`, then one call per visible child                          |
+| A frame comes back without children     | Fetched by its own id inside a slot                 | Fetch the instance that owns the slot                                    |
+| Icon blank                              | Asset not downloaded, or another glyph name         | Chassis Icons reference by the glyph's name                              |
