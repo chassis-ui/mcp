@@ -1,5 +1,5 @@
 ---
-'chassis-mcp': minor
+'@chassis-ui/mcp': minor
 ---
 
 **Breaking:** `chassis-create-design` is rewritten against the Chassis UI Figma library as published today, and its reference files change: `references/typography.md` and `references/patterns.md` are gone, `references/recipes.md` is new, and `components.md`, `tokens.md` and `workflow.md` are rewritten. The resources `chassis-create-design/references/typography` and `chassis-create-design/references/patterns` no longer exist, and the `name` enum of `chassis_get_reference` changes with them.
