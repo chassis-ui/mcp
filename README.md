@@ -64,6 +64,21 @@ Or in your project's `.mcp.json`:
 }
 ```
 
+A client that only starts local servers over stdio can reach the server through a bridge such as [`mcp-remote`](https://github.com/punkpeye/mcp-remote):
+
+```json
+{
+  "mcpServers": {
+    "chassis-ui": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.chassis-ui.com/mcp"]
+    }
+  }
+}
+```
+
+The server is not an npm package: the hosted server is the only one, and it always serves the current skills.
+
 Once connected, the server exposes:
 
 - **Tools** — `chassis_create_design` and `chassis_implement_design` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`; `full: true` returns the instructions with every reference inline
