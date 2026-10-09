@@ -80,6 +80,31 @@ function describe(path, content) {
   throw new Error(`${path} has no frontmatter description and no level-one heading`)
 }
 
+/**
+ * The one line a SKILL.md gives a reference in its list of references, written as
+ * `- [<file>.md](./references/<file>.md) — <summary>`. The skill tools show it in their index
+ * of the references, so an agent knows what each file holds before it fetches one. A
+ * reference without such a line fails the generator: an index that lists a file with nothing
+ * on it is a worse tool, and nothing else would notice
+ * @param {string} reference - The reference file, from the root
+ * @param {string} skill - Its SKILL.md, from the root
+ * @param {string | undefined} content - The text of the SKILL.md
+ * @returns {string}
+ */
+function summarize(reference, skill, content) {
+  if (content === undefined) throw new Error(`${reference} has no ${skill}`)
+
+  const file = reference.slice(reference.lastIndexOf('/') + 1)
+  const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const line = new RegExp(`^- \\[${escaped}\\]\\(\\./references/${escaped}\\) — (.+)$`, 'm')
+  const match = content.match(line)
+  if (match && match[1].trim()) return match[1].trim()
+
+  throw new Error(
+    `${skill} has no line "- [${file}](./references/${file}) — <summary>" for ${reference}`
+  )
+}
+
 const skillPaths = collectMd('skills').sort(registryOrder)
 const paths = [PROMPT, ...skillPaths]
 const content = Object.fromEntries(paths.map((p) => [p, readFileSync(join(ROOT, p), 'utf-8')]))
@@ -92,12 +117,20 @@ const resources = skillPaths.map((path) => {
     .replace(/\/SKILL\.md$/, '')
     .replace(/\.md$/, '')
 
-  return {
+  const resource = {
     name,
     uri: `chassis://skills/${name}`,
     description: describe(path, content[path]),
     path
   }
+
+  // A reference also carries the line its SKILL.md gives it
+  if (name.includes('/references/')) {
+    const skill = `skills/${path.split('/')[1]}/SKILL.md`
+    return { ...resource, summary: summarize(path, skill, content[skill]) }
+  }
+
+  return resource
 })
 
 const resourceEntries = resources.map(
@@ -117,8 +150,8 @@ export const VERSION = '${version}'
 
 // Every Markdown file of skills/, in the order of the skill bundles: a SKILL.md, then its
 // references. The description is the frontmatter description of a skill and the level-one
-// heading of a reference. Typed as a tuple of literals so the enum of chassis_get_reference
-// can be made from the names.
+// heading of a reference; a reference also has the summary its SKILL.md gives it. Typed as a
+// tuple of literals so the enum of chassis_get_reference can be made from the names.
 export const RESOURCES = [
 ${resourceEntries.join(',\n')}
 ] as const

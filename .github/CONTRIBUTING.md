@@ -102,7 +102,9 @@ them.
 
 To add a reference file, add the Markdown file to `skills/<skill>/references/` with one level-one
 heading (its title is the description of the resource; the name is the path without `skills/` and
-`.md`), mention it in the `SKILL.md` where the agent needs it, and run `pnpm test -u` to add it to
+`.md`), give it a line `- [<file>.md](./references/<file>.md) — <what it holds>` in the References
+list of the `SKILL.md` (the skill tools show that line in their index of the references, and the
+build fails without it), mention it where the agent needs it, and run `pnpm test -u` to add it to
 the snapshot. The registry of resources is generated from the files of `skills/` together with
 their content, by `build/generate-content.js`, and the tests of `tests/registry.test.ts` compare
 it with the files on disk.

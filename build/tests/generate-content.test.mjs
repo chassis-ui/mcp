@@ -26,6 +26,8 @@ const TRICKY = [
   '',
   'Inline `code`, a fence, and a literal ${placeholder} with a \\${escaped} one.',
   '',
+  '- [first.md](./references/first.md) — The first reference, with a table',
+  '',
   '```js',
   'const text = `Hello ${name}`',
   'const path = "C:\\\\temp\\n"',
@@ -129,6 +131,14 @@ describe('generate-content', () => {
     )
   })
 
+  // The text after the dash of `- [first.md](./references/first.md) — …` in its SKILL.md
+  test('carries the summary a SKILL.md gives a reference, and none for a skill', () => {
+    assert.deepEqual(
+      generated.RESOURCES.map(({ summary }) => summary),
+      [undefined, 'The first reference, with a table', undefined]
+    )
+  })
+
   test('types the registry as a tuple of literals', () => {
     assert.match(readFile(dir, OUTPUT), /^] as const$/m)
   })
@@ -155,6 +165,28 @@ describe('generate-content, with a file that has no description and no heading',
   })
 })
 
+describe('generate-content, with a reference its SKILL.md does not list', () => {
+  let dir
+
+  before(() => {
+    dir = createFixture(SCRIPT, {
+      ...FILES,
+      'skills/two/references/unlisted.md': '# Unlisted\n'
+    })
+  })
+
+  after(() => removeFixture(dir))
+
+  test('fails, names the SKILL.md and the file, and writes no module', async () => {
+    const result = await runScript(dir, SCRIPT)
+
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, /skills\/two\/SKILL\.md/)
+    assert.match(result.stderr, /skills\/two\/references\/unlisted\.md/)
+    assert.equal(fs.existsSync(path.join(dir, OUTPUT)), false)
+  })
+})
+
 describe('generate-content, after a file changed', () => {
   let dir
 
@@ -168,7 +200,7 @@ describe('generate-content, after a file changed', () => {
     await runScript(dir, SCRIPT)
     writeFiles(dir, {
       'package.json': JSON.stringify({ name: 'fixture', version: '10.0.0' }),
-      'skills/two/SKILL.md': '# Two, edited\n',
+      'skills/two/SKILL.md': '# Two, edited\n\n- [added.md](./references/added.md) — Added later\n',
       'skills/two/references/added.md': '# Added\n'
     })
 
@@ -177,7 +209,7 @@ describe('generate-content, after a file changed', () => {
 
     assert.equal(result.status, 0, result.stderr)
     assert.equal(generated.VERSION, '10.0.0')
-    assert.equal(generated.CONTENT['skills/two/SKILL.md'], '# Two, edited\n')
+    assert.match(generated.CONTENT['skills/two/SKILL.md'], /^# Two, edited\n/)
     assert.equal(generated.CONTENT['skills/two/references/added.md'], '# Added\n')
   })
 })
