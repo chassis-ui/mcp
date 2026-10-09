@@ -19,7 +19,7 @@ A new file of the team has the three added; `get_libraries` lists them under `li
 Three tool calls, never a key from memory:
 
 1. `get_libraries({ fileKey })` returns the libraries added to the file. Take the `libraryKey` of each.
-2. `search_design_system({ fileKey, includeLibraryKeys, queries })`, with one object per thing needed: `{ entity: "component", query: "Solid Button" }`, `{ entity: "variable", query: "color/context/default/bg-main" }`, `{ entity: "style", query: "font/context/title/medium" }`. One intent per query, every query of the task in one call. `results[]` comes back in the same order; a component entry has `name`, `assetType` (`component` or `component_set`), `componentKey` or `componentSetKey`, and `libraryKey`; variables and styles have `name` and `key`. A result is about 500 characters, so ask for what the sections need and nothing speculative.
+2. `search_design_system({ fileKey, includeLibraryKeys, queries })`, with one object per thing needed: `{ entity: "component", query: "Solid Button" }`, `{ entity: "variable", query: "color/context/default/bg-main" }`, `{ entity: "style", query: "font/context/title/medium" }`. One intent per query. `results[]` comes back in the same order; a component entry has `name`, `assetType` (`component` or `component_set`), `componentKey` or `componentSetKey`, and `libraryKey`; variables and styles have `name` and `key`. A result is about 500 characters, and a component query returns two to five of them, a variable or style query fourteen (about 7 KB): send every component of the task in one call and the variables and styles in another, at most six of those to a call, because a client refuses a tool result that grows past about 50 KB. Ask for what the sections need and nothing speculative.
 3. In `use_figma`: `importComponentByKeyAsync(componentKey)` for a `component`, `importComponentSetByKeyAsync(componentSetKey)` for a `component_set`; a library variable with `figma.variables.importVariableByKeyAsync(key)`; a style with `figma.importStyleByKeyAsync(key)`.
 
 Query by the name the library gives the component. The old docs slugs (`button-solid`, `form-regular`) still find the set, but not first, and `cx.asset.text` returns an app icon: for standalone text query "Basic Text Asset". A variant of a set is named by all its props (`context=default, size=medium, state=idle`), so a variant is never picked by comparing a child's name with one pair; take `set.defaultVariant` and set the variants with `setProperties`.
@@ -87,6 +87,8 @@ Variant props are lower-case `context`, `size`, `state`, `type`. A few sets use 
 ### Hidden layers
 
 A hidden layer that a prop shows is set through the prop: `has-back-button` (modal headers), `back-button` (title assets), `title-chip` (a `Smooth Chip` in the page title). Three hidden layers have no prop and stay hidden: "Asset 2" in `Table Head Cell`, "Separator" in `List footer`, "Common Background" in the cards.
+
+The reverse case is a visible part the design does not show. A boolean turns it off where the component has one (subtract first). Where it has none, as with "Search Frame" and "Navbar Right" of `Navbar` or the pen icon after the subtitle of `Page Title`, set `visible = false` on that layer of the instance: the instance stays connected to the library and the override survives an update. Hide the smallest layer that holds the part, do it for every such part of the view and not for some, never detach for it, and name each hidden layer in the report.
 
 ## The pages
 
