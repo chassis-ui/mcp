@@ -90,6 +90,11 @@ them.
 - A name of a class, a token, a component or a Figma API call must exist. For Chassis CSS,
   `references/css-classes.md` lists every class of the framework; a class that is not there does
   not exist.
+- `pnpm lint:skills` checks the form: the frontmatter, that every Markdown file a skill names
+  is a file of that skill and that `SKILL.md` names each of its references, one level-one
+  heading in each file, and tables whose rows have the cells of their header (write a pipe
+  inside a cell as `\|`). `pnpm docs:links:offline` checks the links and their heading anchors,
+  and `pnpm lint:spell` the spelling; add a word of the project to `.cspell.json`.
 - Try the change with an agent, on a real Figma frame, before you open the pull request, and say
   in the pull request which client and model you used.
 - Both skills need the Figma MCP server in the agent's session. The plugin installs it with the
@@ -133,10 +138,13 @@ Branch names aren't templated; name yours descriptively (for example `fix/toolti
 - **Passing CI**: `.github/workflows/ci.yml` runs on every pull request and every push to
   `develop`. Its jobs are Check (ESLint, Prettier on the whole repository, the type check, the
   tests of the server and the tests of the build scripts, on Node.js 22 and 24), Verify (the
-  class catalog matches a fresh run of its generator), Audit (`pnpm check:pnpm`, which is
+  class catalog matches a fresh run of its generator; the skills are valid; the links between
+  the Markdown files resolve; the spelling), External Links (the URLs of the Markdown files;
+  it doesn't block a merge), Audit (`pnpm check:pnpm`, which is
   `pnpm audit --prod` and fails on a moderate advisory in what the server runs; the audit of the
   tooling is reported and doesn't fail), Changeset, and Dependency Review on a pull request.
-  One command runs all of them but the changeset check and the dependency review locally:
+  One command runs all of them locally, but the changeset check, the external links and the
+  dependency review:
 
   ```sh
   pnpm test:ci

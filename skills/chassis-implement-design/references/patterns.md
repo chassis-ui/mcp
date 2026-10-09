@@ -78,17 +78,17 @@ Inside it, `fg-main`, `bg-even`, `border-subtle`, `icon-subtle` and the componen
 
 ### Auto-layout → flex or stacks
 
-| Figma auto-layout | Classes |
-| ---------------------- | ----------------------------------------------------------- | ------ | --- | -------- | -------- | ------- |
-| Horizontal | `d-flex` (or `hstack` for a centered row with `gap-{size}`) |
-| Vertical | `d-flex flex-column` (or `vstack`) |
-| Wrap | `flex-wrap` |
-| Item spacing | `gap-{size}` |
-| Padding | `p-{size}`, `px-`, `py-` |
-| Main-axis alignment | `justify-content-start                                      | center | end | between  | around   | evenly` |
-| Cross-axis alignment | `align-items-start                                          | center | end | baseline | stretch` |
-| Fill container (child) | `flex-fill` or `w-100` |
-| Hug contents (child) | `w-auto` |
+| Figma auto-layout      | Classes                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- |
+| Horizontal             | `d-flex` (or `hstack` for a centered row with `gap-{size}`)             |
+| Vertical               | `d-flex flex-column` (or `vstack`)                                      |
+| Wrap                   | `flex-wrap`                                                             |
+| Item spacing           | `gap-{size}`                                                            |
+| Padding                | `p-{size}`, `px-`, `py-`                                                |
+| Main-axis alignment    | `justify-content-start \| center \| end \| between \| around \| evenly` |
+| Cross-axis alignment   | `align-items-start \| center \| end \| baseline \| stretch`             |
+| Fill container (child) | `flex-fill` or `w-100`                                                  |
+| Hug contents (child)   | `w-auto`                                                                |
 
 ### Columns → the grid
 

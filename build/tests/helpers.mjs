@@ -38,7 +38,15 @@ export function createFixture(script, files = {}) {
   // The real path: macOS has its temporary directory behind a symbolic link
   const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'chassis-mcp-build-test-')))
 
-  writeFiles(dir, { ...files, [script]: fs.readFileSync(path.join(root, script), 'utf8') })
+  // The scripts are ES modules by the "type" of the repository's package.json, so the
+  // fixture's package.json says the same
+  const pkg = { ...JSON.parse(files['package.json'] ?? '{}'), type: 'module' }
+
+  writeFiles(dir, {
+    ...files,
+    'package.json': JSON.stringify(pkg),
+    [script]: fs.readFileSync(path.join(root, script), 'utf8')
+  })
   // The packages a script imports. A junction on Windows, where a symbolic link needs rights
   fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'), 'junction')
   return dir

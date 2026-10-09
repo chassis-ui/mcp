@@ -52,7 +52,7 @@ Follow the steps of `figma-design-to-code` and add, at each step:
 - **Assets** — a Chassis icon instance (`Icon Asset`, `*-icon`) becomes a Chassis Icons reference, not a downloaded SVG; images use the MCP localhost URLs as the parent skill says; brand- or theme-gated images become conditional markup ([patterns.md](./references/patterns.md#theme-conditional-assets)).
 - **Translate** — identify each Figma instance's Chassis family with [components.md](./references/components.md), emit its markup, lift Asset text, then add utilities for the token-bound styles that the component does not already apply (a card's padding, a button's font and colors are built in and are not repeated as utilities).
 - **Parity** — compare against the per-section screenshot; fix by picking a different token class, never by inline CSS.
-- **Validate** — run the checklist in [workflow.md](./references/workflow.md#lint-checklist); render under light and dark when the design has both.
+- **Validate** — run the checklist in [workflow.md](./references/workflow.md#phase-5--lint-checklist); render under light and dark when the design has both.
 
 ## Deliverable format
 
