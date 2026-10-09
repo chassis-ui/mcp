@@ -12,7 +12,7 @@ What the library is, how a component is found and read at run time, the conventi
 
 A new file of the team has the three added; `get_libraries` lists them under `libraries_added_to_file`, each with `name`, `libraryKey` and `source`. Other libraries may be added to a file (an icon library, for one); nothing of Chassis uses them. Neither the library file nor a product file has local variables or styles: `getLocalVariableCollectionsAsync()` and `getLocalTextStylesAsync()` return nothing, and `figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync()` may too. The search is the way to a variable or style.
 
-`cx.components.UI` is published twice, by the team and as a community file of the same name. A search scoped to the community copy returns nothing today, so a file uses the team library. Components whose name starts with `_` are private parts of other components; they are not placed on their own.
+`cx.components.UI` is published twice, by the team and as a community file of the same name. A search scoped to the community copy returns nothing today, so a file uses the team library.
 
 ## Finding a component
 
@@ -26,7 +26,7 @@ Query by the name the library gives the component. The old docs slugs (`button-s
 
 `get_metadata` returns the node tree of a page or frame (ids, types, names, positions, sizes, hidden layers) and never a key; keys come from the search alone.
 
-A name ending in ` @ 0.1 - DEPRECATED` is a deprecated publication (today only two old `Basic Slot`s): use the same name without the suffix.
+A name ending in ` @ 0.1 - DEPRECATED` is a deprecated publication (today only two old `Basic Slot`s): use the same name without the suffix. A name starting with `_` is a private part of another component and is not placed on its own.
 
 ## Reading a component
 
@@ -74,7 +74,7 @@ Nineteen sets take their content in a native Figma slot: a child node of type `S
 
 ### Booleans
 
-Boolean names are not uniform: `has-*` and `is-*` on buttons, cards, chips, navs and modals; bare `icon`, `help`, `label`, `assist`, `dropdown`, `mandatory`, `scrollbar` on the forms; `2nd-action`, `3rd-action`, `dismissible`, `expanded`, `show-menu` elsewhere. Find them by `type === 'BOOLEAN'`. Most default to `true`; the ones that default to `false` are `dropdown` and `scrollbar` on the forms, `has-slot`, `has-floating-close`, `has-bg`, `back-button`, `progress`, and `mandatory` on the check assets. A boolean that gates an icon has an INSTANCE_SWAP next to it (`has-icon-start` and `icon-start-instance`); set the swap for every boolean kept `true`.
+Boolean names are not uniform: `has-*` and `is-*` on buttons, cards, chips, navs and modals; bare `icon`, `help`, `label`, `assist`, `dropdown`, `mandatory`, `scrollbar` on the forms; `2nd-action`, `3rd-action`, `dismissible`, `expanded`, `show-menu` elsewhere. Find them by `type === 'BOOLEAN'`. Most default to `true`; the ones that default to `false` are `dropdown` and `scrollbar` on the forms, `has-slot`, `has-floating-close`, `has-bg`, `back-button`, `progress`, and `mandatory` on the check assets. A boolean that gates an icon has an INSTANCE_SWAP next to it (`has-icon-start` and `icon-start-instance`); set the swap for every boolean kept `true`. A nested Asset can carry booleans of its own that the parent's `componentProperties` does not list (`back-button` and `title-chip` on the `_ Large Title Asset` inside `Page Title`): read and subtract them on the nested instance.
 
 ### Variants
 
@@ -86,15 +86,15 @@ Variant props are lower-case `context`, `size`, `state`, `type`. A few sets use 
 
 ### Hidden layers
 
-A hidden layer that a prop shows is set through the prop: `has-back-button` (modal headers), `back-button` (title assets), `title-chip` (a `Smooth Chip` in the page title). Three hidden layers have no prop and stay hidden: "Asset 2" in `Table Head Cell`, "Separator" in `List footer`, "Common Background" in the cards.
+A hidden layer that a prop shows is set through the prop: `has-back-button` (modal headers), `back-button` (title assets). The `Smooth Chip` of the page title is the reverse, visible by default behind `title-chip` on the nested title Asset. Three hidden layers have no prop and stay hidden: "Asset 2" in `Table Head Cell`, "Separator" in `List footer`, "Common Background" in the cards.
 
 The reverse case is a visible part the design does not show. A boolean turns it off where the component has one (subtract first). Where it has none, as with "Search Frame" and "Navbar Right" of `Navbar` or the pen icon after the subtitle of `Page Title`, set `visible = false` on that layer of the instance: the instance stays connected to the library and the override survives an update. Hide the smallest layer that holds the part, do it for every such part of the view and not for some, never detach for it, and name each hidden layer in the report.
 
-## The pages
+## The pages and their components
 
 Each line is a page of `cx.components.UI` with its public components and, in parentheses, the slot the set takes content in. Props are read from the component.
 
-### Actions
+### Action pages
 
 - **Button - Solid**, **Button - Smooth**, **Button - Outline**, **Button - Link** — `Solid Button` and `Solid Icon-Button`, `Smooth Button` and `Smooth Icon-Button`, `Outline Button` and `Outline Icon-Button`, `Link Button` and `Link Icon-Button`
 - **Button Group** — `Button Group` (`Slot`), `Button Group Item`, `Icon-Button Group Item`, `Cart Button Group`
@@ -102,7 +102,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 - **Close Button** — `Close Button`
 - **Toggle Button** — `Basic Common Toggle`, `Icon-Only Common Toggle`
 
-### Forms
+### Form pages
 
 - **Form - Regular** — `Regular Form Field`, `Regular Form Input`, `Form Label`, `Form Help`, `Regular Input Text Asset`, `Regular Input Textarea Asset`
 - **Form - Floating** — `Floating Form Field`, `Floating Form Input`
@@ -111,7 +111,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 - **Dropdown** — `Dropdown Menu` (`items`), `Dropdown Item`, `Dropdown Button` (`dropdown`)
 - **Datepicker** — `Date Picker`
 
-### Navigation
+### Navigation pages
 
 - **Navbar** — `Navbar` (`nav-links`), `Nav Link`
 - **Nav - Tab** — `Nav Tabs` (`items`), `Regular Nav Tab Item`, `Fancy Nav Tab Item`
@@ -120,7 +120,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 - **Pagination** — `Simple Pagination`, `Advanced Pagination`, `Dot Pagination`, `Button Pagination`
 - **Page Title** — `Page Title` (`actions`)
 
-### Surfaces
+### Surface pages
 
 - **Card** — `Full-bleed Card`, `Contained Card`
 - **Section** — `Section Block` (`content`), `Section Header`, `Section Footer`, `Mobile Footer`
@@ -129,7 +129,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 - **List** — `Common List Item`, `iOS List Item`, `List Header`, `List footer`, `List Event`, `List Swipe`
 - **Carousel** — `Card Carousel` (`items`), `Small Carousel` (`items`), `Hero Carousel`
 
-### Feedback
+### Feedback pages
 
 - **Alert** — `Alert Window` (`slot`), `Alert Screen`
 - **Notification** — `Notification`, `Rich Notification` (`Slot`)
@@ -137,7 +137,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 - **Progress** — `Large Chip Progress Flow`, `Small Chip Progress Flow`, `Large Thumb Progress Flow`, `Small Thumb Progress Flow`, `Thumb Progress Step`, `Chip Progress Step`, `Loading Indicator`, `Progress Bar - 10 Segments`, `Progress Bar - 12 Segments`, `Animated Progress Indicator`, `Mobile Progress Indicator`
 - **Message** — `Chat Message`, `Message Form`, `Message Suggestions`, `Chat Status`
 
-### Data
+### Data pages
 
 - **Table** — `Data Table` (`table-head`, `table-body`), `Table Row` (`columns`), `Table Head Cell`, `Table Data Cell`, `Table Input Cell`, `Table Container`, `Table Empty`
 - **Badge** — `Solid Badge`, `Smooth Badge`, `Outline Badge`, `Strip Badge`, `Cap Badge`, `Ribbon Badge`, three store badges
@@ -147,7 +147,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 - **Story** — `Story Button`, `Story Card`, `Story Carousel`
 - **Map** — 29 map components
 
-### Mobile
+### Mobile pages
 
 - **Mobile Alert** — `Mobile Alert Window` (`Slot`), `Mobile Alert Screen`
 - **Mobile Button** — `Mobile Button`, `Mobile Icon-Button`, `Swipe Mobile Button`
@@ -156,7 +156,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 - **Mobile Section** — `Mobile Section Header`, `Mobile Section Footer`, `Mobile Section Block`
 - **Mobile Sheet**, **Mobile Keyboard**, **Mobile System** — sheets, keyboards and system bars
 
-### Assets
+### Asset pages
 
 - **Text** — `Basic Text  Asset`, `Fill Text  Asset`, `Variable Text  Asset`, `Stack TTB Text Asset`, `Stack BTT Text Asset`, `Stack LTR Text Asset`, `Stack RTL Text Asset`, `Definition Horizontal Text Asset`, `Definition Vertical Text Asset`, `Expired Text Asset`, `Rotated Text Asset`, `Wrap Text Asset`
 - **Slot** — `Basic Slot` (`Content`)
@@ -172,7 +172,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 
 ## Composition
 
-How the families that are built from several components fit together. Props are named here only where the structure needs them.
+How the families that are built from several components fit together, one section per family, read for the families the view has. Props are named here only where the structure needs them.
 
 ### Buttons
 
@@ -188,7 +188,7 @@ A table is library components in slots, nothing is turned into a component: `Dat
 
 ### Navigation
 
-`Navbar` (`size` `large` or `small`, boolean `expanded`) holds `Nav Link`s in its `nav-links` slot; a nav link has "Text Asset" and the booleans `has-text`, `has-icon`, `has-badge`, `is-dropdown`; a search field in the navbar is a bare `Regular Form Input`. `Nav Tabs` (`variant` `top`, `bottom`, `fancy`) holds `Regular Nav Tab Item`s or `Fancy Nav Tab Item`s in `items`, each with "Label Asset", `is-active` and the icon and badge booleans. `Nav Segments` holds `Nav Segment Item`s in `items`. The breadcrumbs carry their levels as plain text layers and the separator as a top-level TEXT property. `Page Title` takes its action buttons in `actions`.
+`Navbar` (`size` `large` or `small`, boolean `expanded`) carries the brand as `chassis-logo` in "Logo Frame", with no swap, slot or text for a product name (a name as text is Blocked), and holds `Nav Link`s in its `nav-links` slot; a nav link has "Text Asset" and the booleans `has-text`, `has-icon`, `has-badge`, `is-dropdown`; a search field in the navbar is a bare `Regular Form Input`. `Nav Tabs` (`variant` `top`, `bottom`, `fancy`) holds `Regular Nav Tab Item`s or `Fancy Nav Tab Item`s in `items`, each with "Label Asset", `is-active` and the icon and badge booleans. `Nav Segments` holds `Nav Segment Item`s in `items`. The breadcrumbs carry their levels as plain text layers and the separator as a top-level TEXT property. `Page Title` takes its action buttons in `actions`.
 
 ### Cards
 

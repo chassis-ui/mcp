@@ -19,7 +19,7 @@ Build or reconnect a Figma view with the Chassis UI library.
 
 1. Load, in this order and before any tool call: `figma-use` and `figma-generate-design` from the Figma MCP server, then [`chassis-create-design`](../skills/chassis-create-design/SKILL.md). Its rules and its overlay on Figma's workflow govern the work; this prompt adds nothing to them.
 2. Confirm the Figma MCP server is connected, the target file is accessible, and `cx.components.UI` and `cx.tokens.MAIN` are among the libraries of the file (`get_libraries`).
-3. Follow the six steps of `figma-generate-design` with the skill's overlay, and fetch the skill's reference files as the steps need them: the library and its components, the recipes, the tokens, the workflow.
+3. Follow the six steps of `figma-generate-design` with the skill's overlay, and fetch the skill's references as its steps name them, a file whole or one section of it, and not before the step.
 4. Close with the skill's report: Built, Swapped, Replaced, Composed, Local components, Already connected, Blocked.
 
 ## Example invocations

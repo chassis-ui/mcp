@@ -48,6 +48,8 @@
 .button-group > .button { margin: 0; }
 .card { display: block; }
 .card-body { padding: 1rem; }
+.md\:card-body { padding: 2rem; }
+.lg\:card-body { padding: 3rem; }
 .card.card-sm .card-body { padding: 0.5rem; }
 .modal.show .modal-dialog { transform: none; }
 

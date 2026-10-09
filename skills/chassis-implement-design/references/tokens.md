@@ -139,6 +139,6 @@ The glyph sizes of Figma go to `6xlarge`; `5xlarge` and `6xlarge` have no class 
 
 ## Checklist per styled property
 
-- Bound to a `*/context/*` variable or a `font/*` style → translate and emit the class.
+- Bound to a `*/context/*` variable or a `font/*` style → translate and emit the class, unless the element inherits that value already (`fg-main` on text in the `default` context, where the page's `body` sets it): a class that restates the inherited default is not written.
 - Bound to a `*/{component}/*` token → emit the component; do not repeat the style.
-- Bound to a unit, level or primitive token, or unbound → ask; emit nothing until answered.
+- Bound to a unit, level or primitive token, or unbound → ask; emit nothing until answered. When no one can answer, the context step nearest the resolved value, with a Flagged line that says so.

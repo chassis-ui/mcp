@@ -470,15 +470,23 @@ async function build() {
   p(
     '## Components',
     '',
-    'For each component: the root class, its subpart classes, the modifiers that appear on the root in the stylesheet, and whether a context color (`primary`, `danger`, …) is written directly on the root ("direct color"). A component without a direct color takes `context {ctx}` instead. State classes such as `active`, `disabled` and `show` are listed where the stylesheet styles them.',
+    'For each component: the root class, its subpart classes (a subpart that takes variant prefixes says so: `navbar-expand` (takes `sm:` … `xl:`) exists as `md:navbar-expand`), the modifiers that appear on the root in the stylesheet, and whether a context color (`primary`, `danger`, …) is written directly on the root ("direct color"). A component without a direct color takes `context {ctx}` instead. State classes such as `active`, `disabled` and `show` are listed where the stylesheet styles them.',
     ''
   )
   for (const [group, list] of COMPONENT_GROUPS) {
     p(`### ${group}`, '')
     for (const root of list) {
       if (!classes.has(root)) continue
+      // A subpart that takes variant prefixes (`md:navbar-expand`) says so, like a utility
       const parts = templatize(subparts.get(root))
-        .map((e) => code(e.template) + (e.note ? ` (${e.note})` : ''))
+        .map((e) => {
+          const shared = e.names
+            .map((name) => classes.get(name))
+            .reduce((a, b) => new Set([...a].filter((v) => b.has(v))))
+          const variants = variantSignature(shared)
+          const notes = [e.note, variants && `takes ${variants}`].filter(Boolean).join('; ')
+          return code(e.template) + (notes ? ` (${notes})` : '')
+        })
         .join(', ')
       const mods = [...modifiers.get(root)].sort().map(code).join(', ')
       const facts = [
