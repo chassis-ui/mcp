@@ -100,17 +100,22 @@ them.
 - Both skills need the Figma MCP server in the agent's session. The plugin installs it with the
   Chassis server.
 
-To add a reference file, add the Markdown file to `skills/<skill>/references/`, add its entry to
-[`server/resources.ts`](../server/resources.ts) (the name is the path without `skills/` and
+To add a reference file, add the Markdown file to `skills/<skill>/references/` with one level-one
+heading (its title is the description of the resource; the name is the path without `skills/` and
 `.md`), mention it in the `SKILL.md` where the agent needs it, and run `pnpm test -u` to add it to
-the snapshot. The tests of `tests/registry.test.ts` fail while a file of `skills/` is missing
-from the server.
+the snapshot. The registry of resources is generated from the files of `skills/` together with
+their content, by `build/generate-content.js`, and the tests of `tests/registry.test.ts` compare
+it with the files on disk.
 
 ## Changing the server
 
 - The handler is stateless: every request gets a new server and a new transport, and there is no
   session. Test a change through the handler, with `pnpm dev` or in `tests/handler.test.ts`, and
   not only through `createServer()` in memory: the handler is what Vercel runs.
+- Besides the protocol, the handler answers a browser (a `GET` without `text/event-stream` in
+  `Accept`) with a page, `GET /health` with `{ "ok": true, "version": "<version>" }`, and a
+  failure with a JSON-RPC error after a `console.error`. `tests/handler.test.ts` pins each, and
+  `pnpm dev` serves `/`, `/health` and `/mcp`.
 - The names, descriptions and inputs of the tools, prompts and resources are what every client is
   shown. `tests/__snapshots__/server.test.ts.snap` holds them; a change to that file is a change
   for every agent that uses the server. Update it with `pnpm test -u` and review the difference.

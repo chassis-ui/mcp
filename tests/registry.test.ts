@@ -1,11 +1,10 @@
-// server/resources.ts is written by hand and server/content.generated.ts by
-// build/generate-content.js. These tests fail when either one misses a file of skills/ or
-// prompts/, so a new reference cannot be left out of the server without a red test.
+// build/generate-content.js writes server/content.generated.ts: the text of every Markdown file
+// of skills/ and prompts/, and the registry of resources the server serves. These tests compare
+// both with the files on disk, so a file the generator drops or misnames is a red test.
 
 import { describe, expect, test } from 'vitest'
-import { CONTENT, VERSION } from '../server/content.generated.js'
-import { RESOURCES } from '../server/resources.js'
-import { markdownFiles, read, version } from './helpers.js'
+import { CONTENT, RESOURCES, VERSION } from '../server/content.generated.js'
+import { heading, markdownFiles, read, version } from './helpers.js'
 
 const skills = markdownFiles('skills')
 const prompts = markdownFiles('prompts')
@@ -70,9 +69,33 @@ describe('resource registry', () => {
     }
   })
 
-  test('describes every resource', () => {
+  // A skill bundle is the resources of a skill in the order of the registry
+  test('lists SKILL.md before the references of its skill', () => {
+    const paths: string[] = RESOURCES.map((resource) => resource.path)
+
+    for (const skill of new Set(skills.map((path) => path.split('/')[1]))) {
+      const own = paths.filter((path) => path.startsWith(`skills/${skill}/`))
+
+      expect(own[0]).toBe(`skills/${skill}/SKILL.md`)
+      expect(own.slice(1)).toEqual([...own.slice(1)].sort())
+    }
+  })
+
+  // The frontmatter description of a skill, the level-one heading of a reference
+  test('describes every resource from its file', () => {
     for (const { description, path } of RESOURCES) {
-      expect(description.length, path).toBeGreaterThan(10)
+      const file = read(path)
+      const expected = path.endsWith('/SKILL.md')
+        ? file.match(/^description: '(.+)'$/m)?.[1]
+        : heading(file).slice('# '.length)
+
+      expect(description, path).toBe(expected)
+    }
+  })
+
+  test('keys the content and the registry with forward slashes', () => {
+    for (const key of [...Object.keys(CONTENT), ...RESOURCES.map((resource) => resource.path)]) {
+      expect(key).not.toContain('\\')
     }
   })
 })

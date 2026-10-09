@@ -1,7 +1,11 @@
 {
   "buildCommand": "pnpm run build",
   "outputDirectory": ".",
-  "rewrites": [{ "source": "/mcp", "destination": "/api/index" }],
+  "rewrites": [
+    { "source": "/", "destination": "/api/index" },
+    { "source": "/health", "destination": "/api/index" },
+    { "source": "/mcp", "destination": "/api/index" }
+  ],
   "functions": {
     "api/index.ts": {
       "maxDuration": 60

@@ -43,7 +43,7 @@ The repository also carries a Cursor plugin manifest (`.cursor-plugin/plugin.jso
 
 ### Any MCP client
 
-The server speaks Streamable HTTP at `https://mcp.chassis-ui.com/mcp`. It needs no authentication and keeps no session.
+The server speaks Streamable HTTP at `https://mcp.chassis-ui.com/mcp`. It needs no authentication and keeps no session. Opened in a browser, the endpoint shows a page; `https://mcp.chassis-ui.com/health` answers `{ "ok": true, "version": "<version>" }`.
 
 In Claude Code, without the plugin:
 
