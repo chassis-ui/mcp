@@ -8,7 +8,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createServer } from '../server/index.js'
 import { RESOURCES } from '../server/content.generated.js'
-import { body, heading, read, version } from './helpers.js'
+import { body, heading, read, summary, version } from './helpers.js'
 
 const SKILLS = ['chassis-create-design', 'chassis-implement-design']
 const REFERENCES = RESOURCES.filter((resource) => resource.name.includes('/references/'))
@@ -76,13 +76,50 @@ describe('server', () => {
 
 describe.each(SKILLS)('%s', (skill) => {
   const tool = skill.replaceAll('-', '_')
-  const files = RESOURCES.filter(
+  const own = RESOURCES.filter(
     (resource) => resource.name === skill || resource.name.startsWith(`${skill}/`)
-  ).map((resource) => read(resource.path))
+  )
+  const files = own.map((resource) => read(resource.path))
+  const references = own.filter((resource) => resource.name.includes('/references/'))
+  const instructions = read(`skills/${skill}/SKILL.md`)
 
-  // Phase 7 of the plan changes this on purpose: the tool returns SKILL.md and an index
-  test('the tool returns SKILL.md and every reference, without frontmatter', async () => {
-    const bundle = text(await client.callTool({ name: tool, arguments: {} }))
+  // The instructions, then an index of the references: for each its file, its size, the line
+  // the SKILL.md gives it, its title and its name for chassis_get_reference
+  test('the tool returns SKILL.md without frontmatter and an index of its references', async () => {
+    const result = text(await client.callTool({ name: tool, arguments: {} }))
+
+    expect(references.length).toBeGreaterThan(1)
+    expect(result.startsWith(body(instructions).trimEnd())).toBe(true)
+    expect(result).not.toMatch(/^name: /m)
+    expect(result).toContain('`chassis_get_reference`')
+    for (const { name, path } of references) {
+      const file = read(path)
+
+      expect(result).toContain(`\`${path.slice(path.lastIndexOf('/') + 1)}\``)
+      expect(result).toContain(`(${Math.round(file.length / 1024)} KB)`)
+      expect(result).toContain(summary(instructions, path))
+      expect(result).toContain(heading(file).slice('# '.length))
+      expect(result).toContain(`\`${name}\``)
+      expect(result).not.toContain(body(file))
+    }
+  })
+
+  // SKILL.md of chassis-create-design is 29 KB by itself; the index adds about 1 KB
+  test('the index response is under 40 KB', async () => {
+    const result = text(await client.callTool({ name: tool, arguments: {} }))
+
+    expect(result.length).toBeLessThan(40 * 1024)
+  })
+
+  test('full: false returns the same as no input', async () => {
+    const withInput = text(await client.callTool({ name: tool, arguments: { full: false } }))
+    const without = text(await client.callTool({ name: tool, arguments: {} }))
+
+    expect(withInput).toBe(without)
+  })
+
+  test('full: true returns SKILL.md and every reference, without frontmatter', async () => {
+    const bundle = text(await client.callTool({ name: tool, arguments: { full: true } }))
 
     expect(files.length).toBeGreaterThan(1)
     for (const file of files) expect(bundle).toContain(body(file))
@@ -94,8 +131,9 @@ describe.each(SKILLS)('%s', (skill) => {
     expect(positions[0]).toBeGreaterThanOrEqual(0)
   })
 
-  test('the prompt returns the same text as one user message', async () => {
-    const bundle = text(await client.callTool({ name: tool, arguments: {} }))
+  // A prompt is the user's explicit choice: it keeps the whole skill
+  test('the prompt returns the full bundle as one user message', async () => {
+    const bundle = text(await client.callTool({ name: tool, arguments: { full: true } }))
     const { messages } = await client.getPrompt({ name: skill })
 
     expect(messages).toEqual([{ role: 'user', content: { type: 'text', text: bundle } }])

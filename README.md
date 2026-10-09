@@ -66,7 +66,7 @@ Or in your project's `.mcp.json`:
 
 Once connected, the server exposes:
 
-- **Tools** — `chassis_create_design` and `chassis_implement_design` return a skill with all of its reference files; `chassis_get_reference` returns one reference file by name
+- **Tools** — `chassis_create_design` and `chassis_implement_design` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`; `full: true` returns the instructions with every reference inline
 - **Prompts** — `chassis-create-design` and `chassis-implement-design` load a skill; `chassis-ui` is a one-shot command to build or reconnect a Figma screen using the Chassis UI library
 - **Resources** — every skill and reference file, readable by your agent on demand
 

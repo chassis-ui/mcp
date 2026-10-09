@@ -139,6 +139,28 @@ describe('POST', () => {
     expect(result?.content?.[0].text).toMatch(/^# /)
   })
 
+  // The skill tools through the handler: the index by default, the bundle with full: true
+  test('answers a skill tool with the index, and with the bundle when asked', async () => {
+    const call = async (id: number, args: Record<string, unknown>) => {
+      const response = await post({
+        jsonrpc: '2.0',
+        id,
+        method: 'tools/call',
+        params: { name: 'chassis_implement_design', arguments: args }
+      })
+
+      expect(response.status).toBe(200)
+      return (await message(response)).result?.content?.[0].text ?? ''
+    }
+    const index = await call(30, {})
+    const bundle = await call(31, { full: true })
+
+    expect(index).toContain('`chassis-implement-design/references/tokens`')
+    expect(index).not.toContain('## chassis-implement-design/references/tokens')
+    expect(bundle).toContain('## chassis-implement-design/references/tokens')
+    expect(bundle.length).toBeGreaterThan(index.length * 3)
+  })
+
   test('accepts a notification with 202 and no body', async () => {
     const response = await post({ jsonrpc: '2.0', method: 'notifications/initialized' })
 

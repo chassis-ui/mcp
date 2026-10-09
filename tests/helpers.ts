@@ -30,3 +30,12 @@ export function heading(markdown: string): string {
   if (!match) throw new Error('The file has no level-one heading')
   return match[0]
 }
+
+// The one line a SKILL.md gives a reference in its list of references, written as
+// `- [<file>.md](./references/<file>.md) — <summary>`
+export function summary(skill: string, path: string): string {
+  const file = path.slice(path.lastIndexOf('/') + 1).replaceAll('.', '\\.')
+  const match = skill.match(new RegExp(`^- \\[${file}\\]\\(\\./references/${file}\\) — (.+)$`, 'm'))
+  if (!match) throw new Error(`${path} has no line in its SKILL.md`)
+  return match[1].trim()
+}

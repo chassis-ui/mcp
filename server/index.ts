@@ -23,14 +23,65 @@ function buildSkillBundle(skill: string): string {
     .join('')
 }
 
+type Resource = (typeof RESOURCES)[number]
+type Reference = Extract<Resource, { summary: string }>
+
+// A reference carries the one-line summary its SKILL.md gives it; a skill does not
+function isReference(resource: Resource): resource is Reference {
+  return 'summary' in resource
+}
+
+// What the skill tools return unless asked for the bundle: SKILL.md, then an index of its
+// references with what chassis_get_reference needs. The references are what a task may need,
+// not what every task needs, and together they are several times the size of the instructions
+function buildSkillIndex(skill: string): string {
+  const instructions = stripFrontmatter(text(`skills/${skill}/SKILL.md`))
+  const references = RESOURCES.filter(isReference).filter((r) =>
+    r.name.startsWith(`${skill}/references/`)
+  )
+  const lines = references.map((r) => {
+    const file = r.path.slice(r.path.lastIndexOf('/') + 1)
+    const size = Math.max(1, Math.round(text(r.path).length / 1024))
+    return `- \`${file}\` (${size} KB) — ${r.summary}. Title "${r.description}". Name \`${r.name}\``
+  })
+
+  return [
+    instructions.trimEnd(),
+    '---',
+    '## Fetching the references',
+    'The instructions above link to the files of `./references/`. They are not included here: when the instructions send you to one, call `chassis_get_reference` with the name given below, and read what it returns before you go on.',
+    lines.join('\n')
+  ].join('\n\n')
+}
+
 const BUNDLES = new Map<string, string>(
   RESOURCES.filter((r) => !r.name.includes('/')).map((r) => [r.name, buildSkillBundle(r.name)])
+)
+
+const INDEXES = new Map<string, string>(
+  RESOURCES.filter((r) => !r.name.includes('/')).map((r) => [r.name, buildSkillIndex(r.name)])
 )
 
 function bundle(skill: string): string {
   const content = BUNDLES.get(skill)
   if (content === undefined) throw new Error(`No skill ${skill} in the registry`)
   return content
+}
+
+function index(skill: string): string {
+  const content = INDEXES.get(skill)
+  if (content === undefined) throw new Error(`No skill ${skill} in the registry`)
+  return content
+}
+
+// The input of the skill tools
+const FULL = {
+  full: z
+    .boolean()
+    .optional()
+    .describe(
+      'Also return every reference file of the skill, inline after the instructions, instead of the index of their names: several times the size. Default false'
+    )
 }
 
 const PROMPT = stripFrontmatter(text('prompts/chassis-ui.prompt.md'))
@@ -90,15 +141,22 @@ export function createServer(): McpServer {
     })
   )
 
-  // Tools
+  // Tools. A skill tool returns the instructions and an index of the references; the
+  // references come one at a time from chassis_get_reference, or all at once with full: true
   server.registerTool(
     'chassis_create_design',
     {
       description:
-        'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the full skill instructions and all reference files.'
+        'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.',
+      inputSchema: FULL
     },
-    async () => ({
-      content: [{ type: 'text', text: bundle('chassis-create-design') }]
+    async ({ full }) => ({
+      content: [
+        {
+          type: 'text',
+          text: full ? bundle('chassis-create-design') : index('chassis-create-design')
+        }
+      ]
     })
   )
 
@@ -106,17 +164,24 @@ export function createServer(): McpServer {
     'chassis_implement_design',
     {
       description:
-        'Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the full skill instructions and all reference files.'
+        'Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.',
+      inputSchema: FULL
     },
-    async () => ({
-      content: [{ type: 'text', text: bundle('chassis-implement-design') }]
+    async ({ full }) => ({
+      content: [
+        {
+          type: 'text',
+          text: full ? bundle('chassis-implement-design') : index('chassis-implement-design')
+        }
+      ]
     })
   )
 
   server.registerTool(
     'chassis_get_reference',
     {
-      description: 'Fetch a specific Chassis UI reference file by name.',
+      description:
+        'Fetch one reference file of a Chassis UI skill by name, without its frontmatter. The skill tools list the names and what each file holds.',
       inputSchema: { name: z.enum(REFERENCE_NAMES).describe('Reference file to fetch') }
     },
     async ({ name }) => {

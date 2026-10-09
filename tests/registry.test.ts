@@ -4,7 +4,7 @@
 
 import { describe, expect, test } from 'vitest'
 import { CONTENT, RESOURCES, VERSION } from '../server/content.generated.js'
-import { heading, markdownFiles, read, version } from './helpers.js'
+import { heading, markdownFiles, read, summary, version } from './helpers.js'
 
 const skills = markdownFiles('skills')
 const prompts = markdownFiles('prompts')
@@ -90,6 +90,21 @@ describe('resource registry', () => {
         : heading(file).slice('# '.length)
 
       expect(description, path).toBe(expected)
+    }
+  })
+
+  // The line `- [<file>.md](./references/<file>.md) — <summary>` of the skill's SKILL.md, which
+  // the skill tools show in their index. A skill has none
+  test('carries the summary a SKILL.md gives each of its references', () => {
+    for (const resource of RESOURCES) {
+      const { path } = resource
+      const { summary: carried } = resource as { summary?: string }
+
+      if (path.endsWith('/SKILL.md')) {
+        expect(carried, path).toBeUndefined()
+      } else {
+        expect(carried, path).toBe(summary(read(`skills/${path.split('/')[1]}/SKILL.md`), path))
+      }
     }
   })
 

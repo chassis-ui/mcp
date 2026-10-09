@@ -100,23 +100,37 @@ exports[`server > lists its resources 1`] = `
 exports[`server > lists its tools 1`] = `
 [
   {
-    "description": "Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the full skill instructions and all reference files.",
+    "description": "Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.",
     "inputSchema": {
-      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "additionalProperties": false,
+      "properties": {
+        "full": {
+          "description": "Also return every reference file of the skill, inline after the instructions, instead of the index of their names: several times the size. Default false",
+          "type": "boolean",
+        },
+      },
       "type": "object",
     },
     "name": "chassis_create_design",
   },
   {
-    "description": "Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the full skill instructions and all reference files.",
+    "description": "Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files, which are fetched on demand with chassis_get_reference.",
     "inputSchema": {
-      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "additionalProperties": false,
+      "properties": {
+        "full": {
+          "description": "Also return every reference file of the skill, inline after the instructions, instead of the index of their names: several times the size. Default false",
+          "type": "boolean",
+        },
+      },
       "type": "object",
     },
     "name": "chassis_implement_design",
   },
   {
-    "description": "Fetch a specific Chassis UI reference file by name.",
+    "description": "Fetch one reference file of a Chassis UI skill by name, without its frontmatter. The skill tools list the names and what each file holds.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": false,
