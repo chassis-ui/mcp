@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "restricted",
+  "baseBranch": "develop",
+  "changedFilePatterns": [
+    "server/**",
+    "api/**",
+    "skills/**",
+    "prompts/**",
+    "build/generate-*.js",
+    ".mcp.json",
+    ".claude-plugin/**",
+    ".cursor-plugin/**",
+    ".github/plugin/**"
+  ],
+  "updateInternalDependencies": "patch",
+  "privatePackages": { "version": true, "tag": true },
+  "ignore": []
+}

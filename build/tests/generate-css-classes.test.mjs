@@ -33,7 +33,7 @@ describe('generate-css-classes', () => {
   before(async () => {
     // The script writes into the directory of the skill, which it expects to exist
     dir = createFixture(SCRIPT, { [path.join(path.dirname(OUTPUT), '.keep')]: '' })
-    result = await runScript(dir, SCRIPT, { CHASSIS_CSS_DIR: PACKAGE })
+    result = await runScript(dir, SCRIPT, { env: { CHASSIS_CSS_DIR: PACKAGE } })
     catalog = result.status === 0 ? readFile(dir, OUTPUT) : ''
   })
 
@@ -178,7 +178,9 @@ describe('generate-css-classes, with a CHASSIS_CSS_DIR that holds no package', (
 
   // The installed package, through node_modules: the catalog of the repository
   test('falls back to the installed package', async () => {
-    const result = await runScript(dir, SCRIPT, { CHASSIS_CSS_DIR: path.join(dir, 'missing') })
+    const result = await runScript(dir, SCRIPT, {
+      env: { CHASSIS_CSS_DIR: path.join(dir, 'missing') }
+    })
     const installed = JSON.parse(readFile(root, 'node_modules/@chassis-ui/css/package.json'))
 
     assert.equal(result.status, 0, result.stderr)
