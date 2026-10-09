@@ -1,8 +1,7 @@
 dist/
 
 # Claude Code
-.claude/worktrees/
-.claude/*.local.json
+.claude/
 
 # Generated
 server/content.generated.ts
