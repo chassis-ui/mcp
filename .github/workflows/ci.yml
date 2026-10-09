@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # The lint, format and type checks on every Node.js version the server supports
+  # The lint, format and type checks and the tests on every Node.js version the server supports
   check:
     name: Check (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
@@ -60,6 +60,14 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
+      # The contract of the server in memory, and the handler over HTTP
+      - name: Test
+        run: pnpm test
+
+      # The generators, each on files of its own
+      - name: Test the build scripts
+        run: pnpm build:test
+
   # skills/chassis-implement-design/references/css-classes.md is committed and generated
   # from the installed @chassis-ui/css. This job generates it again and fails when the
   # result differs from the commit: the catalog was edited by hand, or @chassis-ui/css was
@@ -87,17 +95,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate
-        run: pnpm generate
-
-      - name: Compare with the commit
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git status --short
-            git diff --stat
-            echo "::error::Generated files differ from the commit. Run \`pnpm generate\` and commit the result."
-            exit 1
-          fi
+      # `pnpm generate`, then a comparison of the catalog with the commit
+      - name: Generate and compare with the commit
+        run: pnpm verify
 
   audit:
     name: Audit
