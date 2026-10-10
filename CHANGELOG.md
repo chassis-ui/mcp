@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0
+
+### Minor Changes
+
+- 36f98df: `chassis_get_reference` takes `sections`, a list of headings or anchors of one reference file, next to `section`. It returns those sections in the order of the file under one introduction, each once, with a heading that two of them are under written once. `section` and `sections` add up; a value that names no section of the file fails the call with an error that names it and lists the sections.
+
+  Both skills say to fetch the sections a step needs of one file in one call, and `chassis-implement-design` fetches the sections of the component families a design uses together. An agent that fetched four sections of a file in four calls got the introduction of the file four times; it now gets it once.
+
+### Patch Changes
+
+- 36f98df: `chassis-implement-design` says what to write for the own tokens of a component that has no CSS class (`Section Block`, `Section Header`, `Section Footer`, `Page Title`, `Chat Message`), in a new section of `tokens.md`, "Tokens of a composed component".
+
+  What an agent now does differently: it no longer asks about `font/section/header-medium`, `font/page/medium-title`, `color/section/fg-medium` or `space/page/medium-padding-x`. A text style is written from the parts `get_variable_defs` lists with it (`size: typography/fontSize/text/medium`, `style: typography/fontWeight/text/strong` is `font-md font-strong`); a color, space, radius, border or shadow token as the class of the context token that has the same value in the response, or the nearest context step. Each is named in a Flagged line with the class written for it.
+
+  Also in `chassis-implement-design`, from a trial run: rule 4 names the inputs of `chassis_check_classes` (`classes`, a list that holds the markup as one item or the class names, and `mode`); the checklist of `tokens.md` gives the base values of the `space/context/*` and `size/context/*` steps for "the nearest context step", and says a value no step is near gets no class; `get_variable_defs` is called once on the frame, and on a smaller node only to tell which of two layers holds a variable; the help icon of a `Form Check` or `Form Help` takes the gap class of the value the design binds (`gap-xs` for 8, `gap-sm` for 12).
+
 ## 0.4.0
 
 ### Minor Changes
