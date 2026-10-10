@@ -45,7 +45,7 @@ A `Basic Text  Asset` that the designer placed on a frame is a text on its own: 
 | "Input Text" in "Input Asset" | form inputs                                             | the `placeholder` when its color is `…/fg-inactive`, else the `value`                                |
 | "Help Asset"                  | `Form Help`                                             | `<div class="form-help">`                                                                            |
 | "Check Text" in "Check Asset" | `Form Check`                                            | the text of the `<label class="form-check">`                                                         |
-| An icon instance              | any component                                           | `<svg class="icon">` or `<i class="icon cx-{name}-{style}">`, see components.md                      |
+| An icon instance              | any component                                           | the icon of the project's icon library, see components.md                                            |
 | "Media Placeholder"           | cards                                                   | `<img>`; `<picture>` when theme-conditional                                                          |
 | A text asset on its own       | a frame of the designer                                 | `<h1>`–`<h6>` by outline or `<p>`, with the class of its text style                                  |
 

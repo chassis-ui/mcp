@@ -84,6 +84,22 @@ Variant props are lower-case `context`, `size`, `state`, `type`. A few sets use 
 
 `icon-start-instance`, `icon-end-instance`, `icon-instance`, `bg-instance`, `table-iInstance` (`Table Container`) and `icon-nstance` (`Outline Form Input`, `Nav Link`, `Table Data Cell`): the last two are misspelt in the library and are used as read. An INSTANCE_SWAP takes the `id` of a component imported into the file.
 
+### Icons
+
+Every icon is a component of the page "Icon"; which one depends on the icon library of the project, noted at the first step of the build. A view uses one icon library.
+
+| The project uses                           | Component                                                                                                                | The glyph is                                                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Chassis Icons, and the default             | The single component `<name>-solid`, `<name>-outline` or `<name>-brand`                                                  | The component, found by its name                                                                        |
+| Font Awesome 6, Material Icons, SF Symbols | The font set: `FA 6 Free Icon`, `FA 6 Pro Icon`, `FA 6 Brands Icon`, `FA 6 Duotone Icon`, `Material Icon`, `SF Pro Icon` | The characters of its text layer: the name the font gives the icon (`search`), set with the font loaded |
+| Another icon library added to the file     | `Library Icon`                                                                                                           | The component of that library, set on the `instance` prop of `Library Icon`                             |
+
+An `*-instance` prop takes any of the three: the single glyph, the variant of a font set or the variant of `Library Icon`. The glyph of a set or of `Library Icon` is then set on the nested instance, the layer the prop fills ("Icon Start") ([recipes.md → Set an icon](./recipes.md#set-an-icon)). In a prop the default variant is right, since the component sizes its icon. Placed on its own, a font set has `Size` and `Library Icon` has `size`, with `adaptive` as its default; the options are used as read (`small (20)`, `2xlarge(36)`). `FA 6 Pro Icon` and `Material Icon` have a `Style`, and `FA 6 Duotone Icon` takes its name in two text props, `layer-1` and `layer-2`, written as their defaults are (`font-awesome#`, `font-awesome##`).
+
+The color of every icon is the fill of its layer "Color": a rectangle over the masked shape in a glyph and in `Library Icon`, the text itself in a font set ("Layer 1" and "Layer 2" in `FA 6 Duotone Icon`). It is bound to `color/context/default/fg-main`, and a component that holds the icon rebinds it (a button to its own `fg-idle`). Bind another role there, never on the shape. A component of another library need not have such a layer, which is what `Library Icon` is for: it masks the component under its own "Color".
+
+A font set needs its font in the file. Load it at the discovery pass, on the temporary instance of the set (`loadFontsOf`): when `loadFontAsync` throws that the family does not exist, no glyph of that set can be set here, and the icons are Blocked until the designer has the font; a licensed font (Font Awesome 6 Pro, SF Pro) is there only for those who have it. `Placeholder Icon` is what an icon prop shows before a glyph is set, never a glyph of the design.
+
 ### Hidden layers
 
 A hidden layer that a prop shows is set through the prop: `has-back-button` (modal headers), `back-button` (title assets). The `Smooth Chip` of the page title is the reverse, visible by default behind `title-chip` on the nested title Asset. Three hidden layers have no prop and stay hidden: "Asset 2" in `Table Head Cell`, "Separator" in `List footer`, "Common Background" in the cards.
@@ -160,7 +176,7 @@ Each line is a page of `cx.components.UI` with its public components and, in par
 
 - **Text** — `Basic Text  Asset`, `Fill Text  Asset`, `Variable Text  Asset`, `Stack TTB Text Asset`, `Stack BTT Text Asset`, `Stack LTR Text Asset`, `Stack RTL Text Asset`, `Definition Horizontal Text Asset`, `Definition Vertical Text Asset`, `Expired Text Asset`, `Rotated Text Asset`, `Wrap Text Asset`
 - **Slot** — `Basic Slot` (`Content`)
-- **Icon** — 548 components: the single icons `<name>-solid`, `<name>-outline`, `<name>-brand` (`chevron-down-solid`, `xmark-large-solid`, `search-solid`), and the sets `Placeholder Icon`, `Library Icon`, `FA 6 Pro Icon`, `FA 6 Brands Icon`, `FA 6 Duotone Icon`, `FA 6 Free Icon`, `Material Icon`, `SF Pro Icon`. An icon is set through an `*-instance` prop or placed as an instance; the library has no other icon source
+- **Icon** — 548 components: the single icons `<name>-solid`, `<name>-outline`, `<name>-brand` (`chevron-down-solid`, `xmark-large-solid`, `search-solid`), the font sets `FA 6 Pro Icon`, `FA 6 Brands Icon`, `FA 6 Duotone Icon`, `FA 6 Free Icon`, `Material Icon`, `SF Pro Icon`, and the sets `Placeholder Icon`, `Library Icon`, `Basic Icon Asset`, `Stack TTB Icon Asset`, `Stack BTT Icon Asset`, `Stack LTR Icon Asset`, `Stack RTL Icon Asset`. Which one a view uses, and how its glyph and color are set: [Icons](#icons)
 - **Image** — `Basic Placeholder`, `Aspect Ratio Image Placeholder`, `Basic Media Asset`
 - **Avatar** — `Common Avatar`
 - **Assist** — `Small Left Assist`, `Medium Left Assist`, `Large Left Assist` and the three `Right Assist`s

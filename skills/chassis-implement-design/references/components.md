@@ -729,7 +729,17 @@ Controls are ordinary buttons with `data-cx-slide`; `carousel-fade`, `carousel-a
 
 ## Icons
 
-Chassis Icons (`@chassis-ui/icons`) ship an SVG sprite, an icon font and single SVGs; names are `{name}-{style}` with `outline`, `solid` or, for a logo, `brand`. Chassis CSS styles any of them through `.icon`:
+A glyph of the design is written with the icon library of the project, which is settled before the first Figma call ([workflow.md](./workflow.md#before-the-first-figma-call)). The design names the glyph; the project decides what draws it:
+
+| The project uses                        | A glyph becomes                                                                                                                                            |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@chassis-ui/icons`                     | A Chassis Icons reference by the name of the glyph                                                                                                         |
+| Another icon library                    | The icon of that library that draws the same glyph, written the way the project writes its icons; a glyph the library lacks is the downloaded SVG, flagged |
+| No icon library, or there is no project | Ask which library to use; without an answer, the downloaded SVG                                                                                            |
+
+In Figma an icon is an instance of a glyph component of the library, named `{name}-{style}` with `outline`, `solid` or, for a logo, `brand` (`pen-solid`, `chevron-down-solid`). The layer carries that name unless the component names it by its role ("Icon", "Icon Start", "Icon End", "Input Icon", "Help Icon"); then the glyph is the one the screenshot shows. A design made for another icon library holds other components of the library's page "Icon": a font set (`FA 6 Free Icon`, `FA 6 Pro Icon`, `FA 6 Brands Icon`, `FA 6 Duotone Icon`, `Material Icon`, `SF Pro Icon`), whose text is the name of the icon in that font, or `Library Icon`, which holds the component of another icon library. Such an icon names its library, and when that is the library of the project its name is written as it is; the project still decides, as in the table. `Placeholder Icon` is a placeholder, not a glyph: ask which icon is meant. A logo (`chassis-logo` and the components of the page "Logo", a wordmark) is not a glyph: it is an image, downloaded as the response says, whatever the icon library. The size and the fill of a glyph are not in the code block: their variables are in `get_variable_defs`.
+
+**Chassis Icons** (`@chassis-ui/icons`) ship an SVG sprite, an icon font and single SVGs, under the names of the glyph components. Write the one the project loads; Chassis CSS styles any of them through `.icon`:
 
 ```html
 <svg class="icon icon-lg icon-primary" aria-hidden="true">
@@ -741,7 +751,11 @@ Chassis Icons (`@chassis-ui/icons`) ship an SVG sprite, an icon font and single 
 </svg>
 ```
 
-Size: `icon-{size}` (`3xs` … `4xl`) or `icon-adaptive`; color: `icon-{ctx}`, `icon-main` / `icon-subtle` / `icon-slight`, `{ctx}-icon-main`; both cascade from an ancestor. Icons that mirror in RTL take `directional-icon`. In Figma an icon is an instance of a glyph component of the library, named in the same form (`pen-solid`, `chevron-down-solid`). The layer carries that name unless the component names it by its role ("Icon", "Icon Start", "Icon End", "Input Icon", "Help Icon"); then the glyph is the one the screenshot shows. `Placeholder Icon` is a placeholder, not a glyph: ask which icon is meant. A logo (`chassis-logo` and the components of the page "Logo", a wordmark) is not a glyph of the sprite: it is an image, downloaded as the response says. The size and the fill of a glyph are not in the code block: their variables are in `get_variable_defs`. Resolve the glyph to a Chassis Icons name, and fall back to the downloaded SVG only for icons outside the set. The names are the `id`s of the symbols of `chassis-icons.svg` in `@chassis-ui/icons` (`node_modules/@chassis-ui/icons/icons/chassis-icons.svg`, or `packages/icons/icons/` of a `chassis-icons` checkout next to the project): check a glyph matched by eye against them, since a role name cannot be checked otherwise. The glyph variables of Figma go to `6xlarge`; `icon-{size}` ends at `4xl`.
+Size: `icon-{size}` (`3xs` … `4xl`) or `icon-adaptive`; color: `icon-{ctx}`, `icon-main` / `icon-subtle` / `icon-slight`, `{ctx}-icon-main`; both cascade from an ancestor. Icons that mirror in RTL take `directional-icon`. The names are the `id`s of the symbols of `chassis-icons.svg` in the package the project has installed (`node_modules/@chassis-ui/icons/icons/chassis-icons.svg`, or `packages/icons/icons/` of a `chassis-icons` checkout next to the project): check every name you write against them, a glyph matched by eye first of all, since a role name cannot be checked otherwise. A glyph the installed package lacks is the downloaded SVG, flagged. The glyph variables of Figma go to `6xlarge`; `icon-{size}` ends at `4xl`.
+
+**Another icon library**: find the icon by what the glyph draws, not by its name, since two libraries name the same glyph differently, and check that the library has the name you write. Give it the size and the color of the design the way the project sizes and colors its icons. The `icon` class and the `icon-*` classes of tokens.md are for Chassis Icons markup, not for it: an `.icon` sets `fill` with its color, which fills an icon that is drawn with strokes. List in the summary each glyph with the icon it became.
+
+**A downloaded SVG** is used as the parent skill says for an asset. It has the color of the export, not a class, and does not follow the theme: say so under Flagged, once for all of them.
 
 ## Composition rules
 

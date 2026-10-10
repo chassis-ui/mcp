@@ -5,8 +5,9 @@ What the SKILL.md does not say: what is settled before the first Figma call, the
 ## Before the first Figma call
 
 - **Source**: a Figma URL gives `fileKey` and `nodeId` (`-` → `:`); without one, the active selection.
-- **Target**: which file or route; a new page or a slot in an existing layout; which themes the design covers. A standalone page loads `dist/css/chassis.css` and, as a module, `dist/js/chassis.bundle.min.js` of `@chassis-ui/css`, and the sprite `chassis-icons.svg` of `@chassis-ui/icons` from wherever the project serves it: the `href` of a `<use>` is that path plus `#{name}-{style}`.
+- **Target**: which file or route; a new page or a slot in an existing layout; which themes the design covers. A standalone page loads `dist/css/chassis.css` and, as a module, `dist/js/chassis.bundle.min.js` of `@chassis-ui/css`.
 - **CSS mode**: as the SKILL.md says. Note which JS entry the project loads (`dist/js/chassis.bundle.min.js`, or imports from `@chassis-ui/css`).
+- **Icon library**: what the project draws its icons with, read from its dependencies and from the icons its markup already has. `@chassis-ui/icons` among the dependencies, or its sprite `chassis-icons.svg` or its font loaded, is Chassis Icons: note whether the project uses the sprite or the font, and the path it serves the sprite from, since the `href` of a `<use>` is that path plus `#{name}-{style}`. Another icon package, sprite or font is that library: note how the project writes an icon with it. The icons of the design may name a library too (a `Material Icon`, an `FA 6 Free Icon`), but the project decides. When the project has no icon library, or there is no project, ask which one to use, and default to the downloaded SVG. Never add an icon library to a project that has another. What each case writes: [components.md](./components.md#icons).
 - **Reuse**: search the project for existing partials of the same sections; reuse over recreation. The framework's own examples are the docs in `chassis-css/packages/site/content/docs/` when that repo is at hand.
 
 ## Lint checklist
@@ -51,4 +52,4 @@ Then: ARIA and `for` attributes present; `<dialog>` for modals and drawers; `ari
 | Tailwind mode: class missing at runtime | Name built from parts                               | Literal class in source, or the safelist                                                                     |
 | `get_design_context` sparse             | Section too large                                   | `get_metadata`, then one call per visible child                                                              |
 | A frame comes back without children     | Fetched by its own id inside a slot                 | Fetch the instance that owns the slot                                                                        |
-| Icon blank                              | Asset not downloaded, or another glyph name         | Chassis Icons reference by the glyph's name                                                                  |
+| Icon blank                              | Asset not downloaded, or a name the library lacks   | The name as the project's icon library has it; the downloaded SVG when it has none                           |
