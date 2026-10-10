@@ -149,7 +149,7 @@ Colors: `default`, `primary`, `secondary`, `neutral`, `success`, `danger`, `warn
 </form>
 ```
 
-Static validation states: `is-valid` / `is-invalid` on the control. Range: `<input type="range" class="form-range">`. One field style per form: regular or floating. The help icon of a `Form Check` or a `Form Help` (`help` on, "Help Icon") has no part in the stylesheet: compose it beside the label (`d-flex align-items-start gap-sm` and the icon) and flag it.
+Static validation states: `is-valid` / `is-invalid` on the control. Range: `<input type="range" class="form-range">`. One field style per form: regular or floating. The help icon of a `Form Check` or a `Form Help` (`help` on, "Help Icon") has no part in the stylesheet: compose it beside the label (`d-flex align-items-start` and the icon, with the gap the design binds: the library binds `space/unit/8`, the `xs` step, so `gap-xs`) and flag it.
 
 ### Selection and special inputs
 
@@ -551,7 +551,7 @@ Modifiers on the list: `flush`, `horizontal`, `numbered` (with `<ol>`), `outline
 </div>
 ```
 
-Modifiers: `striped`, `striped-columns`, `bordered`, `borderless`, `hoverable`, `sticky-header`, `sticky-column`, `caption-top`, `align-middle`, `context {ctx}`. `active` on a row or cell; `table-divider` on a `<tbody>` or `<tfoot>`.
+Modifiers: `striped`, `striped-columns`, `bordered`, `borderless`, `hoverable`, `sticky-header`, `sticky-column`, `caption-top`, `align-middle`, `context {ctx}`. `active` on a row or cell; `table-divider` on a `<tbody>` or `<tfoot>`. Column widths follow the content: a design with equal columns has no class for it and is flagged.
 
 ## Feedback
 

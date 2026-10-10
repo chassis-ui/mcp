@@ -55,6 +55,8 @@ const SKILL_KEYS = new Set([
 ])
 
 const CATALOG = 'skills/chassis-implement-design/references/css-classes.md'
+// The class list the catalog's generator writes next to it, for chassis_check_classes
+const CLASS_LIST = 'skills/chassis-implement-design/references/css-classes.json'
 const BANNER_RE = /AUTO-GENERATED from @chassis-ui\/css (\S+) by /
 
 const problems = []
@@ -267,6 +269,20 @@ function checkCatalog() {
     report(
       CATALOG,
       `is generated from @chassis-ui/css ${banner[1]}, and ${installed} is installed; run \`pnpm generate\``
+    )
+  }
+
+  // The class list is written by the same run of the generator as the catalog
+  if (!existsSync(CLASS_LIST)) {
+    report(CLASS_LIST, 'is missing: the generator writes it with the catalog; run `pnpm generate`')
+    return
+  }
+
+  const { version } = JSON.parse(read(CLASS_LIST))
+  if (version !== banner[1]) {
+    report(
+      CLASS_LIST,
+      `is generated from @chassis-ui/css ${version}, and the catalog from ${banner[1]}; run \`pnpm generate\``
     )
   }
 }

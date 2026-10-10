@@ -7,7 +7,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createServer } from '../server/index.js'
-import { RESOURCES } from '../server/content.generated.js'
+import { CLASSES, RESOURCES } from '../server/content.generated.js'
 import {
   body,
   heading,
@@ -341,6 +341,137 @@ describe('chassis_get_reference', () => {
     })
 
     expect(result.isError).toBe(true)
+  })
+})
+
+describe('chassis_check_classes', () => {
+  const CATALOG = 'chassis-implement-design/references/css-classes'
+  const catalog = read(`skills/${CATALOG}.md`)
+  const call = (classes: string[], mode?: string) =>
+    client.callTool({
+      name: 'chassis_check_classes',
+      arguments: mode === undefined ? { classes } : { classes, mode }
+    })
+
+  // The names the catalog prints as themselves in its utility and component sections: in
+  // backticks, without a placeholder or a variant prefix. The list and the catalog are
+  // written from one walk of the stylesheet, so each is in the list
+  test('accepts every class the catalog prints', async () => {
+    const from = catalog.indexOf('## Utilities and helpers')
+    const to = catalog.indexOf('## JavaScript data attributes')
+    const names = [
+      ...new Set([...catalog.slice(from, to).matchAll(/`([a-z0-9][a-z0-9/-]*)`/g)].map((m) => m[1]))
+    ]
+    const result = await call(names)
+
+    expect(names.length).toBeGreaterThan(300)
+    expect(result.isError).toBeFalsy()
+    expect(text(result)).toBe(
+      `All ${names.length} classes are in the Chassis catalog (@chassis-ui/css ${CLASSES.version}, native mode).`
+    )
+  })
+
+  test('refuses a class that is not in the catalog, with its section and the classes near it', async () => {
+    const result = await call(['card', 'card-content', 'btn'])
+    const answer = text(result)
+
+    expect(result.isError).toBeFalsy()
+    expect(answer).toMatch(/^2 of 3 classes are not in the Chassis catalog \(/)
+    expect(answer).toContain(
+      '- `card-content`: not a Chassis class. Catalog section: Surfaces. Near it: `card-body`, '
+    )
+    expect(answer).toContain('- `btn`: not a Chassis class.')
+    expect(answer).not.toContain('- `card`')
+    expect(answer).toContain(`\`${CATALOG}\``)
+  })
+
+  // The section the answer names is one chassis_get_reference returns
+  test('names a section of the catalog that chassis_get_reference has', async () => {
+    const answer = text(await call(['text-muted', 'gap-4', 'card-content', 'navbar-foo']))
+    const named = [...answer.matchAll(/Catalog section: ([^.]+)\./g)].map((m) => m[1])
+
+    expect(named).toEqual(['Typography', 'Gap', 'Surfaces', 'Navigation'])
+    for (const section of named) {
+      const result = await client.callTool({
+        name: 'chassis_get_reference',
+        arguments: { name: CATALOG, section }
+      })
+
+      expect(result.isError, section).toBeFalsy()
+      expect(text(result)).toContain(`### ${section}`)
+    }
+  })
+
+  test('in native mode a class takes the variant prefixes the catalog lists for it', async () => {
+    const taken = ['md:d-flex', '@lg:col-span-6', 'print:d-none', 'dark:d-flex', 'max-md:drawer']
+    expect(text(await call([...taken, 'md:navbar-expand']))).toMatch(/^All 6 classes are in/)
+
+    const answer = text(await call(['hover:d-flex', 'md:card', 'light:p-md', 'md:hover:p-md']))
+    expect(answer).toMatch(/^4 of 4 classes are not/)
+    expect(answer).toContain(
+      '- `hover:d-flex`: `d-flex` does not take `hover:`: it takes `sm:`–`2xl:`, `@sm:`–`@2xl:`, `print:`, `dark:`; in tailwind mode every Tailwind variant applies to it. Catalog section: Display.'
+    )
+    expect(answer).toContain(
+      '- `md:card`: `card` does not take `md:`: it takes no variant prefix in the native build. Catalog section: Surfaces.'
+    )
+    expect(answer).toContain(
+      '- `light:p-md`: `light:` is not a variant prefix of the native build; they are `sm:`–`2xl:`, `@sm:`–`@2xl:`, `max-sm:`–`max-2xl:`, `print:`, `dark:`, `hover:`, each on the classes that take it. Catalog section: Padding.'
+    )
+    expect(answer).toContain(
+      '- `md:hover:p-md`: `md:hover:` is not a variant prefix of the native build'
+    )
+  })
+
+  test('in tailwind mode every Tailwind variant applies to a utility of the entry, none to a component class', async () => {
+    const utilities = ['dark:fg-primary', 'md:hover:p-md', 'light:d-flex', 'md:col-span-6', 'card']
+    expect(text(await call(utilities, 'tailwind'))).toBe(
+      `All 5 classes are in the Chassis catalog (@chassis-ui/css ${CLASSES.version}, tailwind mode).`
+    )
+
+    const answer = text(await call(['md:card', 'hover:col-span-6', 'flex'], 'tailwind'))
+    expect(answer).toContain(
+      '- `md:card`: `card` is not a utility of the Tailwind entry, so no Tailwind variant applies to it. Catalog section: Surfaces.'
+    )
+    expect(answer).toContain(
+      '- `hover:col-span-6`: `col-span-6` is not a utility of the Tailwind entry, so no Tailwind variant applies to it, only `sm:`–`2xl:`, `@sm:`–`@2xl:` of the stylesheet. Catalog section: Grid.'
+    )
+    expect(answer).toContain(
+      '- `flex`: not a Chassis class (Tailwind core utilities are not checked here; the skill writes Chassis names).'
+    )
+  })
+
+  test('reads the class attributes of markup and the names of a class attribute value', async () => {
+    const markup =
+      '<div class="card context primary">\n  <p class=\'card-body fg-muted\'>x</p><span>none</span></div>'
+    const answer = text(await call([markup, 'button primary  btn']))
+
+    expect(answer).toMatch(/^2 of 7 classes are not/)
+    expect(answer).toContain(
+      '- `fg-muted`: not a Chassis class. Catalog section: Foreground color.'
+    )
+    expect(answer).toContain('- `btn`: not a Chassis class.')
+  })
+
+  test('counts each class once and defaults to native mode', async () => {
+    const once = text(await call(['d-flex d-flex', 'd-flex']))
+
+    expect(once).toBe(text(await call(['d-flex'], 'native')))
+    expect(once).toMatch(/^The class is in the Chassis catalog \(.*, native mode\)\.$/)
+    expect(text(await call(['btn']))).toMatch(/^1 of 1 class is not in the Chassis catalog/)
+  })
+
+  test('answers an input without a class name with an error', async () => {
+    const result = await call(['  ', '<p>hi</p>'])
+
+    expect(result.isError).toBe(true)
+    expect(text(result)).toContain('No class names given')
+  })
+
+  test('refuses a mode it does not know', async () => {
+    const result = await call(['d-flex'], 'bootstrap')
+
+    expect(result.isError).toBe(true)
+    expect(text(result)).toContain('Invalid arguments for tool chassis_check_classes')
   })
 })
 

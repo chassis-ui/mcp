@@ -3,7 +3,7 @@
 // both with the files on disk, so a file the generator drops or misnames is a red test.
 
 import { describe, expect, test } from 'vitest'
-import { CONTENT, RESOURCES, VERSION } from '../server/content.generated.js'
+import { CLASSES, CONTENT, RESOURCES, VERSION } from '../server/content.generated.js'
 import { heading, markdownFiles, read, sections, summary, version } from './helpers.js'
 
 const skills = markdownFiles('skills')
@@ -147,5 +147,34 @@ describe('resource registry', () => {
     for (const key of [...Object.keys(CONTENT), ...RESOURCES.map((resource) => resource.path)]) {
       expect(key).not.toContain('\\')
     }
+  })
+})
+
+// build/generate-css-classes.js writes css-classes.json next to the catalog, and the content
+// generator writes it into the module as CLASSES: what chassis_check_classes checks against
+describe('class list', () => {
+  const file = 'skills/chassis-implement-design/references/css-classes.json'
+
+  test('holds css-classes.json as it is on disk', () => {
+    expect(CLASSES).toEqual(JSON.parse(read(file)))
+  })
+
+  test('is generated from the @chassis-ui/css of the catalog', () => {
+    const banner = read('skills/chassis-implement-design/references/css-classes.md').match(
+      /AUTO-GENERATED from @chassis-ui\/css (\S+) by /
+    )
+
+    expect(CLASSES.version).toBe(banner?.[1])
+  })
+
+  test('lists every class once, sorted, with a set of prefixes that exists', () => {
+    const names = Object.keys(CLASSES.classes)
+
+    expect(names.length).toBeGreaterThan(1000)
+    expect(names).toEqual([...names].sort())
+    for (const name of names) {
+      expect(CLASSES.sets[CLASSES.classes[name]], name).toBeDefined()
+    }
+    for (const utility of CLASSES.utilities) expect(names, utility).toContain(utility)
   })
 })

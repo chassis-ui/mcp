@@ -14,6 +14,17 @@ import { createFixture, readFile, removeFixture, runScript, writeFiles } from '.
 
 const SCRIPT = 'build/generate-content.js'
 const OUTPUT = 'server/content.generated.ts'
+const CLASS_LIST = 'skills/chassis-implement-design/references/css-classes.json'
+
+// A class list as build/generate-css-classes.js writes it
+const LIST = {
+  version: '9.9.9',
+  sets: [[], ['md']],
+  classes: { 'd-block': 1, 'd-flex': 0 },
+  utilities: ['d-flex'],
+  families: [['Display', '^d-']],
+  components: [['Layout', []]]
+}
 
 // What a template literal would read as its own syntax
 const TRICKY = [
@@ -76,6 +87,7 @@ const FILES = {
   'skills/two/SKILL.md': '# Two\n',
   // Not Markdown: left out
   'skills/one/notes.txt': 'Not a skill file',
+  [CLASS_LIST]: JSON.stringify(LIST),
   'server/.keep': ''
 }
 
@@ -210,6 +222,49 @@ describe('generate-content', () => {
 
   test('types the registry as a tuple of literals', () => {
     assert.match(readFile(dir, OUTPUT), /^] as const$/m)
+  })
+
+  // What chassis_check_classes checks against, as the catalog's generator wrote it
+  test('holds the class list of css-classes.json, typed from server/classes.ts', () => {
+    assert.deepEqual(generated.CLASSES, LIST)
+    assert.match(readFile(dir, OUTPUT), /^import type \{ ClassList \} from '\.\/classes\.js'$/m)
+  })
+})
+
+describe('generate-content, without the class list', () => {
+  let dir
+
+  before(() => {
+    const files = Object.entries(FILES).filter(([file]) => file !== CLASS_LIST)
+    dir = createFixture(SCRIPT, Object.fromEntries(files))
+  })
+
+  after(() => removeFixture(dir))
+
+  test('fails, names the file and writes no module', async () => {
+    const result = await runScript(dir, SCRIPT)
+
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, /css-classes\.json/)
+    assert.equal(fs.existsSync(path.join(dir, OUTPUT)), false)
+  })
+})
+
+describe("generate-content, with a class list that is not the generator's", () => {
+  let dir
+
+  before(() => {
+    dir = createFixture(SCRIPT, { ...FILES, [CLASS_LIST]: JSON.stringify({ version: '1' }) })
+  })
+
+  after(() => removeFixture(dir))
+
+  test('fails, names what is missing and writes no module', async () => {
+    const result = await runScript(dir, SCRIPT)
+
+    assert.notEqual(result.status, 0)
+    assert.match(result.stderr, /css-classes\.json has no "sets"/)
+    assert.equal(fs.existsSync(path.join(dir, OUTPUT)), false)
   })
 })
 

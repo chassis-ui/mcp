@@ -45,7 +45,9 @@ export function createFixture(script, files = {}) {
   writeFiles(dir, {
     ...files,
     'package.json': JSON.stringify(pkg),
-    [script]: fs.readFileSync(path.join(root, script), 'utf8')
+    [script]: fs.readFileSync(path.join(root, script), 'utf8'),
+    // A script that formats what it writes resolves the repository's Prettier config
+    '.prettierrc.json': fs.readFileSync(path.join(root, '.prettierrc.json'), 'utf8')
   })
   // The packages a script imports. A junction on Windows, where a symbolic link needs rights
   fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'), 'junction')

@@ -6,7 +6,7 @@ Guidance for AI coding agents working in this repository.
 
 Chassis MCP is the MCP server and the agent skills of the Chassis UI design system. It has two deliverables, and both ship the same Markdown:
 
-- **The hosted MCP server**, `https://mcp.chassis-ui.com/mcp`: one stateless HTTP function on Vercel. It serves the skills as resources, as prompts and through three tools (`chassis_create_design`, `chassis_implement_design`, `chassis_get_reference`).
+- **The hosted MCP server**, `https://mcp.chassis-ui.com/mcp`: one stateless HTTP function on Vercel. It serves the skills as resources, as prompts and through four tools (`chassis_create_design`, `chassis_implement_design`, `chassis_get_reference`, `chassis_check_classes`).
 - **The plugin** for Claude Code and Cursor: the skills of `skills/` as slash commands, and the MCP servers of `.mcp.json` (this server and the Figma MCP server, which both skills need).
 
 The repository is one package (`private`, not published to npm), not a workspace:
@@ -25,7 +25,7 @@ api/
   index.ts                    # the HTTP handler Vercel deploys
 build/
   generate-content.js         # skills/ and prompts/ into server/content.generated.ts, with the registry
-  generate-css-classes.js     # @chassis-ui/css into references/css-classes.md
+  generate-css-classes.js     # @chassis-ui/css into references/css-classes.md and css-classes.json
   sync-version-refs.js        # the version of package.json into the plugin manifests
   release-notes.js            # the CHANGELOG entry of a version, for the GitHub release
   validate-skills.js          # the frontmatter, file names, headings and tables of the skills
@@ -51,7 +51,7 @@ Package manager is **pnpm** (pinned in `package.json`), with Node.js 22.12 or la
 - `pnpm dev` — the handler at `http://localhost:3000/mcp` (`PORT` changes the port), restarted on a change to `server/` or `api/`
 - `pnpm inspect` — the MCP Inspector against the local server
 - `pnpm build` — writes `server/content.generated.ts`, then `tsc --noEmit`; what Vercel runs
-- `pnpm generate` — writes `css-classes.md` and `server/content.generated.ts`
+- `pnpm generate` — writes `css-classes.md`, `css-classes.json` and `server/content.generated.ts`
 - `pnpm lint` — ESLint, with typescript-eslint's recommended rules on `server/`, `api/` and `tests/`
 - `pnpm lint:prettier` — Prettier over the whole repository; `pnpm format` writes
 - `pnpm lint:skills` — the frontmatter of the skills and prompts, the reference files they name, one level-one heading in each file, well-formed tables, and the `@chassis-ui/css` version in the banner of `css-classes.md`
@@ -60,7 +60,7 @@ Package manager is **pnpm** (pinned in `package.json`), with Node.js 22.12 or la
 - `pnpm typecheck` — `tsc --noEmit` over `server/`, `api/` and `tests/`
 - `pnpm test` — Vitest (`tests/`): the registry, the contract of the server through the SDK client in memory, the handler over HTTP. `pnpm test -u` updates the snapshot
 - `pnpm build:test` — `node --test` (`build/tests/`): each build script on files of its own, never on the repository
-- `pnpm verify` — `pnpm generate`, then fails when `css-classes.md` differs from the commit
+- `pnpm verify` — `pnpm generate`, then fails when `css-classes.md` or `css-classes.json` differs from the commit
 - `pnpm check:pnpm` — `pnpm audit --prod`, failing on a moderate advisory
 - `pnpm changeset` — writes a changeset; `pnpm changeset --empty` writes one that releases nothing
 - `pnpm test:ci` — every check of `.github/workflows/ci.yml` except the changeset check, the external links and the dependency review, in one run. A test in `build/tests/` fails when the workflow runs a script that `test:ci` does not
@@ -75,7 +75,7 @@ Run the checks of the area you changed, and report the ones that fail.
 | A file added to or removed from `skills/` | the row above, then `pnpm test -u` and a look at the snapshot: the registry is generated from the files                                            |
 | `server/`, `api/`                         | `pnpm lint`, `pnpm typecheck`, `pnpm test`; add a test for a change of behavior, and a changeset                                                   |
 | `build/`                                  | `pnpm lint`, `pnpm build:test`, `pnpm verify`; add a test in `build/tests/` for a change of behavior                                               |
-| `@chassis-ui/css` in `package.json`       | `pnpm install`, `pnpm generate`, commit the new `css-classes.md`, `pnpm verify`                                                                    |
+| `@chassis-ui/css` in `package.json`       | `pnpm install`, `pnpm generate`, commit the new `css-classes.md` and `css-classes.json`, `pnpm verify`                                             |
 | `package.json`, `pnpm-lock.yaml`          | `pnpm install --frozen-lockfile`, `pnpm test:ci`                                                                                                   |
 | `.github/workflows/`                      | `actionlint`, and `pnpm build:test`: a script `ci.yml` runs is part of `test:ci`. A job name is also in the ruleset of `main` and in `release.yml` |
 | README or other Markdown                  | `pnpm lint:prettier`, `pnpm docs:links`, `pnpm lint:spell`                                                                                         |
@@ -83,7 +83,7 @@ Run the checks of the area you changed, and report the ones that fail.
 ## Generated files
 
 - `server/content.generated.ts` holds the text of every Markdown file of `skills/` and `prompts/`, the registry of resources (`RESOURCES`) and the version of `package.json`, as a module, so the function reads nothing from disk at runtime. `build/generate-content.js` writes it on `pnpm install`, `pnpm build` and before the tests. Git ignores it. `pnpm dev` does not write it: after a change to a skill, run `pnpm build`.
-- `skills/chassis-implement-design/references/css-classes.md` is written by `build/generate-css-classes.js` from the compiled stylesheet of the `@chassis-ui/css` development dependency, and is **committed**. Never edit it. Change the generator or bump the dependency, run `pnpm generate`, and commit the result with the change; the Verify job of CI fails when they differ. `CHASSIS_CSS_DIR` points the generator at a checkout of `chassis-css/packages/css` instead of `node_modules`.
+- `skills/chassis-implement-design/references/css-classes.md` and, next to it, `css-classes.json` are written by `build/generate-css-classes.js` from the compiled stylesheet of the `@chassis-ui/css` development dependency, in one walk, and are **committed**. The Markdown is the catalog an agent reads; the JSON is the list `chassis_check_classes` checks class names against (every class with the variant prefixes it takes, the utilities of the Tailwind entry, and the families and component groups of the catalog), which `build/generate-content.js` writes into `server/content.generated.ts` as `CLASSES`. Never edit either. Change the generator or bump the dependency, run `pnpm generate`, and commit the result with the change; the Verify job of CI fails when they differ. `CHASSIS_CSS_DIR` points the generator at a checkout of `chassis-css/packages/css` instead of `node_modules`.
 
 ## How the server finds a file
 
@@ -92,7 +92,7 @@ Run the checks of the area you changed, and report the ones that fail.
 - `CONTENT`, the text of every Markdown file of `skills/` and of `prompts/chassis-ui.prompt.md`, keyed by path with forward slashes on every platform (`skills/chassis-create-design/SKILL.md`).
 - `RESOURCES`, one entry per file of `skills/` with `name`, `uri`, `description` and `path`, in the order of the skill bundles: the skills by name, and within a skill `SKILL.md` before its references by path. The name is the path without `skills/` and `.md`, and a `SKILL.md` has the name of its directory. The URI is `chassis://skills/<name>`. The description is the frontmatter `description` of a skill and the level-one heading of a reference; a file with neither fails the generator, and so the build. A reference also has `summary`: the text after the dash of the line `- [<file>.md](./references/<file>.md) — …` in its `SKILL.md`. A reference without that line fails the generator too. And it has `sections`: one entry per heading below level one that is not in a code block, with `title`, `anchor` (the one GitHub gives the heading, which a link `file.md#anchor` carries and `pnpm docs:links:offline` checks), `level`, and `start` and `end`, the offsets of the section in the file, from its heading to the next heading of the same level or a higher one.
 
-The server derives the rest from `RESOURCES`, built once when `server/index.ts` loads: a skill bundle (what the two skill prompts return, and `chassis_create_design` and `chassis_implement_design` with `full: true`) is every resource whose name is the skill or starts with `<skill>/`, in the order of the list, without frontmatter; a skill index (what the two tools return by default) is the `SKILL.md` without frontmatter followed by one line per reference with its file name, size, `summary`, `description` and name, and under it the level-two sections of the file with their sizes and the names of their level-three sections; `chassis_get_reference` offers the names that contain `/references/`, and with `section` returns one section of the file: the introduction of the file (what is before its first section), the headings the section is inside, then the section with its subsections. `section` is a heading or an anchor, compared without case and punctuation; one the file does not have, or a heading it has twice, is answered with an error that lists what to ask for.
+The server derives the rest from `RESOURCES`, built once when `server/index.ts` loads: a skill bundle (what the two skill prompts return, and `chassis_create_design` and `chassis_implement_design` with `full: true`) is every resource whose name is the skill or starts with `<skill>/`, in the order of the list, without frontmatter; a skill index (what the two tools return by default) is the `SKILL.md` without frontmatter followed by one line per reference with its file name, size, `summary`, `description` and name, and under it the level-two sections of the file with their sizes and the names of their level-three sections; `chassis_get_reference` offers the names that contain `/references/`, and with `section` returns one section of the file: the introduction of the file (what is before its first section), the headings the section is inside, then the section with its subsections. `section` is a heading or an anchor, compared without case and punctuation; one the file does not have, or a heading it has twice, is answered with an error that lists what to ask for. `chassis_check_classes` (`server/classes.ts`) takes class names, class attribute values or markup and a CSS mode, and answers with the classes that are not in `CLASSES` for that mode, each with the reason, the catalog section (a component group or a utility family, from the data of the list) and the classes near it; in `native` a class takes the prefixes the stylesheet has for it, in `tailwind` a utility of the entry takes any prefix.
 
 To add a reference file: add the Markdown file to `skills/<skill>/references/` with one level-one heading, give it a line `- [<file>.md](./references/<file>.md) — <what it holds>` in the References list of the `SKILL.md` and mention it where an agent needs it, and run `pnpm test -u`: the next `pnpm build` or test run puts it in the registry, and the snapshot gains it. `tests/registry.test.ts` compares the registry with the files on disk. A second prompt file needs a line in `build/generate-content.js` and a `registerPrompt` in `server/index.ts`.
 
@@ -139,6 +139,6 @@ Never commit, merge or push without being asked. CI runs on `develop` and on pul
 
 ## Do not edit
 
-- Generated: `server/content.generated.ts`, `skills/chassis-implement-design/references/css-classes.md` (see [Generated files](#generated-files)).
+- Generated: `server/content.generated.ts`, `skills/chassis-implement-design/references/css-classes.md` and `css-classes.json` (see [Generated files](#generated-files)).
 - Written by the version step (`pnpm changeset:version`): `CHANGELOG.md`, `version` in `package.json` and in the three plugin manifests. It also removes the changesets it used.
 - Written by Vitest: `tests/__snapshots__/` (`pnpm test -u`).

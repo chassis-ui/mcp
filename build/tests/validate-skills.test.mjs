@@ -9,6 +9,7 @@ import { createFixture, readFile, removeFixture, root, runScript } from './helpe
 
 const SCRIPT = 'build/validate-skills.js'
 const CATALOG = 'skills/chassis-implement-design/references/css-classes.md'
+const CLASS_LIST = 'skills/chassis-implement-design/references/css-classes.json'
 
 const installed = JSON.parse(readFile(root, 'node_modules/@chassis-ui/css/package.json')).version
 
@@ -179,13 +180,14 @@ describe('validate-skills.js, on the class catalog', () => {
   const catalog = (version) =>
     `# Chassis CSS Class Catalog\n\n<!-- AUTO-GENERATED from @chassis-ui/css ${version} by build/generate-css-classes.js. Do not edit. -->\n`
 
-  const validate = (version, pinned = installed) => {
+  const validate = (version, pinned = installed, listVersion = version) => {
     dir = createFixture(SCRIPT, {
       'package.json': JSON.stringify({ devDependencies: { '@chassis-ui/css': pinned } }),
       'skills/chassis-implement-design/SKILL.md': skill({ name: 'chassis-implement-design' })
         .replace('./references/guide.md', './references/css-classes.md')
         .replace('tables.md', 'css-classes.md'),
-      [CATALOG]: catalog(version)
+      [CATALOG]: catalog(version),
+      [CLASS_LIST]: JSON.stringify({ version: listVersion, sets: [], classes: {} })
     })
     return runScript(dir, SCRIPT)
   }
@@ -205,6 +207,33 @@ describe('validate-skills.js, on the class catalog', () => {
     assert.ok(
       stderr.includes(`is generated from @chassis-ui/css 0.0.1, and ${installed} is installed`)
     )
+  })
+
+  test('fails on a class list of another version than the catalog', async () => {
+    const { status, stderr } = await validate(installed, installed, '0.0.1')
+
+    assert.equal(status, 1)
+    assert.match(stderr, /^1 problem:/)
+    assert.ok(
+      stderr.includes(
+        `css-classes.json: is generated from @chassis-ui/css 0.0.1, and the catalog from ${installed}`
+      )
+    )
+  })
+
+  test('fails when the class list is missing', async () => {
+    dir = createFixture(SCRIPT, {
+      'package.json': JSON.stringify({ devDependencies: { '@chassis-ui/css': installed } }),
+      'skills/chassis-implement-design/SKILL.md': skill({ name: 'chassis-implement-design' })
+        .replace('./references/guide.md', './references/css-classes.md')
+        .replace('tables.md', 'css-classes.md'),
+      [CATALOG]: catalog(installed)
+    })
+
+    const { status, stderr } = await runScript(dir, SCRIPT)
+
+    assert.equal(status, 1)
+    assert.match(stderr, /css-classes\.json: is missing/)
   })
 
   test('fails when package.json does not pin one version', async () => {
