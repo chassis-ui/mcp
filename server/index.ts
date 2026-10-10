@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
+import { checkClasses, MODES } from './classes.js'
 import { CONTENT, RESOURCES, VERSION } from './content.generated.js'
 
 function stripFrontmatter(content: string): string {
@@ -316,6 +317,34 @@ export function createServer(): McpServer {
               .join('\n')}`
 
       return { content: [{ type: 'text', text: problem }], isError: true }
+    }
+  )
+
+  // The class check of chassis-implement-design: the classes an agent wrote against the list
+  // the catalog is generated from, so the agent reads the catalog by the section the answer
+  // names instead of whole
+  server.registerTool(
+    'chassis_check_classes',
+    {
+      description:
+        'Check class names against the Chassis CSS class catalog (css-classes.md of chassis-implement-design): returns the classes that do not exist in the given CSS mode, each with why and the catalog section to read, or one line when all exist. Pass class names, class attribute values or markup.',
+      inputSchema: {
+        classes: z
+          .array(z.string())
+          .describe(
+            'Class names to check: one per item, or space-separated as in a class attribute, or markup, whose `class` attributes are read'
+          ),
+        mode: z
+          .enum(MODES)
+          .optional()
+          .describe(
+            'The CSS mode of the project: `native` (the compiled stylesheet, where a class takes the variant prefixes listed for its family) or `tailwind` (the Chassis Tailwind entry, where every Tailwind variant applies to a Chassis utility). Default native'
+          )
+      }
+    },
+    async ({ classes, mode }) => {
+      const { text, isError } = checkClasses(classes, mode ?? 'native')
+      return { content: [{ type: 'text', text }], isError }
     }
   )
 

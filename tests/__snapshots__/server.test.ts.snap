@@ -156,5 +156,34 @@ exports[`server > lists its tools 1`] = `
     },
     "name": "chassis_get_reference",
   },
+  {
+    "description": "Check class names against the Chassis CSS class catalog (css-classes.md of chassis-implement-design): returns the classes that do not exist in the given CSS mode, each with why and the catalog section to read, or one line when all exist. Pass class names, class attribute values or markup.",
+    "inputSchema": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "additionalProperties": false,
+      "properties": {
+        "classes": {
+          "description": "Class names to check: one per item, or space-separated as in a class attribute, or markup, whose \`class\` attributes are read",
+          "items": {
+            "type": "string",
+          },
+          "type": "array",
+        },
+        "mode": {
+          "description": "The CSS mode of the project: \`native\` (the compiled stylesheet, where a class takes the variant prefixes listed for its family) or \`tailwind\` (the Chassis Tailwind entry, where every Tailwind variant applies to a Chassis utility). Default native",
+          "enum": [
+            "native",
+            "tailwind",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "classes",
+      ],
+      "type": "object",
+    },
+    "name": "chassis_check_classes",
+  },
 ]
 `;

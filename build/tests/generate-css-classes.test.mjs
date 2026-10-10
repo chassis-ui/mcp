@@ -10,6 +10,7 @@ import { createFixture, readFile, removeFixture, root, runScript } from './helpe
 
 const SCRIPT = 'build/generate-css-classes.js'
 const OUTPUT = 'skills/chassis-implement-design/references/css-classes.md'
+const LIST = 'skills/chassis-implement-design/references/css-classes.json'
 const PACKAGE = path.join(root, 'build/tests/fixtures/css')
 
 // The lines of a section: from its heading to the next heading of the same or a higher level
@@ -29,12 +30,14 @@ describe('generate-css-classes', () => {
   let dir
   let result
   let catalog
+  let list
 
   before(async () => {
     // The script writes into the directory of the skill, which it expects to exist
     dir = createFixture(SCRIPT, { [path.join(path.dirname(OUTPUT), '.keep')]: '' })
     result = await runScript(dir, SCRIPT, { env: { CHASSIS_CSS_DIR: PACKAGE } })
     catalog = result.status === 0 ? readFile(dir, OUTPUT) : ''
+    list = result.status === 0 ? JSON.parse(readFile(dir, LIST)) : {}
   })
 
   after(() => removeFixture(dir))
@@ -165,6 +168,65 @@ describe('generate-css-classes', () => {
 
     assert.equal(await prettier.check(catalog, { ...options, filepath: file }), true)
   })
+
+  // The class list next to the catalog, for chassis_check_classes, from the same walk
+  test('writes the class list with the version of the package', () => {
+    assert.equal(list.version, '9.9.9')
+    assert.match(result.stdout, /css-classes\.json from @chassis-ui\/css 9\.9\.9 \(/)
+  })
+
+  test('lists every class that is for markup, sorted, with the variant prefixes it takes', () => {
+    const prefixes = (name) => list.sets[list.classes[name]]
+
+    assert.deepEqual(Object.keys(list.classes), [...Object.keys(list.classes)].sort())
+    assert.deepEqual(prefixes('d-flex'), ['sm', 'md', 'lg', 'xl', '2xl'])
+    assert.deepEqual(prefixes('d-block'), ['md'])
+    assert.deepEqual(prefixes('d-none'), ['print'])
+    assert.deepEqual(prefixes('card-body'), ['md', 'lg'])
+    // A component, a modifier, a state, a leftover, an escaped slash, a pseudo-element's class
+    for (const name of [
+      'button',
+      'primary',
+      'disabled',
+      'is-open',
+      'mystery-thing',
+      'w-1/2',
+      'caret'
+    ]) {
+      assert.deepEqual(prefixes(name), [], name)
+    }
+    // Comments, strings, URLs, the plugins' own classes, and prefixed names as such
+    for (const name of ['comment-class', 'string-class', 'url-class', 'cx-backdrop', 'sm:d-flex']) {
+      assert.equal(name in list.classes, false, name)
+    }
+  })
+
+  test('shares one set of prefixes between the classes that take the same', () => {
+    assert.equal(list.classes.button, list.classes.card)
+    assert.equal(new Set(list.sets.map((set) => set.join(' '))).size, list.sets.length)
+  })
+
+  test('lists the utilities of the Tailwind entry', () => {
+    assert.deepEqual(list.utilities, ['d-flex', 'p-md', 'p-sm'])
+  })
+
+  test('carries the utility families and the component groups of the catalog', () => {
+    const group = (name) => list.components.find(([title]) => title === name)
+
+    assert.deepEqual(list.families[0], ['Display', '^d-'])
+    assert.ok(list.families.some(([title]) => title === 'Typography'))
+    assert.deepEqual(group('Actions'), ['Actions', ['button', 'button-group']])
+    assert.deepEqual(group('Surfaces'), ['Surfaces', ['card', 'modal']])
+    assert.deepEqual(group('Forms'), ['Forms', []])
+  })
+
+  test('writes a class list that Prettier leaves as it is', async () => {
+    const { default: prettier } = await import('prettier')
+    const file = path.join(root, LIST)
+    const options = await prettier.resolveConfig(file)
+
+    assert.equal(await prettier.check(readFile(dir, LIST), { ...options, filepath: file }), true)
+  })
 })
 
 describe('generate-css-classes, with a CHASSIS_CSS_DIR that holds no package', () => {
@@ -186,5 +248,6 @@ describe('generate-css-classes, with a CHASSIS_CSS_DIR that holds no package', (
     assert.equal(result.status, 0, result.stderr)
     assert.ok(result.stdout.includes(`from @chassis-ui/css ${installed.version} (`))
     assert.equal(readFile(dir, OUTPUT), readFile(root, OUTPUT))
+    assert.equal(readFile(dir, LIST), readFile(root, LIST))
   })
 })

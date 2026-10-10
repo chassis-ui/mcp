@@ -27,7 +27,7 @@ Grep the output; every hit is a defect unless flagged in the summary.
 | Asset wrappers                | `-asset\b`                                                                                                                                                                                                                              |
 | Hyphenated modifiers          | `\b(button\|badge\|chip\|alert\|notification)-(primary\|secondary\|success\|danger\|warning\|info)`                                                                                                                                     |
 | Wrong attributes              | `data-bs-`, `data-cx-toggle="(modal\|offcanvas\|dropdown\|alert)"`                                                                                                                                                                      |
-| Class not in catalog          | every class value exists in css-classes.md                                                                                                                                                                                              |
+| Class not in catalog          | `chassis_check_classes` with the markup and the CSS mode refuses nothing; without the server, every class value exists in css-classes.md                                                                                                |
 
 Then: ARIA and `for` attributes present; `<dialog>` for modals and drawers; `aria-current` on active nav and list items; hidden Figma layers absent.
 
@@ -37,18 +37,18 @@ Then: ARIA and `for` attributes present; `<dialog>` for modals and drawers; `ari
 
 ## Failure modes
 
-| Symptom                                 | Cause                                               | Fix                                                                      |
-| --------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------ |
-| Empty text                              | Read the instance, not the layers inside it         | Walk the tree for `<Role> Asset` and plain text layers, lift the text    |
-| Class has no effect                     | Not a Chassis class                                 | Look it up in css-classes.md; translate long names; drop Bootstrap forms |
-| Everything one track wide               | Items without `col-span-*`                          | `col-span-full` for the mobile layout                                    |
-| Modal shows in the page flow            | `<div class="modal">`                               | `<dialog class="modal dialog">` and the Dialog plugin                    |
-| Menu never opens                        | `data-cx-toggle="dropdown"`                         | `data-cx-toggle="menu"` on the button, `.menu` as the next sibling       |
-| Card unstyled inside                    | `card-content`                                      | `card-body`                                                              |
-| Colors ignore the context               | `{ctx}-fg-*` per element on a non-colored component | `context {ctx}` on the root                                              |
-| Dark mode does not switch               | Raw colors, or `prefers-color-scheme` only          | Token classes; `data-cx-theme` on `<html>`                               |
-| `@md:` class does nothing               | No query container                                  | `contains-inline` on an ancestor, or `grid contained`                    |
-| Tailwind mode: class missing at runtime | Name built from parts                               | Literal class in source, or the safelist                                 |
-| `get_design_context` sparse             | Section too large                                   | `get_metadata`, then one call per visible child                          |
-| A frame comes back without children     | Fetched by its own id inside a slot                 | Fetch the instance that owns the slot                                    |
-| Icon blank                              | Asset not downloaded, or another glyph name         | Chassis Icons reference by the glyph's name                              |
+| Symptom                                 | Cause                                               | Fix                                                                                                          |
+| --------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Empty text                              | Read the instance, not the layers inside it         | Walk the tree for `<Role> Asset` and plain text layers, lift the text                                        |
+| Class has no effect                     | Not a Chassis class                                 | `chassis_check_classes` names it and the catalog section to read; translate long names; drop Bootstrap forms |
+| Everything one track wide               | Items without `col-span-*`                          | `col-span-full` for the mobile layout                                                                        |
+| Modal shows in the page flow            | `<div class="modal">`                               | `<dialog class="modal dialog">` and the Dialog plugin                                                        |
+| Menu never opens                        | `data-cx-toggle="dropdown"`                         | `data-cx-toggle="menu"` on the button, `.menu` as the next sibling                                           |
+| Card unstyled inside                    | `card-content`                                      | `card-body`                                                                                                  |
+| Colors ignore the context               | `{ctx}-fg-*` per element on a non-colored component | `context {ctx}` on the root                                                                                  |
+| Dark mode does not switch               | Raw colors, or `prefers-color-scheme` only          | Token classes; `data-cx-theme` on `<html>`                                                                   |
+| `@md:` class does nothing               | No query container                                  | `contains-inline` on an ancestor, or `grid contained`                                                        |
+| Tailwind mode: class missing at runtime | Name built from parts                               | Literal class in source, or the safelist                                                                     |
+| `get_design_context` sparse             | Section too large                                   | `get_metadata`, then one call per visible child                                                              |
+| A frame comes back without children     | Fetched by its own id inside a slot                 | Fetch the instance that owns the slot                                                                        |
+| Icon blank                              | Asset not downloaded, or another glyph name         | Chassis Icons reference by the glyph's name                                                                  |

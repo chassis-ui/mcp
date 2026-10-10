@@ -61,15 +61,17 @@ Remove it with `claude mcp remove chassis-ui-local`.
 
 ## What is generated
 
-Two files are written by scripts. Never edit either by hand.
+Three files are written by scripts. Never edit one by hand.
 
 - **`server/content.generated.ts`** holds the text of every Markdown file of `skills/` and
   `prompts/` and the version of `package.json`, so the deployed function reads nothing from disk.
   `build/generate-content.js` writes it on `pnpm install` and `pnpm build`, and the tests write it
   before they run. It is not committed.
 - **`skills/chassis-implement-design/references/css-classes.md`** is the class catalog of the
-  chassis-implement-design skill. `build/generate-css-classes.js` writes it from the compiled
-  stylesheet of the `@chassis-ui/css` development dependency, and it **is** committed. After a
+  chassis-implement-design skill, and **`css-classes.json`** next to it the same classes as a
+  list, with the variant prefixes each takes, for the `chassis_check_classes` tool.
+  `build/generate-css-classes.js` writes both from the compiled stylesheet of the
+  `@chassis-ui/css` development dependency, in one walk, and they **are** committed. After a
   bump of `@chassis-ui/css`, or a change to the generator:
 
   ```sh
@@ -89,7 +91,7 @@ them.
   can apply it to a case the skill does not list.
 - A name of a class, a token, a component or a Figma API call must exist. For Chassis CSS,
   `references/css-classes.md` lists every class of the framework; a class that is not there does
-  not exist.
+  not exist, and `chassis_check_classes` says so for a list of names or a piece of markup.
 - `pnpm lint:skills` checks the form: the frontmatter, that every Markdown file a skill names
   is a file of that skill and that `SKILL.md` names each of its references, one level-one
   heading in each file, and tables whose rows have the cells of their header (write a pipe

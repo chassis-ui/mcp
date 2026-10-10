@@ -81,7 +81,7 @@ The server is not an npm package: the hosted server is the only one, and it alwa
 
 Once connected, the server exposes:
 
-- **Tools** — `chassis_create_design` and `chassis_implement_design` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`, a whole file or one section of it (`section`: a heading or the anchor of a link); `full: true` returns the instructions with every reference inline
+- **Tools** — `chassis_create_design` and `chassis_implement_design` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`, a whole file or one section of it (`section`: a heading or the anchor of a link); `full: true` returns the instructions with every reference inline. `chassis_check_classes` checks class names, class attribute values or markup against the Chassis CSS class catalog in the project's CSS mode and names the catalog section to read for a class that does not exist
 - **Prompts** — `chassis-create-design` and `chassis-implement-design` load a skill; `chassis-ui` is a one-shot command to build or reconnect a Figma screen using the Chassis UI library
 - **Resources** — every skill and reference file, readable by your agent on demand
 
@@ -132,7 +132,7 @@ Use when:
 - Mapping Figma variables (long names such as `space/context/medium`) to the Chassis classes (short names such as `p-md`)
 - Ensuring component variants, Asset text, theming, and `data-cx-*` behaviors match the design intent
 
-Its class catalog, `references/css-classes.md`, is generated from the compiled stylesheet of the `@chassis-ui/css` dev dependency, so it cannot drift from the framework. After bumping the dependency, regenerate it:
+Its class catalog, `references/css-classes.md`, and the class list that `chassis_check_classes` checks against, `references/css-classes.json`, are generated from the compiled stylesheet of the `@chassis-ui/css` dev dependency, so they cannot drift from the framework. After bumping the dependency, regenerate them:
 
 ```bash
 pnpm generate:css-classes
@@ -147,7 +147,7 @@ api/
   index.ts                        # The HTTP handler Vercel deploys as mcp.chassis-ui.com
 build/
   generate-content.js             # Bundles the skills and prompts into server/content.generated.ts
-  generate-css-classes.js         # Generates the implement-design class catalog from @chassis-ui/css
+  generate-css-classes.js         # Generates the implement-design class catalog and class list from @chassis-ui/css
   tests/                          # Tests of the generators
 prompts/
   chassis-ui.prompt.md            # /chassis-ui prompt
@@ -158,7 +158,7 @@ skills/
     references/                   # The library and its components, recipes, tokens, workflow
   chassis-implement-design/
     SKILL.md                      # Workflow skill — implement Figma designs as Chassis CSS HTML
-    references/                   # css-classes (generated), components, tokens, patterns, workflow
+    references/                   # css-classes .md and .json (generated), components, tokens, patterns, workflow
 tests/                            # Tests of the server and the handler
 .claude-plugin/                   # Claude Code plugin manifest and marketplace
 .cursor-plugin/                   # Cursor plugin manifest

@@ -1,6 +1,8 @@
 // Generates skills/chassis-implement-design/references/css-classes.md from the
 // compiled output of @chassis-ui/css, so the class catalog the skill ships can
-// never drift from the framework.
+// never drift from the framework. Next to it, css-classes.json: the same classes
+// as a list, with the variant prefixes each takes, for the chassis_check_classes
+// tool of the server. Both come from one walk of the stylesheet.
 //
 // Sources (all read from the package, never from the docs):
 //   dist/css/chassis.css        every class selector, the variant prefixes, the compound modifiers
@@ -18,6 +20,7 @@ import prettier from 'prettier'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'skills/chassis-implement-design/references/css-classes.md')
+const OUT_LIST = join(ROOT, 'skills/chassis-implement-design/references/css-classes.json')
 const PKG = resolvePackage()
 
 const CONTEXTS = [
@@ -405,7 +408,12 @@ async function build() {
   // Tailwind entry
   const theme = read('dist/tailwind/theme.css')
   const excluded = [...theme.matchAll(/@source not inline\("([^"]+)"\)/g)].map((m) => m[1])
-  const utilityCount = (read('dist/tailwind/utilities.css').match(/^@utility /gm) || []).length
+  const utilities = [
+    ...new Set(
+      [...read('dist/tailwind/utilities.css').matchAll(/^@utility (\S+)/gm)].map((m) => m[1])
+    )
+  ].sort()
+  const utilityCount = utilities.length
 
   const lines = []
   const p = (...text) => lines.push(...text)
@@ -512,9 +520,52 @@ async function build() {
     ''
   )
 
-  writeFileSync(OUT, await prettier.format(lines.join('\n'), { filepath: OUT }), 'utf-8')
+  // Formatted as the repository's Prettier config has it, so `pnpm lint:prettier` leaves both as written
+  const format = async (text, filepath) =>
+    prettier.format(text, { ...(await prettier.resolveConfig(filepath)), filepath })
+  writeFileSync(OUT, await format(lines.join('\n'), OUT), 'utf-8')
+
+  // The class list of chassis_check_classes: every class of the stylesheet that is for markup
+  // (the plugins' own classes left out, as in the catalog), each with the index of the set of
+  // variant prefixes it takes; the utilities the Tailwind entry emits, which take every Tailwind
+  // variant; and how the catalog groups the classes, so the server can name the section to read
+  // for a class it refuses
+  const names = [...classes.keys()].filter((name) => !INTERNAL.test(name)).sort()
+  const prefixes = [
+    ...BREAKPOINTS,
+    ...BREAKPOINTS.map((bp) => `@${bp}`),
+    ...BREAKPOINTS.map((bp) => `max-${bp}`),
+    'print',
+    'dark',
+    'hover'
+  ]
+  const sets = []
+  const setIndex = new Map()
+  const list = {}
+  for (const name of names) {
+    const own = prefixes.filter((prefix) => classes.get(name).has(prefix))
+    const key = own.join(' ')
+    if (!setIndex.has(key)) {
+      setIndex.set(key, sets.length)
+      sets.push(own)
+    }
+    list[name] = setIndex.get(key)
+  }
+  const data = {
+    version,
+    sets,
+    classes: list,
+    utilities,
+    families: FAMILIES.map(([title, pattern]) => [title, pattern.source]),
+    components: COMPONENT_GROUPS.map(([group, roots]) => [
+      group,
+      roots.filter((root) => classes.has(root))
+    ])
+  }
+  writeFileSync(OUT_LIST, await format(JSON.stringify(data), OUT_LIST), 'utf-8')
+
   console.log(
-    `Generated ${OUT} from @chassis-ui/css ${version} (${classes.size} classes, ${roots.size} component roots, ${leftovers.length} unclassified)`
+    `Generated ${OUT} and ${OUT_LIST} from @chassis-ui/css ${version} (${classes.size} classes, ${roots.size} component roots, ${leftovers.length} unclassified)`
   )
 }
 

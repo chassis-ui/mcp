@@ -14,6 +14,8 @@ import { parse as parseYaml } from 'yaml'
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'server/content.generated.ts')
 const PROMPT = 'prompts/chassis-ui.prompt.md'
+// The class list build/generate-css-classes.js writes next to the catalog, for chassis_check_classes
+const CLASSES = 'skills/chassis-implement-design/references/css-classes.json'
 
 const { version } = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'))
 
@@ -152,6 +154,20 @@ const skillPaths = collectMd('skills').sort(registryOrder)
 const paths = [PROMPT, ...skillPaths]
 const content = Object.fromEntries(paths.map((p) => [p, readFileSync(join(ROOT, p), 'utf-8')]))
 
+// The class list, parsed and written back as one literal: the server checks class names
+// against it without reading the file
+let classes
+try {
+  classes = JSON.parse(readFileSync(join(ROOT, CLASSES), 'utf-8'))
+} catch (error) {
+  throw new Error(`Cannot read ${CLASSES}, the class list of chassis_check_classes`, {
+    cause: error
+  })
+}
+for (const key of ['version', 'sets', 'classes', 'utilities', 'families', 'components']) {
+  if (!(key in classes)) throw new Error(`${CLASSES} has no "${key}"; run \`pnpm generate\``)
+}
+
 // skills/<skill>/SKILL.md is the resource <skill>, skills/<skill>/references/<file>.md is
 // <skill>/references/<file>
 const resources = skillPaths.map((path) => {
@@ -193,6 +209,8 @@ const contentEntries = paths.map((p) => {
 })
 
 const output = `// AUTO-GENERATED — do not edit. Run \`pnpm generate\` to regenerate.
+import type { ClassList } from './classes.js'
+
 export const VERSION = '${version}'
 
 // Every Markdown file of skills/, in the order of the skill bundles: a SKILL.md, then its
@@ -208,6 +226,11 @@ ${resourceEntries.join(',\n')}
 export const CONTENT: Record<string, string> = {
 ${contentEntries.join(',\n')}
 }
+
+// The class list of ${CLASSES}, which build/generate-css-classes.js writes
+// from the compiled stylesheet: what chassis_check_classes checks class names against. Typed
+// in server/classes.ts
+export const CLASSES: ClassList = ${JSON.stringify(classes)}
 `
 
 writeFileSync(OUT, output, 'utf-8')
