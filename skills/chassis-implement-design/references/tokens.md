@@ -40,7 +40,7 @@ Contexts: `default`, `alternate`, `primary`, `secondary`, `neutral`, `success`, 
 | `color/primitive/*`, `color/base/*`                           | ask                                       | ask                                                        | A primitive on a surface means a missing context token                              |
 | `color/{component}/*` (`color/button/*`)                      | built in                                  | built in                                                   | Applied by the component class                                                      |
 
-A glyph whose fill is bound to an `fg-*` role takes the `icon-*` class of the same emphasis (`fg-subtle` → `icon-subtle`): an `fg-*` class does not color an `.icon`. Transparent: `bg-transparent`, `border-transparent`. Reset to inherited: `fg-reset`, `bg-reset`, `border-reset`, `icon-reset`.
+The `icon-*` roles and the `fg-*` roles are tokens of their own, and a brand sets the color of each: an `icon-*` role is not the `fg-*` role of the same emphasis, whatever the two resolve to in one brand. So a glyph takes the class of the token its fill is bound to, by its name, never by the color it has. Bound to an `icon-*` role, it takes that class. Bound to an `fg-*` role, it takes `icon-reset`, which gives an `.icon` the text color of the place it is in, and the `fg-*` class with it when the text there has another role (`fg-subtle icon-reset` next to `fg-main` text); `icon-reset` goes on the `.icon` itself, not on an ancestor. An `fg-*` class alone does not color an `.icon`, and a glyph bound to `fg-main` never takes `icon-main`. Transparent: `bg-transparent`, `border-transparent`. Reset to inherited: `fg-reset`, `bg-reset`, `border-reset`.
 
 ## Typography
 
