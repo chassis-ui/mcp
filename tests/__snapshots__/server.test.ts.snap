@@ -124,7 +124,7 @@ exports[`server > lists its tools 1`] = `
     "name": "chassis_implement_design",
   },
   {
-    "description": "Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it. The skill tools list the names, what each file holds and its sections.",
+    "description": "Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it, or several sections in one call. The skill tools list the names, what each file holds and its sections.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": false,
@@ -147,6 +147,13 @@ exports[`server > lists its tools 1`] = `
         "section": {
           "description": "A heading of the file, or the anchor of a link \`file.md#anchor\`: returns that section, with its subsections and the introduction of the file, instead of the whole file. The skill tools list the sections of each file",
           "type": "string",
+        },
+        "sections": {
+          "description": "Several sections of the file in one call, each a heading or an anchor as for \`section\`: returns them in the order of the file, under one introduction. Use it when a step needs more than one section of the same file",
+          "items": {
+            "type": "string",
+          },
+          "type": "array",
         },
       },
       "required": [

@@ -109,17 +109,34 @@ function parentOf(reference: Reference, section: Section): string {
   return ancestorsOf(reference, section).at(-1)?.title ?? reference.description
 }
 
-// One section of a reference, under the headings it is inside and after the introduction of
-// its file: the level-one heading and the text before the first section, which says how the
-// file is read (the placeholders of the class catalog, the rules every recipe follows)
-function sectionText(reference: Reference, section: Section): string {
+// Sections of a reference, each under the headings it is inside, after the introduction of
+// their file: the level-one heading and the text before the first section, which says how the
+// file is read (the placeholders of the class catalog, the rules every recipe follows). The
+// introduction comes once, however many sections follow it. The sections come in the order of
+// the file, each once; one that is inside another of the list comes with that one, and a
+// heading two of them are under is written once
+function sectionText(reference: Reference, wanted: readonly Section[]): string {
   const file = text(reference.path)
   const first = sectionsOf(reference)[0]
-  const parts = [
-    stripFrontmatter(file.slice(0, first.start)).trim(),
-    ...ancestorsOf(reference, section).map((s) => `${'#'.repeat(s.level)} ${s.title}`),
-    file.slice(section.start, section.end).trim()
-  ]
+  const sections = [...new Set(wanted)]
+    .sort((a, b) => a.start - b.start)
+    .filter(
+      (section, _, all) =>
+        !all.some(
+          (other) => other !== section && other.start <= section.start && other.end >= section.end
+        )
+    )
+  const written = new Set<Section>()
+  const parts = [stripFrontmatter(file.slice(0, first.start)).trim()]
+
+  for (const section of sections) {
+    for (const ancestor of ancestorsOf(reference, section)) {
+      if (written.has(ancestor)) continue
+      written.add(ancestor)
+      parts.push(`${'#'.repeat(ancestor.level)} ${ancestor.title}`)
+    }
+    parts.push(file.slice(section.start, section.end).trim())
+  }
 
   return `${parts.filter((part) => part !== '').join('\n\n')}\n`
 }
@@ -146,7 +163,7 @@ function buildSkillIndex(skill: string): string {
     '---',
     '## Fetching the references',
     'The instructions above link to the files of `./references/`. They are not included here: when the instructions send you to one, call `chassis_get_reference` with the name given below, and read what it returns before you go on.',
-    'To read one part of a file, also pass `section`: a heading of the file, or the anchor of a link, so a link `file.md#anchor` in the instructions is fetched as `section: "anchor"` of that file. A section comes with its subsections, under the introduction of its file. Where the instructions link a section, fetch the section, not its file. The sections of each file are listed under it with their sizes; after a colon, the subsections, which can be fetched the same way.',
+    'To read one part of a file, also pass `section`: a heading of the file, or the anchor of a link, so a link `file.md#anchor` in the instructions is fetched as `section: "anchor"` of that file. A section comes with its subsections, under the introduction of its file. Where the instructions link a section, fetch the section, not its file. When you need several sections of one file at the same step, pass them together as `sections`, a list of headings or anchors: one call, and the introduction comes once. The sections of each file are listed under it with their sizes; after a colon, the subsections, which can be fetched the same way.',
     lines.join('\n')
   ].join('\n\n')
 }
@@ -279,7 +296,7 @@ export function createServer(): McpServer {
     'chassis_get_reference',
     {
       description:
-        'Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it. The skill tools list the names, what each file holds and its sections.',
+        'Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it, or several sections in one call. The skill tools list the names, what each file holds and its sections.',
       inputSchema: {
         name: z.enum(REFERENCE_NAMES).describe('Reference file to fetch'),
         section: z
@@ -287,10 +304,16 @@ export function createServer(): McpServer {
           .optional()
           .describe(
             'A heading of the file, or the anchor of a link `file.md#anchor`: returns that section, with its subsections and the introduction of the file, instead of the whole file. The skill tools list the sections of each file'
+          ),
+        sections: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'Several sections of the file in one call, each a heading or an anchor as for `section`: returns them in the order of the file, under one introduction. Use it when a step needs more than one section of the same file'
           )
       }
     },
-    async ({ name, section }) => {
+    async ({ name, section, sections }) => {
       const resource = RESOURCES.filter(isReference).find((r) => r.name === name)
       if (!resource) {
         return {
@@ -298,25 +321,43 @@ export function createServer(): McpServer {
           isError: true
         }
       }
-      if (section === undefined || section.trim() === '') {
+
+      // `section` and `sections` name sections the same way and add up; none is the whole file
+      const wanted = [section, ...(sections ?? [])].filter(
+        (value): value is string => value !== undefined && value.trim() !== ''
+      )
+      if (wanted.length === 0) {
         return { content: [{ type: 'text', text: stripFrontmatter(text(resource.path)) }] }
       }
 
-      const found = findSections(resource, section)
-      if (found.length === 1) {
-        return { content: [{ type: 'text', text: sectionText(resource, found[0]) }] }
+      // No section, or a heading the file has more than once: the answer says what to ask for,
+      // for every value that does not name one section, and returns none of the others
+      const file = fileOf(resource)
+      const found = wanted.map((value) => ({ value, matches: findSections(resource, value) }))
+      const problems = found
+        .filter(({ matches }) => matches.length !== 1)
+        .map(({ value, matches }) =>
+          matches.length === 0
+            ? `\`${file}\` has no section "${value}".`
+            : `\`${file}\` has ${matches.length} sections "${value}". Pass the anchor of one:\n${matches
+                .map((s) => `  - \`${s.anchor}\`, in "${parentOf(resource, s)}"`)
+                .join('\n')}`
+        )
+      if (problems.length > 0) {
+        const missing = found.some(({ matches }) => matches.length === 0)
+        const listing = missing ? [`Its sections:\n${sectionLines(resource).join('\n')}`] : []
+
+        return {
+          content: [{ type: 'text', text: [...problems, ...listing].join('\n') }],
+          isError: true
+        }
       }
 
-      // No section, or a heading the file has more than once: the answer says what to ask for
-      const file = fileOf(resource)
-      const problem =
-        found.length === 0
-          ? `\`${file}\` has no section "${section}". Its sections:\n${sectionLines(resource).join('\n')}`
-          : `\`${file}\` has ${found.length} sections "${section}". Pass the anchor of one:\n${found
-              .map((s) => `  - \`${s.anchor}\`, in "${parentOf(resource, s)}"`)
-              .join('\n')}`
-
-      return { content: [{ type: 'text', text: problem }], isError: true }
+      const result = sectionText(
+        resource,
+        found.map(({ matches }) => matches[0])
+      )
+      return { content: [{ type: 'text', text: result }] }
     }
   )
 

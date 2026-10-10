@@ -46,24 +46,24 @@ A glyph whose fill is bound to an `fg-*` role takes the `icon-*` class of the sa
 
 Text in Figma is a text style named `font/{family}/{size}/{weight}`, a context style (`font/context/*`), an HTML style (`font/html/*`) or the style of a component.
 
-| Figma text style                                                    | Classes                                                          |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `font/text/{size}/normal`                                           | `font-{size}` (text is the body family; `normal` is the default) |
-| `font/text/{size}/{weight}`                                         | `font-{size} font-{weight}`                                      |
-| `font/display/{size}/{weight}`                                      | `font-display font-{size} font-{weight}`                         |
-| `font/code/{size}/{weight}`                                         | `font-code font-{size} font-{weight}` (sizes `sm` `md` `lg`)     |
-| `font/html/h1` … `font/html/h6`                                     | `<h1>` … `<h6>`, or `h1` … `h6` on another element               |
-| `font/html/code`                                                    | `<code>` / `font-monospace`                                      |
-| `font/html/blockquote`, `font/html/cite`                            | `blockquote`, `attribution`                                      |
-| `font/html/body`, `paragraph`, `list`                               | nothing: the page default, `<p>`, `<ul>` / `<ol>`                |
-| `font/context/jumbo`, `hero`, `heading`, `lead`                     | `font-jumbo`, `font-hero`, `font-heading`, `font-lead`           |
-| `font/context/title/medium`, `/small`, `/large`                     | `font-title`, `font-title-sm`, `font-title-lg`                   |
-| `font/context/body/medium`, `/small`, `/large`                      | `font-body`, `font-body-sm`, `font-body-lg`                      |
-| `font/context/label/medium`, `/small`, `/large`                     | `font-label`, `font-label-sm`, `font-label-lg`                   |
-| `font/context/highlight/*`, `expired/*`, `link/*`, `code/*`         | no class in `@chassis-ui/css` 0.7: ask                           |
-| `font/{component}/*` (`font/button/medium`, `font/table/head-text`) | nothing: the component class sets it                             |
+| Figma text style                                                    | Classes                                                                                                     |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `font/text/{size}/normal`                                           | `font-{size}` (text is the body family; `normal` is the default)                                            |
+| `font/text/{size}/{weight}`                                         | `font-{size} font-{weight}`                                                                                 |
+| `font/display/{size}/{weight}`                                      | `font-display font-{size} font-{weight}`                                                                    |
+| `font/code/{size}/{weight}`                                         | `font-code font-{size} font-{weight}` (sizes `sm` `md` `lg`)                                                |
+| `font/html/h1` … `font/html/h6`                                     | `<h1>` … `<h6>`, or `h1` … `h6` on another element                                                          |
+| `font/html/code`                                                    | `<code>` / `font-monospace`                                                                                 |
+| `font/html/blockquote`, `font/html/cite`                            | `blockquote`, `attribution`                                                                                 |
+| `font/html/body`, `paragraph`, `list`                               | nothing: the page default, `<p>`, `<ul>` / `<ol>`                                                           |
+| `font/context/jumbo`, `hero`, `heading`, `lead`                     | `font-jumbo`, `font-hero`, `font-heading`, `font-lead`                                                      |
+| `font/context/title/medium`, `/small`, `/large`                     | `font-title`, `font-title-sm`, `font-title-lg`                                                              |
+| `font/context/body/medium`, `/small`, `/large`                      | `font-body`, `font-body-sm`, `font-body-lg`                                                                 |
+| `font/context/label/medium`, `/small`, `/large`                     | `font-label`, `font-label-sm`, `font-label-lg`                                                              |
+| `font/context/highlight/*`, `expired/*`, `link/*`, `code/*`         | no class in `@chassis-ui/css` 0.7: ask                                                                      |
+| `font/{component}/*` (`font/button/medium`, `font/table/head-text`) | nothing: the component class sets it; of a composed component, [its parts](#tokens-of-a-composed-component) |
 
-A style with no class is asked about, not rebuilt from its parts. Sizes: `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` `4xl` `5xl` (from `2xsmall` … `5xlarge`). Weights keep their names: `font-elegant`, `font-normal`, `font-strong`, `font-mass`. `typography/*` variables (`typography/fontSize/text/medium`) are the parts of a text style; translate the style, not the parts.
+A style with no class is asked about, not rebuilt from its parts; the style of a composed component is the one exception ([Tokens of a composed component](#tokens-of-a-composed-component)). Sizes: `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` `4xl` `5xl` (from `2xsmall` … `5xlarge`). Weights keep their names: `font-elegant`, `font-normal`, `font-strong`, `font-mass`. `typography/*` variables (`typography/fontSize/text/medium`) are the parts of a text style; translate the style, not the parts.
 
 ## Spacing — `space/context/{size}`
 
@@ -137,8 +137,15 @@ The glyph sizes of Figma go to `6xlarge`; `5xlarge` and `6xlarge` have no class 
 
 `figma/switch/{brand,theme,app}/mode-n` are BOOLEAN variables that are `true` in the n-th mode of their collection and gate the visibility of a layer: conditional markup, see patterns.md → Theme-conditional assets. There is no platform collection, no high-contrast theme and no `screen` collection in Figma: the screen sizes exist only in the token build.
 
+## Tokens of a composed component
+
+A component that the family table of components.md composes from primitives (`Section Block`, `Section Header`, `Section Footer`, `Page Title`, `Chat Message`) has no class, so nothing applies its own tokens: `font/section/*`, `font/page/*`, `color/section/*`, `color/page/*`, `color/message/*`, `space/page/*`, `borderRadius/section/main`, `borderWidth/section/main`, `shadow/section/main`, `shadow/message/main`. Each is an alias of a text style or a context token in the token build. Do not ask about it: write the class of what it resolves to, and name the token and the class in a Flagged line, because the class no longer follows the token if a brand points it elsewhere.
+
+- **A text style.** `get_variable_defs` lists it with its parts: `Font(family: "typography/fontFamily/text", style: typography/fontWeight/text/strong, size: typography/fontSize/text/medium, …)`. The last segment of `size` is the size and the last segment of `style` is the weight, so that style is `font-md font-strong`; it is what `font/section/header-medium` returns.
+- **A color, space, radius, border or shadow token.** The context token of the same namespace that has the same value in what `get_variable_defs` returned: `color/section/fg-medium` `#171717` is `color/context/default/fg-main`, so `fg-main`, which the checklist below does not write where it is the inherited default; `space/page/medium-padding-x` `24` is `space/context/xlarge`, so `px-xl`. When no context token of the response has the value, the context step nearest to it, and the Flagged line says so.
+
 ## Checklist per styled property
 
 - Bound to a `*/context/*` variable or a `font/*` style → translate and emit the class, unless the element inherits that value already (`fg-main` on text in the `default` context, where the page's `body` sets it): a class that restates the inherited default is not written.
-- Bound to a `*/{component}/*` token → emit the component; do not repeat the style.
-- Bound to a unit, level or primitive token, or unbound → ask; emit nothing until answered. When no one can answer, the context step nearest the resolved value, with a Flagged line that says so.
+- Bound to a `*/{component}/*` token → emit the component; do not repeat the style. When the component is composed, no class carries the style: [Tokens of a composed component](#tokens-of-a-composed-component).
+- Bound to a unit, level or primitive token, or unbound → ask; emit nothing until answered. When no one can answer, the context step nearest the resolved value, with a Flagged line that says so. The base values of the steps, in px: `space/context/*` is the Spacing scale of css-classes.md (section Scales, in rem: `md` 1rem is 16); `size/context/*` is `2xs` 16, `xs` 24, `sm` 32, `md` 40, `lg` 48, `xl` 56, `2xl` 64. A value no step is near (a width of 256) gets no class and a Flagged line.

@@ -161,6 +161,14 @@ describe('POST', () => {
     expect(section.match(/^## /gm)).toHaveLength(1)
     expect(file).toContain(section.slice(section.indexOf('## Typography')).trim())
     expect(section.length).toBeLessThan(file.length / 2)
+
+    // Several sections in one call: in the order of the file, under one introduction
+    const several = await call(34, { name, sections: ['Opacity', 'tokens.md#typography'] })
+
+    expect(several.match(/^# /gm)).toHaveLength(1)
+    expect(several.match(/^## /gm)).toEqual(['## ', '## '])
+    expect(several.indexOf('\n## Typography\n')).toBeLessThan(several.indexOf('\n## Opacity\n'))
+    expect(several.startsWith(section.trimEnd())).toBe(true)
   })
 
   // The skill tools through the handler: the index by default, the bundle with full: true

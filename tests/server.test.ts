@@ -134,6 +134,7 @@ describe.each(SKILLS)('%s', (skill) => {
     const result = text(await client.callTool({ name: tool, arguments: {} }))
 
     expect(result).toContain('`section`')
+    expect(result).toContain('`sections`')
     for (const { path } of references) {
       const all = sections(read(path))
 
@@ -280,6 +281,142 @@ describe('chassis_get_reference', () => {
       expect(result.isError, `${from}: ${file}#${anchor}`).toBeFalsy()
       expect(text(result)).toContain(section?.text.trim())
     }
+  })
+
+  // What several sections of a file are answered with: the introduction once, then the
+  // sections in the order of the file, each under the headings it is inside, a heading that
+  // two of them are under written once. Made from the file here, not by the server
+  function several(file: string, chosen: { text: string; ancestors: string[] }[]): string {
+    const parts = [introduction(file).trim()]
+    const written = new Set<string>()
+
+    for (const { text: own, ancestors } of chosen) {
+      for (const ancestor of ancestors) {
+        if (!written.has(ancestor)) parts.push(ancestor)
+        written.add(ancestor)
+      }
+      parts.push(own.trim())
+    }
+    return `${parts.join('\n\n')}\n`
+  }
+
+  test.each(REFERENCES)(
+    'a list of one section of $name is that section',
+    async ({ name, path }) => {
+      for (const { anchor } of sections(read(path))) {
+        const one = await client.callTool({
+          name: 'chassis_get_reference',
+          arguments: { name, section: anchor }
+        })
+        const list = await client.callTool({
+          name: 'chassis_get_reference',
+          arguments: { name, sections: [anchor] }
+        })
+
+        expect(list.isError, anchor).toBeFalsy()
+        expect(text(list), anchor).toBe(text(one))
+      }
+    }
+  )
+
+  // Asked for last to first, by heading: answered in the order of the file, the introduction
+  // and the heading the sections share once
+  test.each(REFERENCES)(
+    'returns several sections of $name in the order of the file, under one introduction',
+    async ({ name, path }) => {
+      const file = read(path)
+      const all = sections(file)
+
+      for (const level of [2, 3]) {
+        const chosen = all.filter((section) => section.level === level)
+        if (chosen.length < 2) continue
+
+        const result = await client.callTool({
+          name: 'chassis_get_reference',
+          arguments: { name, sections: chosen.map(({ title }) => title).reverse() }
+        })
+
+        expect(result.isError, `${name} level ${level}`).toBeFalsy()
+        expect(text(result), `${name} level ${level}`).toBe(several(file, chosen))
+        expect(text(result).split(heading(file)).length - 1).toBe(1)
+      }
+    }
+  )
+
+  test('several sections cost less than the same sections one by one', async () => {
+    const { name, path } = REFERENCES.find((r) =>
+      r.name.endsWith('implement-design/references/components')
+    )!
+    const file = read(path)
+    const chosen = sections(file)
+      .filter(({ level }) => level === 2)
+      .slice(1, 5)
+    const anchors = chosen.map(({ anchor }) => anchor)
+    const together = text(
+      await client.callTool({
+        name: 'chassis_get_reference',
+        arguments: { name, sections: anchors }
+      })
+    )
+    let apart = 0
+    for (const section of anchors) {
+      apart += text(
+        await client.callTool({ name: 'chassis_get_reference', arguments: { name, section } })
+      ).length
+    }
+
+    expect(chosen).toHaveLength(4)
+    // Each call of its own carries the introduction, a blank line less the final newline
+    expect(apart - together.length).toBe(3 * (introduction(file).trim().length + 1))
+  })
+
+  // A section that is inside another of the list comes with it, and one named twice, or by
+  // `section` too, comes once
+  test('returns a section once, whatever names it', async () => {
+    const { name, path } = REFERENCES.find((r) => r.name.endsWith('/css-classes'))!
+    const all = sections(read(path))
+    const parent = all.find(({ title }) => title === 'Utilities and helpers')!
+    const [flex, gap] = ['Flex', 'Gap'].map((title) => all.find((s) => s.title === title)!)
+    const call = async (args: Record<string, unknown>) =>
+      text(await client.callTool({ name: 'chassis_get_reference', arguments: { name, ...args } }))
+
+    expect(await call({ sections: [flex.anchor, parent.anchor, gap.title] })).toBe(
+      await call({ section: parent.anchor })
+    )
+    expect(
+      await call({ section: gap.anchor, sections: [flex.title, 'GAP', `#${flex.anchor}`] })
+    ).toBe(await call({ sections: [flex.anchor, gap.anchor] }))
+    expect(await call({ sections: [flex.anchor, gap.anchor] })).toBe(
+      several(read(path), [flex, gap])
+    )
+  })
+
+  test.each([[[]], [['', '  ']]])('returns the whole file for the sections %j', async (list) => {
+    const { name, path } = REFERENCES[0]
+    const result = await client.callTool({
+      name: 'chassis_get_reference',
+      arguments: { name, sections: list }
+    })
+
+    expect(result.isError).toBeFalsy()
+    expect(text(result)).toBe(body(read(path)))
+  })
+
+  // One value that names no section fails the call: the answer names it and lists the
+  // sections, and returns none of the others
+  test('answers a list with a section the file does not have with an error', async () => {
+    const { name, path } = REFERENCES[0]
+    const [first] = sections(read(path))
+    const result = await client.callTool({
+      name: 'chassis_get_reference',
+      arguments: { name, sections: [first.anchor, 'No such section', 'Nor this'] }
+    })
+
+    expect(result.isError).toBe(true)
+    expect(text(result)).toContain('has no section "No such section"')
+    expect(text(result)).toContain('has no section "Nor this"')
+    expect(text(result)).toContain(`  - ${first.title}`)
+    expect(text(result)).not.toContain(first.text.trim())
   })
 
   test('a section is smaller than its file', async () => {

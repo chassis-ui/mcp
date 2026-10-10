@@ -149,7 +149,7 @@ Colors: `default`, `primary`, `secondary`, `neutral`, `success`, `danger`, `warn
 </form>
 ```
 
-Static validation states: `is-valid` / `is-invalid` on the control. Range: `<input type="range" class="form-range">`. One field style per form: regular or floating. The help icon of a `Form Check` or a `Form Help` (`help` on, "Help Icon") has no part in the stylesheet: compose it beside the label (`d-flex align-items-start` and the icon, with the gap the design binds: the library binds `space/unit/8`, the `xs` step, so `gap-xs`) and flag it.
+Static validation states: `is-valid` / `is-invalid` on the control. Range: `<input type="range" class="form-range">`. One field style per form: regular or floating. The help icon of a `Form Check` or a `Form Help` (`help` on, "Help Icon") has no part in the stylesheet: compose it beside the label (`d-flex align-items-start` and the icon, with the gap class of the value the design binds between the two: `8` is the `xs` step, `gap-xs`, and `12` the `sm` step, `gap-sm`) and flag it.
 
 ### Selection and special inputs
 
