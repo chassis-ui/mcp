@@ -85,6 +85,26 @@ return { createdNodeIds: [button.id] }
 
 A button, badge, chip or text hugs its content; a section, a field or a table fills its container. `layoutSizingHorizontal = 'FILL'` is rejected with an error on a node that is not yet the child of an auto-layout frame.
 
+## Set an icon
+
+A glyph of Chassis Icons is the component itself, as above. A font set and `Library Icon` go on the prop by their variant, and the glyph is set on the nested instance ([components.md → Icons](./components.md#icons)):
+
+```js
+const swapKey = Object.keys(button.componentProperties).find((k) => k.startsWith('icon-start-instance#'))
+
+// A font set (FA 6 Free Icon, Material Icon, …): the name of the icon in that font
+button.setProperties({ [swapKey]: fontSet.defaultVariant.id })
+const glyph = button.findOne((n) => n.name === 'Icon Start').findAllWithCriteria({ types: ['TEXT'] })[0]
+await loadFontsOf(glyph) // throws when the file lacks the font: the icon is Blocked
+glyph.characters = 'search'
+
+// Library Icon: the component of another icon library, imported into the file
+button.setProperties({ [swapKey]: libraryIconSet.defaultVariant.id })
+const holder = button.findOne((n) => n.name === 'Icon Start')
+const instanceKey = Object.keys(holder.componentProperties).find((k) => k.startsWith('instance#'))
+holder.setProperties({ [instanceKey]: otherLibraryIcon.id })
+```
+
 ## Set text
 
 On a text Asset, through its TEXT property; on a plain layer, through `characters`. Both after the fonts.

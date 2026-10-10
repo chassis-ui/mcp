@@ -5,7 +5,7 @@ What the SKILL.md does not say: the order of a build, the reconnect playbook, ho
 ## Build mode
 
 1. **Source and target.** The source is code, a screenshot, a description or a URL; ask when it is unclear which. The target is a file URL (`fileKey`, and a `nodeId` with `-` turned into `:` when a frame is named) and a page; a user without a file gets one through `create_new_file`, which adds the team libraries.
-2. **Modes.** Note which brand, theme and app modes the view is for. The designer sets them; a view for several themes is checked in each (below).
+2. **Modes and icons.** Note which brand, theme and app modes the view is for. The designer sets them; a view for several themes is checked in each (below). Note the icon library of the project: the one its code uses, the one the icons of the file's screens come from, or an icon library `get_libraries` lists; when none shows, ask, and default to the Chassis glyphs ([components.md → Icons](./components.md#icons)).
 3. **Sections.** List them top to bottom (navbar, page title, hero, cards, form, table, footer; a modal or drawer is a deliverable of its own) and, per section, the components by their library name ([components.md → The pages and their components](./components.md#the-pages-and-their-components)). A gap is settled before building: compose from library instances, build a local component for a repeated element, or flag it as Blocked.
 4. **One discovery pass.** `get_libraries`, then `search_design_system` with every component of the list in one call and the variables and styles in another (at most six to a call), then one inspection per component ([recipes.md → Inspect a component](./recipes.md#inspect-a-component)). Keep in the session notes, per component: its key and `assetType`, the prop keys with their types and defaults, the Asset names and their text keys, the slot names, the plain text layers.
 5. **Wrapper, then sections**, in retry-safe batches; per instance the order of [recipes.md → Insert an instance](./recipes.md#insert-an-instance). Return every created id.
@@ -70,7 +70,7 @@ Before the report:
 - [ ] Every color, padding, gap, size, radius, border and opacity of the agent's own frames is bound to a `*/context/*` variable (a width to `grid/breakpoint/*`), or the value was approved
 - [ ] Every text node has one `font/*` style and no raw font value or `typography/*` binding
 - [ ] Every shadow is a `shadow/*` effect style
-- [ ] No component named ` - DEPRECATED`; every icon a library icon
+- [ ] No component named ` - DEPRECATED`; every icon a component of the page "Icon", of the one icon library of the project
 - [ ] One button size per action group; one form style per form; no hidden layer without a prop revealed; every part hidden by an override is in the report
 - [ ] Positions preserved in non-auto-layout parents; no frame converted to auto-layout unasked (reconnect)
 - [ ] No variable mode set by a script

@@ -52,9 +52,9 @@ One file is read whole, before the first line of markup, because every value of 
 
 Follow `figma-design-to-code` and add, at each part of the work:
 
-- **Prepare** — what is settled before the first Figma call (the source, the target, the CSS mode, what the project already has) is in [workflow.md](./references/workflow.md#before-the-first-figma-call).
+- **Prepare** — what is settled before the first Figma call (the source, the target, the CSS mode, the icon library, what the project already has) is in [workflow.md](./references/workflow.md#before-the-first-figma-call).
 - **Fetch** — `get_design_context` with its screenshot, then `get_variable_defs` for the same node (a top-level node, not one inside an instance) and `get_code_connect_map`: a Code Connect snippet is used verbatim, and when the tool answers that the plan or the seat has no Code Connect, nothing is mapped and the work goes on. For large screens, `get_metadata` first and then one `get_design_context` per section, at the frame or instance that owns a slot and not at a node inside one. Before reading the code block, fetch [Reading the Figma output](./references/patterns.md#reading-the-figma-output): it says where the variable, the component and the variants of each layer are.
-- **Assets** — a Chassis icon (an instance of a glyph component of the library, `pen-solid`, whatever its layer is called) becomes a Chassis Icons reference, not a downloaded SVG: it is the exact match in the design library that the parent skill allows in place of an asset ([components.md](./references/components.md#icons)); other images are downloaded as the response says; brand- or theme-gated images become conditional markup ([patterns.md](./references/patterns.md#theme-conditional-assets)).
+- **Assets** — a Chassis icon (an instance of a glyph component of the library, `pen-solid`, whatever its layer is called) is written with the icon library of the project: a Chassis Icons reference when the project uses `@chassis-ui/icons` (the exact match in the design library that the parent skill allows in place of an asset), the icon of another library when the project uses that one (what the project has is reused), and the downloaded SVG when the project has no icon library or the library lacks the glyph ([components.md](./references/components.md#icons)); other images are downloaded as the response says; brand- or theme-gated images become conditional markup ([patterns.md](./references/patterns.md#theme-conditional-assets)).
 - **Translate** — identify the component of each Figma instance by its name in the family table ([components.md](./references/components.md#figma-component--css)), then fetch the sections of the families the design uses (Buttons, Forms, Navigation, Card, Table, …), together in one call, for their markup and `data-cx-*` wiring; lift Asset text ([patterns.md](./references/patterns.md#asset-extraction)) into the element its role takes ([semantic HTML](./references/patterns.md#semantic-html)); then add utilities for the token-bound styles that the component does not already apply (a card's padding, a button's font and colors are built in and are not repeated as utilities).
 - **Parity** — compare against the per-section screenshot and, when the view was fetched in sections, `get_screenshot` of the whole view for the composition; fix by picking a different token class, never by inline CSS. A symptom with no obvious cause: [failure modes](./references/workflow.md#failure-modes).
 - **Validate** — `chassis_check_classes` on the written markup (`classes: ["<the markup>"]`, `mode`), until it refuses nothing that the summary does not flag; then the checklist in [workflow.md](./references/workflow.md#lint-checklist); render under light and dark when the design has both, and fix a color that does not invert at the class level.
@@ -66,11 +66,11 @@ Follow `figma-design-to-code` and add, at each part of the work:
 | **Implemented** | Sections and components emitted as Chassis CSS HTML                            |
 | **Reused**      | Project snippets reused verbatim                                               |
 | **Composed**    | Figma components with no Chassis CSS counterpart, built from primitives        |
-| **Iconified**   | Downloaded SVGs replaced with Chassis Icons references                         |
+| **Iconified**   | Glyphs written with the icon library of the project, not as downloaded SVGs    |
 | **Flagged**     | Styles that needed an inline value or a non-token decision, each with a reason |
 | **Blocked**     | What could not be implemented, with the exact failure                          |
 
-State the CSS mode used at the top of the summary.
+State the CSS mode and the icon library used at the top of the summary.
 
 ## References
 
