@@ -149,7 +149,7 @@ Colors: `default`, `primary`, `secondary`, `neutral`, `success`, `danger`, `warn
 </form>
 ```
 
-Static validation states: `is-valid` / `is-invalid` on the control. Range: `<input type="range" class="form-range">`. One field style per form: regular or floating.
+Static validation states: `is-valid` / `is-invalid` on the control. Range: `<input type="range" class="form-range">`. One field style per form: regular or floating. The help icon of a `Form Check` or a `Form Help` (`help` on, "Help Icon") has no part in the stylesheet: compose it beside the label (`d-flex align-items-start gap-sm` and the icon) and flag it.
 
 ### Selection and special inputs
 
@@ -277,7 +277,7 @@ The `.menu` is the next sibling of the toggle. `caret` adds the indicator. Rich 
 </nav>
 ```
 
-Below the `{bp}:navbar-expand` breakpoint the links live in the drawer; above it they flow inline and the toggler hides. Colored: `navbar context primary solid`.
+Below the `{bp}:navbar-expand` breakpoint the links live in the drawer; above it they flow inline and the toggler hides. Emit the toggler and the drawer even when the design has only a desktop frame, since the markup serves every width; the breakpoint is the narrowest frame of the design that shows the links inline, `sm:`, `md:`, `lg:` or `xl:`, and `md:` when there is one desktop frame. Colored: `navbar context primary solid`.
 
 ```html
 <!-- Tabs -->
@@ -741,7 +741,7 @@ Chassis Icons (`@chassis-ui/icons`) ship an SVG sprite, an icon font and single 
 </svg>
 ```
 
-Size: `icon-{size}` (`3xs` … `4xl`) or `icon-adaptive`; color: `icon-{ctx}`, `icon-main` / `icon-subtle` / `icon-slight`, `{ctx}-icon-main`; both cascade from an ancestor. Icons that mirror in RTL take `directional-icon`. In Figma an icon is an instance of a glyph component of the library, named in the same form (`pen-solid`, `chevron-down-solid`). The layer carries that name unless the component names it by its role ("Icon", "Icon Start", "Icon End", "Input Icon", "Help Icon"); then the glyph is the one the screenshot shows. `Placeholder Icon` is a placeholder, not a glyph: ask which icon is meant. The size and the fill of a glyph are not in the code block: their variables are in `get_variable_defs`. Resolve the glyph to a Chassis Icons name, and fall back to the downloaded SVG only for icons outside the set. The glyph variables of Figma go to `6xlarge`; `icon-{size}` ends at `4xl`.
+Size: `icon-{size}` (`3xs` … `4xl`) or `icon-adaptive`; color: `icon-{ctx}`, `icon-main` / `icon-subtle` / `icon-slight`, `{ctx}-icon-main`; both cascade from an ancestor. Icons that mirror in RTL take `directional-icon`. In Figma an icon is an instance of a glyph component of the library, named in the same form (`pen-solid`, `chevron-down-solid`). The layer carries that name unless the component names it by its role ("Icon", "Icon Start", "Icon End", "Input Icon", "Help Icon"); then the glyph is the one the screenshot shows. `Placeholder Icon` is a placeholder, not a glyph: ask which icon is meant. A logo (`chassis-logo` and the components of the page "Logo", a wordmark) is not a glyph of the sprite: it is an image, downloaded as the response says. The size and the fill of a glyph are not in the code block: their variables are in `get_variable_defs`. Resolve the glyph to a Chassis Icons name, and fall back to the downloaded SVG only for icons outside the set. The names are the `id`s of the symbols of `chassis-icons.svg` in `@chassis-ui/icons` (`node_modules/@chassis-ui/icons/icons/chassis-icons.svg`, or `packages/icons/icons/` of a `chassis-icons` checkout next to the project): check a glyph matched by eye against them, since a role name cannot be checked otherwise. The glyph variables of Figma go to `6xlarge`; `icon-{size}` ends at `4xl`.
 
 ## Composition rules
 

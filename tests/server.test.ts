@@ -321,25 +321,15 @@ describe('chassis_get_reference', () => {
     }
   })
 
-  // "Forms" is a list of components and a way to compose them in the same file. The anchor
-  // of a link is never ambiguous; a heading can be, and the first is not a safe guess
-  test('answers a heading the file has twice with an error that lists the anchors', async () => {
-    const twice = REFERENCES.flatMap(({ name, path }) => {
+  // A heading is what an agent asks a section by, so no file has one twice: the server
+  // answers a repeated heading with an error that lists the anchors, and the skills are
+  // written so that it never has to
+  test('every heading of a reference names one section of its file', () => {
+    for (const { name, path } of REFERENCES) {
       const all = sections(read(path))
-      return all.filter(({ title }) => repeated(title, all)).map((section) => ({ name, section }))
-    })
+      const twice = all.filter(({ title }) => repeated(title, all)).map(({ title }) => title)
 
-    // The files of today have such headings; without one this test says nothing
-    expect(twice.length).toBeGreaterThan(0)
-    for (const { name, section } of twice) {
-      const result = await client.callTool({
-        name: 'chassis_get_reference',
-        arguments: { name, section: section.title }
-      })
-
-      expect(result.isError, section.title).toBe(true)
-      expect(text(result)).toContain(`\`${section.anchor}\``)
-      expect(text(result)).not.toContain(section.text.trim())
+      expect(twice, name).toEqual([])
     }
   })
 

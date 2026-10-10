@@ -130,9 +130,9 @@ describe('generate-css-classes', () => {
     assert.match(button, /; modifiers `disabled`, `outline`; direct color$/)
   })
 
-  test('lists a component without a direct color, and one that has only a modifier', () => {
+  test('lists a component without a direct color, one that has only a modifier, and the variant prefixes of a subpart', () => {
     assert.deepEqual(section(catalog, '### Surfaces'), [
-      '- `card` — subparts `card-body`, `card-sm`',
+      '- `card` — subparts `card-body` (takes md: lg:), `card-sm`',
       '- `modal` — subparts `modal-dialog`; modifiers `show`'
     ])
   })

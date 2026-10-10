@@ -145,7 +145,7 @@ function buildSkillIndex(skill: string): string {
     '---',
     '## Fetching the references',
     'The instructions above link to the files of `./references/`. They are not included here: when the instructions send you to one, call `chassis_get_reference` with the name given below, and read what it returns before you go on.',
-    'To read one part of a file, also pass `section`: a heading of the file, or the anchor of a link, so a link `file.md#anchor` in the instructions is fetched as `section: "anchor"` of that file. A section comes with its subsections, under the introduction of its file. The sections of each file are listed under it with their sizes; after a colon, the subsections, which can be fetched the same way.',
+    'To read one part of a file, also pass `section`: a heading of the file, or the anchor of a link, so a link `file.md#anchor` in the instructions is fetched as `section: "anchor"` of that file. A section comes with its subsections, under the introduction of its file. Where the instructions link a section, fetch the section, not its file. The sections of each file are listed under it with their sizes; after a colon, the subsections, which can be fetched the same way.',
     lines.join('\n')
   ].join('\n\n')
 }

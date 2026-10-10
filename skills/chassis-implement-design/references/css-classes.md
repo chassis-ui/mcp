@@ -149,7 +149,7 @@ The values of the default tokens (`--cx-space-*`); a project with its own tokens
 
 ## Components
 
-For each component: the root class, its subpart classes, the modifiers that appear on the root in the stylesheet, and whether a context color (`primary`, `danger`, …) is written directly on the root ("direct color"). A component without a direct color takes `context {ctx}` instead. State classes such as `active`, `disabled` and `show` are listed where the stylesheet styles them.
+For each component: the root class, its subpart classes (a subpart that takes variant prefixes says so: `navbar-expand` (takes `sm:` … `xl:`) exists as `md:navbar-expand`), the modifiers that appear on the root in the stylesheet, and whether a context color (`primary`, `danger`, …) is written directly on the root ("direct color"). A component without a direct color takes `context {ctx}` instead. State classes such as `active`, `disabled` and `show` are listed where the stylesheet styles them.
 
 ### Layout
 
@@ -191,7 +191,7 @@ For each component: the root class, its subpart classes, the modifiers that appe
 
 ### Navigation
 
-- `navbar` — subparts `navbar-brand`, `navbar-expand`, `navbar-nav`, `navbar-text`, `navbar-toggler`, `navbar-toggler-icon`; modifiers `translucent`
+- `navbar` — subparts `navbar-brand`, `navbar-expand` (takes sm:–2xl:), `navbar-nav`, `navbar-text`, `navbar-toggler`, `navbar-toggler-icon`; modifiers `translucent`
 - `nav` — subparts `nav-fill`, `nav-item`, `nav-justified`, `nav-link`, `nav-overflow`, `nav-segments`, `nav-tabs`, `nav-underline`; modifiers `lg`, `sm`
 - `nav-overflow` — subparts `nav-overflow-item`
 - `breadcrumb` — subparts `breadcrumb-item`
@@ -201,11 +201,11 @@ For each component: the root class, its subpart classes, the modifiers that appe
 
 ### Surfaces
 
-- `card` — subparts `card-body`, `card-footer`, `card-group`, `card-header`, `card-header-segments`, `card-header-tabs`, `card-image`, `card-image-bottom`, `card-image-end`, `card-image-start`, `card-image-top`, `card-link`, `card-overlay`, `card-subtitle`, `card-title`; modifiers `lg`, `sm`
+- `card` — subparts `card-body`, `card-footer`, `card-group`, `card-header`, `card-header-segments`, `card-header-tabs`, `card-image`, `card-image-bottom`, `card-image-end` (takes sm:–2xl:), `card-image-start` (takes sm:–2xl:), `card-image-top`, `card-link`, `card-overlay`, `card-subtitle`, `card-title`; modifiers `lg`, `sm`
 - `accordion` — subparts `accordion-body`, `accordion-title`; modifiers `caret-end`, `context`, `flush`, `lg`, `sm`
 - `collapse` — subparts `collapse-horizontal`
 - `list` — subparts `list-action`, `list-item`; modifiers `flush`, `horizontal`, `numbered`, `outline`, `plain`
-- `table` — subparts `table-divider`, `table-responsive`; modifiers `bordered`, `borderless`, `caption-top`, `context`, `hoverable`, `sticky-column`, `sticky-header`, `striped`, `striped-columns`
+- `table` — subparts `table-divider`, `table-responsive` (takes max-sm:–max-2xl:); modifiers `bordered`, `borderless`, `caption-top`, `context`, `hoverable`, `sticky-column`, `sticky-header`, `striped`, `striped-columns`
 - `dialog` — subparts `dialog-open`, `dialog-static`; modifiers `instant`, `nonmodal`, `scrollable`, `translucent`
 - `modal` — subparts `modal-body`, `modal-footer`, `modal-header`, `modal-title`; modifiers `fullscreen`, `lg`, `md`, `scrollable`, `sm`, `xl`
 - `drawer` — subparts `drawer-body`, `drawer-bottom`, `drawer-end`, `drawer-fit-content`, `drawer-footer`, `drawer-header`, `drawer-start`, `drawer-title`, `drawer-top`; modifiers `hiding`, `sheet`, `translucent`

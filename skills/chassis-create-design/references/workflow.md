@@ -6,7 +6,7 @@ What the SKILL.md does not say: the order of a build, the reconnect playbook, ho
 
 1. **Source and target.** The source is code, a screenshot, a description or a URL; ask when it is unclear which. The target is a file URL (`fileKey`, and a `nodeId` with `-` turned into `:` when a frame is named) and a page; a user without a file gets one through `create_new_file`, which adds the team libraries.
 2. **Modes.** Note which brand, theme and app modes the view is for. The designer sets them; a view for several themes is checked in each (below).
-3. **Sections.** List them top to bottom (navbar, page title, hero, cards, form, table, footer; a modal or drawer is a deliverable of its own) and, per section, the components by their library name ([components.md → The pages](./components.md#the-pages)). A gap is settled before building: compose from library instances, build a local component for a repeated element, or flag it as Blocked.
+3. **Sections.** List them top to bottom (navbar, page title, hero, cards, form, table, footer; a modal or drawer is a deliverable of its own) and, per section, the components by their library name ([components.md → The pages and their components](./components.md#the-pages-and-their-components)). A gap is settled before building: compose from library instances, build a local component for a repeated element, or flag it as Blocked.
 4. **One discovery pass.** `get_libraries`, then `search_design_system` with every component of the list in one call and the variables and styles in another (at most six to a call), then one inspection per component ([recipes.md → Inspect a component](./recipes.md#inspect-a-component)). Keep in the session notes, per component: its key and `assetType`, the prop keys with their types and defaults, the Asset names and their text keys, the slot names, the plain text layers.
 5. **Wrapper, then sections**, in retry-safe batches; per instance the order of [recipes.md → Insert an instance](./recipes.md#insert-an-instance). Return every created id.
 6. **One screenshot**, a targeted fix, one more screenshot.
@@ -66,8 +66,8 @@ Before the report:
 
 - [ ] Every text is a text Asset, a plain text layer of a component or a `Basic Text  Asset` instance; nothing from `createText()`
 - [ ] Every instance had its booleans subtracted: no decoration the design does not show
-- [ ] Every slot is filled and its placeholders removed
-- [ ] Every color, padding, gap, size, radius, border and opacity of the agent's own frames is bound to a `*/context/*` variable, or the value was approved
+- [ ] Every slot holds the design's content, or nothing when the design has none, and no placeholder is left
+- [ ] Every color, padding, gap, size, radius, border and opacity of the agent's own frames is bound to a `*/context/*` variable (a width to `grid/breakpoint/*`), or the value was approved
 - [ ] Every text node has one `font/*` style and no raw font value or `typography/*` binding
 - [ ] Every shadow is a `shadow/*` effect style
 - [ ] No component named ` - DEPRECATED`; every icon a library icon
