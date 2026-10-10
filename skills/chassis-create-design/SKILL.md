@@ -37,7 +37,7 @@ Keys differ between files and publications, so this skill writes none: a compone
 
 ## How much of each reference to read
 
-Two files are read whole, since a build or a reconnect walks nearly all of them: [recipes.md](./references/recipes.md), the Plugin API snippets, before the first `use_figma` call, and [tokens.md](./references/tokens.md), the variables and styles by namespace, before the search of Step 2, which is written with its names. The other two are lookups, read by section at the step that needs one: a link with an anchor (`#…`) below names the section, and `chassis_get_reference` with that `section` returns it with the introduction of its file, which is all it needs. Fetch the section, not its file, and only when its step comes: the rest of the file is not needed by the step and costs several times more.
+Two files are read whole, since a build or a reconnect walks nearly all of them: [recipes.md](./references/recipes.md), the Plugin API snippets, before the first `use_figma` call, and [tokens.md](./references/tokens.md), the variables and styles by namespace, before the search of Step 2, which is written with its names. The other two are lookups, read by section at the step that needs one: a link with an anchor (`#…`) below names the section, and `chassis_get_reference` with that `section` returns it with the introduction of its file, which is all it needs. Fetch the section, not its file, and only when its step comes: the rest of the file is not needed by the step and costs several times more. When a step needs several sections of one file, fetch them in one call: `sections` takes a list of headings or anchors and returns them under one introduction.
 
 ## The thirteen rules
 

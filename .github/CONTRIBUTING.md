@@ -113,8 +113,9 @@ it with the files on disk.
 
 An agent can fetch one section of a reference instead of the file: the skill tools list the
 headings of level two and three of each reference, and `chassis_get_reference` takes one as
-`section`, by its text or by its anchor. So a heading says what its section holds, and what is
-before the first level-two heading of a reference is sent with every section of it.
+`section`, by its text or by its anchor, or several as `sections`, which come under one
+introduction. So a heading says what its section holds, and what is before the first level-two
+heading of a reference is sent with every call that asks for a section of it.
 
 ## Changing the server
 
