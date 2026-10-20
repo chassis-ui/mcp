@@ -1,8 +1,8 @@
 # Chassis CSS Class Catalog
 
-<!-- AUTO-GENERATED from @chassis-ui/css 0.7.2 by build/generate-css-classes.js. Do not edit; run `pnpm generate:css-classes`. -->
+<!-- AUTO-GENERATED from @chassis-ui/css 0.11.0 by build/generate-css-classes.js. Do not edit; run `pnpm generate:css-classes`. -->
 
-Every class below exists in `dist/css/chassis.css` of `@chassis-ui/css` 0.7.2. A class that is not here does not exist. Placeholders stand for a dimension of a family:
+Every class below exists in `dist/css/chassis.css` of `@chassis-ui/css` 0.11.0. A class that is not here does not exist. Placeholders stand for a dimension of a family:
 
 - `{ctx}` — a context color: `default` `alternate` `primary` `secondary` `neutral` `success` `danger` `warning` `info` `black` `white`
 - `{size}` — a step of the size scale: `zero` `4xs` `3xs` `2xs` `xs` `sm` `md` `lg` `xl` `2xl` `3xl` `4xl` `5xl` `6xl`
@@ -105,7 +105,7 @@ The values of the default tokens (`--cx-space-*`); a project with its own tokens
 
 ### Typography
 
-- [no variants] `attribution`, `blockquote`, `bulletless`, `font-body`, `font-body-{size}` ({size}: sm lg), `font-code`, `font-display`, `font-elegant`, `font-heading`, `font-hero`, `font-html`, `font-icon`, `font-initials`, `font-jumbo`, `font-label`, `font-label-{size}` ({size}: sm lg), `font-lead`, `font-mass`, `font-monospace`, `font-normal`, `font-strong`, `font-text`, `font-title`, `font-title-{size}` ({size}: sm lg), `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `inline`, `text-{size}` ({size}: sm lg), `text-bold`, `text-bolder`, `text-break`, `text-capitalize`, `text-decoration`, `text-decoration-{ctx}`, `text-decoration-{n}` ({n}: 1 2 3 4), `text-decoration-none`, `text-italic`, `text-lh-{size}` ({size}: sm md lg), `text-lh-1`, `text-light`, `text-lighter`, `text-line-through`, `text-lowercase`, `text-mark`, `text-medium`, `text-normal`, `text-nowrap`, `text-regular`, `text-semibold`, `text-truncate`, `text-underline`, `text-uppercase`, `text-wrap`, `underline-offset-{n}` ({n}: 1 2 3), `underline-offset-0`
+- [no variants] `attribution`, `blockquote`, `bulletless`, `font-blockquote`, `font-body`, `font-body-{size}` ({size}: sm lg), `font-cite`, `font-code`, `font-display`, `font-elegant`, `font-h1`, `font-h2`, `font-h3`, `font-h4`, `font-h5`, `font-h6`, `font-hero`, `font-icon`, `font-initials`, `font-jumbo`, `font-label`, `font-label-{size}` ({size}: sm lg), `font-lead`, `font-mass`, `font-monospace`, `font-normal`, `font-prose`, `font-strong`, `font-text`, `font-title`, `font-title-{size}` ({size}: sm lg), `font-ui`, `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `inline`, `text-{size}` ({size}: sm lg), `text-bold`, `text-bolder`, `text-break`, `text-capitalize`, `text-decoration`, `text-decoration-{ctx}`, `text-decoration-{n}` ({n}: 1 2 3 4), `text-decoration-none`, `text-italic`, `text-lh-{size}` ({size}: sm md lg), `text-lh-1`, `text-light`, `text-lighter`, `text-line-through`, `text-lowercase`, `text-mark`, `text-medium`, `text-normal`, `text-nowrap`, `text-regular`, `text-semibold`, `text-truncate`, `text-underline`, `text-uppercase`, `text-wrap`, `underline-offset-{n}` ({n}: 1 2 3), `underline-offset-0`
 - [sm:–2xl:] `font-{size}` ({size}: 2xs xs sm md lg xl 2xl 3xl 4xl 5xl)
 - [sm:–2xl:, @sm:–@2xl:] `text-center`, `text-end`, `text-start`
 - [hover:] `text-decoration-opacity-{level}`, `text-decoration-opacity-slight`, `text-decoration-opacity-solid`, `text-decoration-opacity-subtle`, `text-decoration-opacity-zero`
@@ -240,4 +240,4 @@ Attribute names that appear literally in the plugin code: `data-cx-accordion`, `
 
 ## Tailwind entry
 
-`@chassis-ui/css/tailwind` emits 1466 Chassis utilities as Tailwind `@utility` rules under the same names as above, so every Tailwind variant applies to them (`dark:`, `light:`, `hover:`, `sm:`–`2xl:`, `@sm:`–`@2xl:`, `print:`). Components stay plain CSS. These names are excluded from Tailwind core because they are Chassis classes: `caption-top`, `collapse`, `container`, `grid`, `inline`, `list-item`, `outline`, `static`, `table`. The grid placement classes (`col-span-*`, `col-start-*`, `row-span-*`, …) are Tailwind core's own there, with the same declarations as the regular build.
+`@chassis-ui/css/tailwind` emits 1467 Chassis utilities as Tailwind `@utility` rules under the same names as above, so every Tailwind variant applies to them (`dark:`, `light:`, `hover:`, `sm:`–`2xl:`, `@sm:`–`@2xl:`, `print:`). Components stay plain CSS. These names are excluded from Tailwind core because they are Chassis classes: `caption-top`, `collapse`, `container`, `grid`, `inline`, `list-item`, `outline`, `static`, `table`. The grid placement classes (`col-span-*`, `col-start-*`, `row-span-*`, …) are Tailwind core's own there, with the same declarations as the regular build.

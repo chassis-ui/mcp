@@ -147,7 +147,7 @@ await inner.setTextStyleIdAsync(style.id)
 return { createdNodeIds: [text.id] }
 ```
 
-The instance comes with `font/text/medium/normal` and its fill bound to `color/context/default/fg-main`; a title, label or body takes a `font/context/*` style ([tokens.md → Text styles](./tokens.md#text-styles)). A text that wraps gets a fixed width with `resize()` and `textAutoResize = 'HEIGHT'` on the inner node.
+The instance comes with `font/ui/medium/normal` and its fill bound to `color/context/default/fg-main`; a title, label or body takes a `font/context/*` style ([tokens.md → Text styles](./tokens.md#text-styles)). A text that wraps gets a fixed width with `resize()` and `textAutoResize = 'HEIGHT'` on the inner node.
 
 ## Apply a text style
 

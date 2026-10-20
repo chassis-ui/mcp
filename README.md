@@ -101,7 +101,7 @@ Restart Claude Code. `/chassis-create-design` and `/chassis-implement-design` wi
 
 - The **Figma MCP server** in the same agent session (for `use_figma`, `get_design_context`, `get_metadata`, `search_design_system`, etc.). Both skills run on top of it. The plugin connects it; with another client, add `https://mcp.figma.com/mcp` yourself.
 - Access to the Chassis UI Figma library and the target Figma file.
-- For `chassis-implement-design`: a project that uses [`@chassis-ui/css`](https://github.com/chassis-ui/css) 0.7.
+- For `chassis-implement-design`: a project that uses [`@chassis-ui/css`](https://github.com/chassis-ui/css) 0.11.
 
 ## Skills
 

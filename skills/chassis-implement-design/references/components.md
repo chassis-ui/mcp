@@ -1,6 +1,6 @@
 # Components — Figma component → Chassis CSS markup
 
-The emit target for each component of the Chassis UI Figma library (`cx.components.UI`). An instance is named after its component set (`Solid Button`, `Regular Form Field`) unless the designer renamed the layer; [patterns.md](./patterns.md#reading-the-figma-output) says how to tell the component then. Variants become space-separated modifiers (`{root} {color} {style} {size} {state}`); the text of the `<Role> Asset` children and of the plain text layers becomes the text of the elements shown. Snippets are the canonical structure from the Chassis CSS docs for `@chassis-ui/css` 0.7. The full list of subparts and modifiers per component is in css-classes.md → Components.
+The emit target for each component of the Chassis UI Figma library (`cx.components.UI`). An instance is named after its component set (`Solid Button`, `Regular Form Field`) unless the designer renamed the layer; [patterns.md](./patterns.md#reading-the-figma-output) says how to tell the component then. Variants become space-separated modifiers (`{root} {color} {style} {size} {state}`); the text of the `<Role> Asset` children and of the plain text layers becomes the text of the elements shown. Snippets are the canonical structure from the Chassis CSS docs for `@chassis-ui/css` 0.11. The full list of subparts and modifiers per component is in css-classes.md → Components.
 
 ## Figma component → CSS
 

@@ -19,8 +19,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       '@chassis-ui/css':
-        specifier: 0.7.2
-        version: 0.7.2(@floating-ui/dom@1.8.0)(vanilla-calendar-pro@3.4.0)
+        specifier: 0.11.0
+        version: 0.11.0(@floating-ui/dom@1.8.0)(vanilla-calendar-pro@3.4.0)
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.12.0)
@@ -139,8 +139,8 @@ packages:
     resolution: {integrity: sha512-q/ThtP9gcnEP6xlv7LrY26C2mHqdGBti/MmOVngt/M/oIGYkssmQGxPK9WzBNt2juVcH/vml2WQ+ra8LXYOTaA==}
     engines: {node: ^22.11 || ^24 || >=26}
 
-  '@chassis-ui/css@0.7.2':
-    resolution: {integrity: sha512-VZTJE7RsQK62503cwsHOeR7t4ug03IRCrs6lVJqqQ3z4U7Rb+ii6/Ics3RbuvoDlPMnsxPU8fz5KmGlh162c0w==}
+  '@chassis-ui/css@0.11.0':
+    resolution: {integrity: sha512-wOlzPYw/vXqSngPKvhbhb8ZvJVJwLHHrQT9kNlospPUfTo3Net1YJKHTt3wTkQgs34B4GkwYmQxvtaki/yJY0w==}
     engines: {node: '>=22'}
     peerDependencies:
       '@floating-ui/dom': ^1.7.6
@@ -2557,7 +2557,7 @@ snapshots:
       '@changesets/types': 7.0.0
       human-id: 4.2.2
 
-  '@chassis-ui/css@0.7.2(@floating-ui/dom@1.8.0)(vanilla-calendar-pro@3.4.0)':
+  '@chassis-ui/css@0.11.0(@floating-ui/dom@1.8.0)(vanilla-calendar-pro@3.4.0)':
     dependencies:
       '@floating-ui/dom': 1.8.0
       vanilla-calendar-pro: 3.4.0
