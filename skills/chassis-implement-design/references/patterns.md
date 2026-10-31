@@ -180,7 +180,7 @@ A layer gated by `figma/switch/theme/mode-*` (a dark-mode logo, an illustration)
 
 When the page toggles `data-cx-theme` itself, `<picture>` does not follow the attribute. Native mode: twin images with a `color-mode()` rule in the project's Sass. Tailwind mode: `<img class="d-none dark:d-block" …>` and `<img class="dark:d-none" …>`, which follow both the attribute and the preference.
 
-Brand switches (`figma/switch/brand/*`) are not expressed in markup. A project compiles one brand of `@chassis-ui/tokens`.
+Brand switches (`figma/switch/brand/*`) are not expressed in markup. A project compiles one brand of `@chassis-ui/website-tokens`.
 
 ## Native vs Tailwind mode
 

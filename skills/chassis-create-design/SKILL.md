@@ -23,7 +23,7 @@ To generate code from Figma instead, stop and use `chassis-implement-design`.
 | `build`     | A new view on a page of the target file, from code, a screenshot, a description or a URL              |
 | `reconnect` | An existing view whose detached layers, local wrappers and raw frames become instances of the library |
 
-Not for: a fix inside one component (edit it directly), code from Figma (`chassis-implement-design`), token or variable edits (`chassis-tokens`, or Figma itself), importing an icon or an image only (`figma-use`).
+Not for: a fix inside one component (edit it directly), code from Figma (`chassis-implement-design`), token or variable edits (`website-tokens`, or Figma itself), importing an icon or an image only (`figma-use`).
 
 ## The library
 

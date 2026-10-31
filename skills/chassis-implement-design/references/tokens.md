@@ -125,12 +125,12 @@ The glyph sizes of Figma go to `6xlarge`; `5xlarge` and `6xlarge` have no class 
 
 ## Collections and modes
 
-| Figma collection | Modes                                               | In code                                                                                             |
-| ---------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `brand`          | `default`, `chassis`, `sinefil`, `demo-a`, `demo-b` | The token build the project compiles (`@chassis-ui/tokens`, one brand). Never a class or attribute. |
-| `theme`          | `light`, `dark`                                     | `data-cx-theme="light"` or `"dark"` on `<html>` or a subtree; absent means system preference        |
-| `app`            | `docs`, `demo`                                      | The token build. A design in either mode maps to the same classes.                                  |
-| `system`         | `base`                                              | Constants; nothing in markup                                                                        |
+| Figma collection | Modes                                               | In code                                                                                                     |
+| ---------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `brand`          | `default`, `chassis`, `sinefil`, `demo-a`, `demo-b` | The token build the project compiles (`@chassis-ui/website-tokens`, one brand). Never a class or attribute. |
+| `theme`          | `light`, `dark`                                     | `data-cx-theme="light"` or `"dark"` on `<html>` or a subtree; absent means system preference                |
+| `app`            | `docs`, `demo`                                      | The token build. A design in either mode maps to the same classes.                                          |
+| `system`         | `base`                                              | Constants; nothing in markup                                                                                |
 
 `figma/switch/{brand,theme,app}/mode-n` are BOOLEAN variables that are `true` in the n-th mode of their collection and gate the visibility of a layer: conditional markup, see patterns.md → Theme-conditional assets. There is no platform collection, no high-contrast theme and no `screen` collection in Figma: the screen sizes exist only in the token build.
 

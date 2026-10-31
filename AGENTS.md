@@ -40,7 +40,7 @@ tests/                        # Vitest: the server in memory, the handler over H
 CHANGELOG.md                  # written by the version step
 ```
 
-This repo is part of a multi-repo ecosystem (`chassis-tokens`, `chassis-css`, `chassis-react`, `chassis-icons`, `chassis-assets`, `chassis-figma`, `chassis-website`). The skills describe `chassis-css` and the Chassis UI Figma library; when a skill and the framework disagree, the framework is right.
+This repo is part of a multi-repo ecosystem (`chassis-tokens`, `chassis-website-tokens`, `chassis-css`, `chassis-react`, `chassis-icons`, `chassis-assets`, `chassis-figma`, `chassis-website`). The skills describe `chassis-css` and the Chassis UI Figma library; when a skill and the framework disagree, the framework is right.
 
 Human contributors follow [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md): dev setup, branches, what a pull request needs, and how releases are made.
 
@@ -103,7 +103,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 - The prompt file has the frontmatter `mode` and `description`.
 - Both skills run on top of the Figma MCP server and its skills. They name its tools (`use_figma`, `get_design_context`, `search_design_system`); a skill must not assume a tool the Figma server does not have.
 - An agent follows a skill word for word. Change the meaning of a skill only when the task is about the skill, and say in the summary what an agent will now do differently. A change that only formats (Prettier, a link, a table) must leave every sentence as it was.
-- A class, token, component or API name in a skill must exist. For Chassis CSS, `css-classes.md` lists every class; for the rest, check `../chassis-css` and `../chassis-tokens` when they are checked out next to this repository.
+- A class, token, component or API name in a skill must exist. For Chassis CSS, `css-classes.md` lists every class; for the rest, check `../chassis-css` and `../chassis-website-tokens` when they are checked out next to this repository.
 - A heading of a reference is the name of a section an agent can fetch by itself (`section` of `chassis_get_reference`), and the skill tools list the headings of level two and three. Write a heading that says what the section holds, no heading twice in one file (a test fails on it), and write the introduction of a reference (before its first level-two heading) so that a section read after it alone is understood: it is sent with every section.
 - The two skills each have a `references/tokens.md` on the same token namespaces, one from the Figma side and one from the CSS side. A fact that both state must stay the same in both.
 
