@@ -29,7 +29,7 @@ To write to Figma instead, stop and use `chassis-create-design`.
 | `section`   | One region of a page (header, hero, feature block, footer)                                                           |
 | `component` | One component instance as a reusable snippet, in the order of [workflow.md](./references/workflow.md#component-mode) |
 
-Not for: React (`@chassis-ui/react` has its own conventions), token or SCSS edits (`website-tokens`, `chassis-css`), non-Chassis designs (plain `figma-design-to-code`).
+Not for: React (`@chassis-ui/react` has its own conventions), token or SCSS edits (`chassis-ui/website-tokens`, `chassis-ui/css`), non-Chassis designs (plain `figma-design-to-code`).
 
 ## How much of each reference to read
 

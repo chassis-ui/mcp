@@ -90,9 +90,9 @@ Once connected, the server exposes:
 The plugin is the way to get the skills as slash commands. Without it, copy them into Claude Code's skills directory and connect the two MCP servers yourself:
 
 ```bash
-git clone https://github.com/chassis-ui/mcp chassis-mcp
-cp -r chassis-mcp/skills/chassis-create-design ~/.claude/skills/
-cp -r chassis-mcp/skills/chassis-implement-design ~/.claude/skills/
+git clone https://github.com/chassis-ui/mcp
+cp -r mcp/skills/chassis-create-design ~/.claude/skills/
+cp -r mcp/skills/chassis-implement-design ~/.claude/skills/
 ```
 
 Restart Claude Code. `/chassis-create-design` and `/chassis-implement-design` will appear in slash command autocomplete. A copy does not update itself: copy the skills again after a release.
@@ -138,7 +138,7 @@ Its class catalog, `references/css-classes.md`, and the class list that `chassis
 pnpm generate:css-classes
 ```
 
-Set `CHASSIS_CSS_DIR` to a checkout of `chassis-css/packages/css` to generate from an unreleased build instead.
+Set `CHASSIS_CSS_DIR` to `packages/css` of a checkout of `chassis-ui/css` to generate from an unreleased build instead.
 
 ## Structure
 

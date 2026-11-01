@@ -10,8 +10,8 @@
 //   dist/tailwind/theme.css     the class names the Tailwind entry excludes from Tailwind core
 //   dist/tailwind/utilities.css the number of @utility rules of the Tailwind entry
 //
-// The package is resolved from CHASSIS_CSS_DIR when set (for example a checkout
-// of chassis-css: ../chassis-css/packages/css), else from node_modules.
+// The package is resolved from CHASSIS_CSS_DIR when set (for example packages/css
+// of a checkout of chassis-ui/css), else from node_modules.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'

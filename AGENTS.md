@@ -40,7 +40,7 @@ tests/                        # Vitest: the server in memory, the handler over H
 CHANGELOG.md                  # written by the version step
 ```
 
-This repo is part of a multi-repo ecosystem (`chassis-tokens`, `chassis-website-tokens`, `chassis-css`, `chassis-react`, `chassis-icons`, `chassis-assets`, `chassis-figma`, `chassis-website`). The skills describe `chassis-css` and the Chassis UI Figma library; when a skill and the framework disagree, the framework is right.
+This repo is part of a multi-repo ecosystem (`chassis-ui/tokens`, `chassis-ui/website-tokens`, `chassis-ui/css`, `chassis-ui/react`, `chassis-ui/icons`, `chassis-ui/assets`, `chassis-ui/figma`, `chassis-ui/website`). The skills describe `chassis-ui/css` and the Chassis UI Figma library; when a skill and the framework disagree, the framework is right.
 
 Human contributors follow [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md): dev setup, branches, what a pull request needs, and how releases are made.
 
@@ -83,7 +83,7 @@ Run the checks of the area you changed, and report the ones that fail.
 ## Generated files
 
 - `server/content.generated.ts` holds the text of every Markdown file of `skills/` and `prompts/`, the registry of resources (`RESOURCES`) and the version of `package.json`, as a module, so the function reads nothing from disk at runtime. `build/generate-content.js` writes it on `pnpm install`, `pnpm build` and before the tests. Git ignores it. `pnpm dev` does not write it: after a change to a skill, run `pnpm build`.
-- `skills/chassis-implement-design/references/css-classes.md` and, next to it, `css-classes.json` are written by `build/generate-css-classes.js` from the compiled stylesheet of the `@chassis-ui/css` development dependency, in one walk, and are **committed**. The Markdown is the catalog an agent reads; the JSON is the list `chassis_check_classes` checks class names against (every class with the variant prefixes it takes, the utilities of the Tailwind entry, and the families and component groups of the catalog), which `build/generate-content.js` writes into `server/content.generated.ts` as `CLASSES`. Never edit either. Change the generator or bump the dependency, run `pnpm generate`, and commit the result with the change; the Verify job of CI fails when they differ. `CHASSIS_CSS_DIR` points the generator at a checkout of `chassis-css/packages/css` instead of `node_modules`.
+- `skills/chassis-implement-design/references/css-classes.md` and, next to it, `css-classes.json` are written by `build/generate-css-classes.js` from the compiled stylesheet of the `@chassis-ui/css` development dependency, in one walk, and are **committed**. The Markdown is the catalog an agent reads; the JSON is the list `chassis_check_classes` checks class names against (every class with the variant prefixes it takes, the utilities of the Tailwind entry, and the families and component groups of the catalog), which `build/generate-content.js` writes into `server/content.generated.ts` as `CLASSES`. Never edit either. Change the generator or bump the dependency, run `pnpm generate`, and commit the result with the change; the Verify job of CI fails when they differ. `CHASSIS_CSS_DIR` points the generator at `packages/css` of a checkout of `chassis-ui/css` instead of `node_modules`.
 
 ## How the server finds a file
 
@@ -103,7 +103,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 - The prompt file has the frontmatter `mode` and `description`.
 - Both skills run on top of the Figma MCP server and its skills. They name its tools (`use_figma`, `get_design_context`, `search_design_system`); a skill must not assume a tool the Figma server does not have.
 - An agent follows a skill word for word. Change the meaning of a skill only when the task is about the skill, and say in the summary what an agent will now do differently. A change that only formats (Prettier, a link, a table) must leave every sentence as it was.
-- A class, token, component or API name in a skill must exist. For Chassis CSS, `css-classes.md` lists every class; for the rest, check `../chassis-css` and `../chassis-website-tokens` when they are checked out next to this repository.
+- A class, token, component or API name in a skill must exist. For Chassis CSS, `css-classes.md` lists every class; for the rest, check `chassis-ui/css` and `chassis-ui/website-tokens`.
 - A heading of a reference is the name of a section an agent can fetch by itself (`section` of `chassis_get_reference`), and the skill tools list the headings of level two and three. Write a heading that says what the section holds, no heading twice in one file (a test fails on it), and write the introduction of a reference (before its first level-two heading) so that a section read after it alone is understood: it is sent with every section.
 - The two skills each have a `references/tokens.md` on the same token namespaces, one from the Figma side and one from the CSS side. A fact that both state must stay the same in both.
 
@@ -125,6 +125,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 
 ## Formatting
 
+- Name a sibling by its GitHub repository, as in `chassis-ui/css`, never by a local folder name or a relative path: those differ per contributor.
 - 2-space indent, LF line endings, final newline, trim trailing whitespace (`.editorconfig`); `.md` keeps trailing whitespace.
 - Prettier: single quotes, no semicolons, no trailing commas, 100 print width (80 for `.md`, where prose is not rewrapped and code blocks are left as written).
 - `pnpm lint:prettier` checks the whole repository, the skills included, in CI too; `pnpm exec prettier --write <file>` formats a file.

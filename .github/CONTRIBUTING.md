@@ -9,8 +9,8 @@ You need Node.js 22.12 or later and pnpm (the version in `packageManager` of `pa
 `corepack enable` picks it up).
 
 ```sh
-git clone https://github.com/chassis-ui/mcp.git chassis-mcp
-cd chassis-mcp
+git clone https://github.com/chassis-ui/mcp.git
+cd mcp
 pnpm install
 ```
 
@@ -79,8 +79,8 @@ Three files are written by scripts. Never edit one by hand.
   ```
 
   Commit the result with the change. `pnpm verify` and the Verify job of CI fail when the commit
-  and a fresh run differ. Set `CHASSIS_CSS_DIR` to a checkout of `chassis-css/packages/css` to
-  generate from a build that is not released yet.
+  and a fresh run differ. Set `CHASSIS_CSS_DIR` to `packages/css` of a checkout of
+  `chassis-ui/css` to generate from a build that is not released yet.
 
 ## Changing a skill
 
