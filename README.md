@@ -23,7 +23,7 @@ There are two ways to use Chassis MCP. The **plugin** gives an agent the two ski
 /plugin install chassis-ui@chassis-ui
 ```
 
-The plugin adds the skills as `/chassis-ui:chassis-create-design` and `/chassis-ui:chassis-implement-design`, and connects two MCP servers: Chassis UI (`https://mcp.chassis-ui.com/mcp`) and Figma (`https://mcp.figma.com/mcp`). Figma asks you to sign in the first time.
+The plugin adds the skills as `/chassis-ui:chassis-create-design`, `/chassis-ui:chassis-implement-design` and `/chassis-ui:chassis-add-brand`, and connects two MCP servers: Chassis UI (`https://mcp.chassis-ui.com/mcp`) and Figma (`https://mcp.figma.com/mcp`). Figma asks you to sign in the first time.
 
 ### Cursor
 
@@ -81,8 +81,8 @@ The server is not an npm package: the hosted server is the only one, and it alwa
 
 Once connected, the server exposes:
 
-- **Tools** — `chassis_create_design` and `chassis_implement_design` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`, a whole file, one section of it (`section`: a heading or the anchor of a link) or several sections in one call (`sections`); `full: true` returns the instructions with every reference inline. `chassis_check_classes` checks class names, class attribute values or markup against the Chassis CSS class catalog in the project's CSS mode and names the catalog section to read for a class that does not exist
-- **Prompts** — `chassis-create-design` and `chassis-implement-design` load a skill; `chassis-ui` is a one-shot command to build or reconnect a Figma screen using the Chassis UI library
+- **Tools** — `chassis_create_design`, `chassis_implement_design` and `chassis_add_brand` return the instructions of a skill and an index of its reference files, which the agent fetches as it needs them with `chassis_get_reference`, a whole file, one section of it (`section`: a heading or the anchor of a link) or several sections in one call (`sections`); `full: true` returns the instructions with every reference inline. `chassis_check_classes` checks class names, class attribute values or markup against the Chassis CSS class catalog in the project's CSS mode and names the catalog section to read for a class that does not exist
+- **Prompts** — `chassis-create-design`, `chassis-implement-design` and `chassis-add-brand` load a skill; `chassis-ui` is a one-shot command to build or reconnect a Figma screen using the Chassis UI library
 - **Resources** — every skill and reference file, readable by your agent on demand
 
 ### Skills without the plugin
@@ -93,15 +93,17 @@ The plugin is the way to get the skills as slash commands. Without it, copy them
 git clone https://github.com/chassis-ui/mcp
 cp -r mcp/skills/chassis-create-design ~/.claude/skills/
 cp -r mcp/skills/chassis-implement-design ~/.claude/skills/
+cp -r mcp/skills/chassis-add-brand ~/.claude/skills/
 ```
 
-Restart Claude Code. `/chassis-create-design` and `/chassis-implement-design` will appear in slash command autocomplete. A copy does not update itself: copy the skills again after a release.
+Restart Claude Code. `/chassis-create-design`, `/chassis-implement-design` and `/chassis-add-brand` will appear in slash command autocomplete. A copy does not update itself: copy the skills again after a release.
 
 ## Requirements
 
-- The **Figma MCP server** in the same agent session (for `use_figma`, `get_design_context`, `get_metadata`, `search_design_system`, etc.). Both skills run on top of it. The plugin connects it; with another client, add `https://mcp.figma.com/mcp` yourself.
+- The **Figma MCP server** in the same agent session (for `use_figma`, `get_design_context`, `get_metadata`, `search_design_system`, etc.). The two design skills run on top of it; `chassis-add-brand` needs no Figma tool. The plugin connects it; with another client, add `https://mcp.figma.com/mcp` yourself.
 - Access to the Chassis UI Figma library and the target Figma file.
 - For `chassis-implement-design`: a project that uses [`@chassis-ui/css`](https://github.com/chassis-ui/css) 0.11.
+- For `chassis-add-brand`: a repository of tokens written by `chassis-tokens init` of [`@chassis-ui/tokens`](https://github.com/chassis-ui/tokens) and a repository of assets written by `chassis-assets init` of [`@chassis-ui/assets`](https://github.com/chassis-ui/assets), with Git LFS for the fonts and the images.
 
 ## Skills
 
@@ -140,6 +142,22 @@ pnpm generate:css-classes
 
 Set `CHASSIS_CSS_DIR` to `packages/css` of a checkout of `chassis-ui/css` to generate from an unreleased build instead.
 
+### `chassis-add-brand`
+
+Guides agents through adding a brand to a repository of tokens built with `@chassis-ui/tokens` and to a repository of assets built with `@chassis-ui/assets`, tokens first, since the fonts of a brand are placed by the families and the weights its tokens name.
+
+Use when:
+
+- Adding a brand, a white-label or a tenant to the token and asset repositories of a Chassis project
+- Giving an existing brand the fonts of a new family, with the files by weight, the stylesheets and the licenses the builds expect
+
+Key behaviours:
+
+- Writes the token set of the brand with the names of `base/brand-base`, appends its option to `$themes.json` without touching the Figma references of the other options, and runs `lint-source`, `build`, `diff` and `swift-package`
+- Places the fonts by role and weight under the names of the other brands, writes the files by weight of a variable font with `chassis-assets static-font`, and the stylesheet and the license of each family
+- Places the logos, favicons, web manifest and app icon bundles of the designer, adds the brand to `chassis.build` and its files to the contracts of `chassis.checks.json`, and runs `lint-source`, `build` and `verify`
+- Commits and releases nothing, and ends with what the designer does in Tokens Studio to export the brand to Figma and what the maintainer puts in the changelog
+
 ## Structure
 
 ```
@@ -159,6 +177,9 @@ skills/
   chassis-implement-design/
     SKILL.md                      # Workflow skill — implement Figma designs as Chassis CSS HTML
     references/                   # css-classes .md and .json (generated), components, tokens, patterns, workflow
+  chassis-add-brand/
+    SKILL.md                      # Workflow skill — add a brand to a token and an asset repository
+    references/                   # tokens, fonts, images
 tests/                            # Tests of the server and the handler
 .claude-plugin/                   # Claude Code plugin manifest and marketplace
 .cursor-plugin/                   # Cursor plugin manifest

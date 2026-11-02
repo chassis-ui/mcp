@@ -255,6 +255,17 @@ export function createServer(): McpServer {
     })
   )
 
+  server.registerPrompt(
+    'chassis-add-brand',
+    {
+      description:
+        'Load the chassis-add-brand skill: add a brand to a Chassis token repository and a Chassis asset repository.'
+    },
+    async () => ({
+      messages: [{ role: 'user', content: { type: 'text', text: bundle('chassis-add-brand') } }]
+    })
+  )
+
   // Tools. A skill tool returns the instructions and an index of the references; the
   // references come one at a time from chassis_get_reference, whole or by section, or all at
   // once with full: true
@@ -287,6 +298,23 @@ export function createServer(): McpServer {
         {
           type: 'text',
           text: full ? bundle('chassis-implement-design') : index('chassis-implement-design')
+        }
+      ]
+    })
+  )
+
+  server.registerTool(
+    'chassis_add_brand',
+    {
+      description:
+        'Load the chassis-add-brand skill: add a brand to a repository of tokens built with @chassis-ui/tokens and a repository of assets built with @chassis-ui/assets, its token set, option and fonts, images and app icon. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.',
+      inputSchema: FULL
+    },
+    async ({ full }) => ({
+      content: [
+        {
+          type: 'text',
+          text: full ? bundle('chassis-add-brand') : index('chassis-add-brand')
         }
       ]
     })

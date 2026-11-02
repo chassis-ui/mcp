@@ -118,6 +118,7 @@ describe('POST', () => {
     expect(result?.tools?.map((tool) => tool.name)).toEqual([
       'chassis_create_design',
       'chassis_implement_design',
+      'chassis_add_brand',
       'chassis_get_reference',
       'chassis_check_classes'
     ])

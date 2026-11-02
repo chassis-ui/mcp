@@ -36,3 +36,4 @@ Build or reconnect a Figma view with the Chassis UI library.
 - A fix inside a single component: work on the component directly
 - Generating code FROM Figma: use the `chassis-implement-design` skill
 - Token or variable edits: use Figma directly or the `website-tokens` repository
+- Adding a brand to the token and asset repositories: use the `chassis-add-brand` skill

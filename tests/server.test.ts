@@ -19,7 +19,7 @@ import {
   version
 } from './helpers.js'
 
-const SKILLS = ['chassis-create-design', 'chassis-implement-design']
+const SKILLS = ['chassis-create-design', 'chassis-implement-design', 'chassis-add-brand']
 const REFERENCES = RESOURCES.filter((resource) => resource.name.includes('/references/'))
 
 // The reference whose file has that name in the skill of a path

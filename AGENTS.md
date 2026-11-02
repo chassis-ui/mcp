@@ -6,7 +6,7 @@ Guidance for AI coding agents working in this repository.
 
 Chassis MCP is the MCP server and the agent skills of the Chassis UI design system. It has two deliverables, and both ship the same Markdown:
 
-- **The hosted MCP server**, `https://mcp.chassis-ui.com/mcp`: one stateless HTTP function on Vercel. It serves the skills as resources, as prompts and through four tools (`chassis_create_design`, `chassis_implement_design`, `chassis_get_reference`, `chassis_check_classes`).
+- **The hosted MCP server**, `https://mcp.chassis-ui.com/mcp`: one stateless HTTP function on Vercel. It serves the skills as resources, as prompts and through five tools (`chassis_create_design`, `chassis_implement_design`, `chassis_add_brand`, `chassis_get_reference`, `chassis_check_classes`).
 - **The plugin** for Claude Code and Cursor: the skills of `skills/` as slash commands, and the MCP servers of `.mcp.json` (this server and the Figma MCP server, which both skills need).
 
 The repository is one package (`private`, not published to npm), not a workspace:
@@ -15,6 +15,7 @@ The repository is one package (`private`, not published to npm), not a workspace
 skills/
   chassis-create-design/      # SKILL.md and references/: build screens in Figma with Chassis UI
   chassis-implement-design/   # SKILL.md and references/: Figma designs to Chassis CSS markup
+  chassis-add-brand/          # SKILL.md and references/: a brand in a token and an asset repository
 prompts/
   chassis-ui.prompt.md        # the /chassis-ui prompt
 server/
@@ -101,11 +102,12 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 - A skill is `skills/<name>/SKILL.md` with the frontmatter `name` (the directory name), `description` (what it does, when to use it and when not to, in one string of at most 1024 characters: an agent picks a skill by it) and `disable-model-invocation`. Its reference files are in `skills/<name>/references/`, without frontmatter, each with one level-one heading. `SKILL.md` names every reference file, lists each as `- [<file>.md](./references/<file>.md) — <one line>` (the line the skill tools show next to the name), and no file of a skill names a Markdown file the skill does not have. `pnpm lint:skills` checks all of this but the line, which the content generator checks.
 - Inside a table cell, write a pipe as `\|`, in a code span too: an unescaped pipe ends the cell, and a row with more cells than its header is not a table.
 - The prompt file has the frontmatter `mode` and `description`.
-- Both skills run on top of the Figma MCP server and its skills. They name its tools (`use_figma`, `get_design_context`, `search_design_system`); a skill must not assume a tool the Figma server does not have.
+- The two design skills run on top of the Figma MCP server and its skills. They name its tools (`use_figma`, `get_design_context`, `search_design_system`); a skill must not assume a tool the Figma server does not have.
 - An agent follows a skill word for word. Change the meaning of a skill only when the task is about the skill, and say in the summary what an agent will now do differently. A change that only formats (Prettier, a link, a table) must leave every sentence as it was.
 - A class, token, component or API name in a skill must exist. For Chassis CSS, `css-classes.md` lists every class; for the rest, check `chassis-ui/css` and `chassis-ui/website-tokens`.
 - A heading of a reference is the name of a section an agent can fetch by itself (`section` of `chassis_get_reference`), and the skill tools list the headings of level two and three. Write a heading that says what the section holds, no heading twice in one file (a test fails on it), and write the introduction of a reference (before its first level-two heading) so that a section read after it alone is understood: it is sent with every section.
-- The two skills each have a `references/tokens.md` on the same token namespaces, one from the Figma side and one from the CSS side. A fact that both state must stay the same in both.
+- The two design skills each have a `references/tokens.md` on the same token namespaces, one from the Figma side and one from the CSS side. A fact that both state must stay the same in both. The `references/tokens.md` of `chassis-add-brand` is on the token sets of a brand in Tokens Studio form, and names the same roles and weights as `chassis-ui/tokens` documents.
+- `chassis-add-brand` runs on the commands of `@chassis-ui/tokens` and `@chassis-ui/assets` and on the files of a repository each writes with `init`; it names no Figma tool. A command, an option, a file name or a lint rule it names must exist in those packages.
 
 ## Server conventions
 

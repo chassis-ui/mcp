@@ -1,6 +1,6 @@
 ---
 name: chassis-implement-design
-description: 'Implement a Figma design made with the Chassis UI Figma library as production HTML using Chassis CSS (`@chassis-ui/css` 0.11), in a native CSS project or a Tailwind CSS v4 project that uses the Chassis Tailwind entry. Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-design-to-code` and adds the Chassis class catalog, the Figma-token-to-class translation, Asset text extraction, component markup, and theming. Do NOT use for: writing INTO Figma (use `chassis-create-design`), React components, token/SCSS edits, or non-Chassis design systems.'
+description: 'Implement a Figma design made with the Chassis UI Figma library as production HTML using Chassis CSS (`@chassis-ui/css` 0.11), in a native CSS project or a Tailwind CSS v4 project that uses the Chassis Tailwind entry. Use when the user wants to translate, generate, build, or convert a Chassis Figma view, screen, page, modal, drawer, panel, dashboard, landing page, or component into shipping markup with 1:1 visual fidelity. Runs on top of the Figma MCP server skill `figma-design-to-code` and adds the Chassis class catalog, the Figma-token-to-class translation, Asset text extraction, component markup, and theming. Do NOT use for: writing INTO Figma (use `chassis-create-design`), React components, token/SCSS edits, adding a brand to the token and asset repositories (use `chassis-add-brand`), or non-Chassis design systems.'
 disable-model-invocation: false
 ---
 
@@ -29,7 +29,7 @@ To write to Figma instead, stop and use `chassis-create-design`.
 | `section`   | One region of a page (header, hero, feature block, footer)                                                           |
 | `component` | One component instance as a reusable snippet, in the order of [workflow.md](./references/workflow.md#component-mode) |
 
-Not for: React (`@chassis-ui/react` has its own conventions), token or SCSS edits (`chassis-ui/website-tokens`, `chassis-ui/css`), non-Chassis designs (plain `figma-design-to-code`).
+Not for: React (`@chassis-ui/react` has its own conventions), token or SCSS edits (`chassis-ui/website-tokens`, `chassis-ui/css`), a new brand in the token and asset repositories (`chassis-add-brand`), non-Chassis designs (plain `figma-design-to-code`).
 
 ## How much of each reference to read
 

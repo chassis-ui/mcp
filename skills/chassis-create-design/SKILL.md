@@ -1,6 +1,6 @@
 ---
 name: chassis-create-design
-description: 'Build or update a Figma design (screen, page, modal, dialog, drawer, panel, dashboard, landing page or any multi-section view) from the Chassis UI Figma library: instances of `cx.components.UI`, bound to the variables and styles of `cx.tokens.MAIN`. Use when the user wants to create, compose, assemble or reconnect a Figma view from code, a screenshot, a description or an existing detached layout. Runs on top of the Figma MCP server skills `figma-use` and `figma-generate-design` and adds how the Chassis library is found, read and composed at run time: component names, props and their defaults, text Assets, slots, text styles, tokens and modes. Do NOT use for: a fix inside a single component, generating code FROM Figma (use `chassis-implement-design`), or token and variable edits.'
+description: 'Build or update a Figma design (screen, page, modal, dialog, drawer, panel, dashboard, landing page or any multi-section view) from the Chassis UI Figma library: instances of `cx.components.UI`, bound to the variables and styles of `cx.tokens.MAIN`. Use when the user wants to create, compose, assemble or reconnect a Figma view from code, a screenshot, a description or an existing detached layout. Runs on top of the Figma MCP server skills `figma-use` and `figma-generate-design` and adds how the Chassis library is found, read and composed at run time: component names, props and their defaults, text Assets, slots, text styles, tokens and modes. Do NOT use for: a fix inside a single component, generating code FROM Figma (use `chassis-implement-design`), token and variable edits, or adding a brand to the token and asset repositories (use `chassis-add-brand`).'
 disable-model-invocation: false
 ---
 
@@ -23,7 +23,7 @@ To generate code from Figma instead, stop and use `chassis-implement-design`.
 | `build`     | A new view on a page of the target file, from code, a screenshot, a description or a URL              |
 | `reconnect` | An existing view whose detached layers, local wrappers and raw frames become instances of the library |
 
-Not for: a fix inside one component (edit it directly), code from Figma (`chassis-implement-design`), token or variable edits (`chassis-ui/website-tokens`, or Figma itself), importing an icon or an image only (`figma-use`).
+Not for: a fix inside one component (edit it directly), code from Figma (`chassis-implement-design`), token or variable edits (`chassis-ui/website-tokens`, or Figma itself), a new brand in the token and asset repositories (`chassis-add-brand`), importing an icon or an image only (`figma-use`).
 
 ## The library
 
