@@ -1,6 +1,6 @@
 # The images, the app icon and the configuration of a brand
 
-A repository of assets is file-driven: a designer adds a file to `source/<brand>/<app>/<type>/` and the build copies it to `dist/<platform>/<app>/<brand>/` with the name and the format of each platform, with no list to update beside the files. The images and the app icon of a new brand are the designer's exports, placed under the names the committed brands use, so that a site or an app reads the same names whichever brand it is built for. Then the brand enters `chassis.build`, and the files its consumers read enter `chassis.checks.json`. `<web app>` and `<native app>` are the apps of `chassis.build.apps` with the platform `web`, and `ios` and `android`, respectively; every path is relative to the root of the repository.
+A repository of assets is file-driven: a designer adds a file to `source/<brand>/<app>/<type>/` and the build copies it to `dist/<platform>/<app>/<brand>/` with the name and the format of each platform, with no list to update beside the files. The images and the app icon of a new brand are the designer's exports, placed under the names the committed brands use, so that a site or an app reads the same names whichever brand it is built for. Then the brand enters `chassis.build`, and the files its consumers read enter `chassis.checks.json`. `<web app>` and `<native app>` are the apps of `chassis.build.apps` with the platform `web`, and `ios` and `android`, respectively, and `<existing brand>` is a brand of `chassis.build.brands` before the new one, the brand to compare with; every path is relative to the root of the repository.
 
 ## The layout
 
@@ -50,8 +50,8 @@ Add the name of the brand to `chassis.build.brands` of `package.json`:
 ```json
 "chassis": {
   "build": {
-    "brands": ["chassis", "sinefil", "<brand>"],
-    "apps": { "docs": ["web"], "demo": ["ios", "android"] }
+    "brands": ["acme", "globex", "<brand>"],
+    "apps": { "site": ["web"], "mobile": ["ios", "android"] }
   }
 }
 ```
@@ -63,7 +63,7 @@ The build then writes `dist/<platform>/<app>/<brand>/` for each app and its plat
 `chassis.checks.json` lists, under `contracts`, the files of each job that a consumer reads by name, keyed `<platform>/<app>/<brand>`, so that `verify` fails when a file a site or an app relies on is missing from the output. Add the jobs of the new brand: copy the entries of a committed brand, change the key, and keep the `reader` of each entry as the sentence that says who reads the files and why, since that is what a later change checks against. An entry whose reader is a consumer that will not build with the new brand is left out, and a job that no consumer reads needs no entry; a reader that is not known is kept, since the new brand is built for the same consumers as the committed one until the maintainer says otherwise.
 
 ```json
-"web/docs/<brand>": [
+"web/site/<brand>": [
   {
     "reader": "the root layout of <the site>, which links the stylesheet and inlines the logo",
     "files": ["fonts/fonts.css", "images/site-logo.svg"]
@@ -89,6 +89,6 @@ npx chassis-assets verify
 
 The lint checks the names and the layout of `source/`: lowercase letters, digits and hyphens, a type folder under an app, a bundle whole, a font that its stylesheet describes. `build:release`, the script `init` writes, is the build with the asset catalogs of iOS, the `res/` folder and the vector drawables of Android, and whatever else the repository adds to it; it writes `dist/`, which is not committed. `npx chassis-assets build` is the plain build, which copies only; `--brand <brand>` builds the new brand alone and `--dry-run` prints the jobs without writing. `verify` runs the validator, every file of `source/` against the output, and then the contract check of `chassis.checks.json`; after a plain build it says `no res/ for the <n> file(s) of a build with --res` and leaves those contracts unchecked, which is why the release build comes first. `npx chassis-assets analyze` reports the sizes, the types and the duplicates of `source/` and of `dist/`, which shows a file placed twice.
 
-Then compare the output of the brand with that of a committed brand, job by job: `diff <(cd dist/web/<web app>/chassis && find . | sort) <(cd dist/web/<web app>/<brand> && find . | sort)` prints the files one brand holds and the other does not, which for a new brand should be the files of the roles each brand sets in another family and nothing else. On the native jobs, the bundle is `app_icon.icon` and `app_icon.adaptive`, and the fonts are `<role>_<weight>.ttf`.
+Then compare the output of the brand with that of a committed brand, job by job: `diff <(cd dist/web/<web app>/<existing brand> && find . | sort) <(cd dist/web/<web app>/<brand> && find . | sort)` prints the files one brand holds and the other does not, which for a new brand should be the files of the roles each brand sets in another family and nothing else. On the native jobs, the bundle is `app_icon.icon` and `app_icon.adaptive`, and the fonts are `<role>_<weight>.ttf`.
 
 A release is a push to `main` with a new version in `package.json` and its entry in the changelog of the repository, built with `build:release` by the workflow, which attaches one `<name>-<platform>-<app>-<brand>-<version>.zip` per job to the GitHub release. The version and the entry are the maintainer's; the summary drafts the entry, which names the files of `dist/` the brand adds, by job, and the archives a consumer of the brand takes.

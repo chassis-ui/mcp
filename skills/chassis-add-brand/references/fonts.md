@@ -1,6 +1,6 @@
 # The fonts of a brand
 
-A repository of assets copies fonts and converts nothing by default, so every file the output needs is a file of `source/`, prepared once by hand. The steps below add the fonts of one role of one brand, from a download to the files by role and weight that the builds and the other brands expect; a new brand takes them for each role that has a family of its own in its tokens. They need Git LFS, since fonts are Git LFS files, `pnpm` for the conversion, and the `subset-font` package for the files by weight of a variable font: it is an optional peer dependency of `@chassis-ui/assets`, which a repository of `init` does not install, so `pnpm ls subset-font` that lists nothing means `pnpm add -D subset-font` first, and the change to `package.json` and the lockfile goes into the commit with the fonts. `<web app>` is the app of `chassis.build.apps` whose platform is `web`, and `<native app>` the one with `ios` and `android`; a repository may have only one of the two.
+A repository of assets copies fonts and converts nothing by default, so every file the output needs is a file of `source/`, prepared once by hand. The steps below add the fonts of one role of one brand, from a download to the files by role and weight that the builds and the other brands expect; a new brand takes them for each role that has a family of its own in its tokens. They need Git LFS, since fonts are Git LFS files, `pnpm` for the conversion, and the `subset-font` package for the files by weight of a variable font: it is an optional peer dependency of `@chassis-ui/assets`, which a repository of `init` does not install, so `pnpm ls subset-font` that lists nothing means `pnpm add -D subset-font` first, and the change to `package.json` and the lockfile goes into the commit with the fonts. `<web app>` is the app of `chassis.build.apps` whose platform is `web`, and `<native app>` the one with `ios` and `android`; a repository may have only one of the two. `<existing brand>` is a brand of `chassis.build.brands` before the new one, the brand to compare with.
 
 ## What a brand holds
 
@@ -87,10 +87,10 @@ A family with a reserved name gives both its variable files and its files by wei
 For a family with a variable font and no reserved name, write each file by weight from the variable file of its style, with `chassis-assets static-font`. Give it the variable file, the files to write, a `.ttf` and a `.woff2`, and the weight the tokens give the name. For `ui-strong` of a role whose `strong` is 600:
 
 ```shell
-docs=source/<brand>/<web app>/fonts
+web=source/<brand>/<web app>/fonts
 shared=source/<brand>/_shared/fonts
-npx chassis-assets static-font $docs/ui.ttf $shared/ui-strong.ttf $shared/ui-strong.woff2 wght=600
-npx chassis-assets static-font $docs/ui-italic.ttf $shared/ui-strong-italic.ttf $shared/ui-strong-italic.woff2 wght=600
+npx chassis-assets static-font $web/ui.ttf $shared/ui-strong.ttf $shared/ui-strong.woff2 wght=600
+npx chassis-assets static-font $web/ui-italic.ttf $shared/ui-strong-italic.ttf $shared/ui-strong-italic.woff2 wght=600
 ```
 
 The command writes the font as it is at that weight, without an axis, to each file, and prints, for each file, its path, the names it gave it and the weight: `source/<brand>/_shared/fonts/ui-strong-italic.ttf: Geist SemiBold Italic, Geist-SemiBoldItalic, weight 600`, the second name the PostScript name an iOS app loads the font by. The file keeps every glyph, every character and every layout feature of the variable font, and the same command on the same file gives the same bytes. One call per weight and style of the role: four weights with an italic each are eight calls.
@@ -167,9 +167,9 @@ The native app takes the files by weight and the licenses of `source/<brand>/_sh
 The three font folders of a brand hold the names of the other brands:
 
 ```shell
-diff <(command ls source/chassis/_shared/fonts) <(command ls source/<brand>/_shared/fonts)
-diff <(command ls source/chassis/<web app>/fonts) <(command ls source/<brand>/<web app>/fonts)
-diff <(command ls source/chassis/<native app>/fonts) <(command ls source/<brand>/<native app>/fonts)
+diff <(command ls source/<existing brand>/_shared/fonts) <(command ls source/<brand>/_shared/fonts)
+diff <(command ls source/<existing brand>/<web app>/fonts) <(command ls source/<brand>/<web app>/fonts)
+diff <(command ls source/<existing brand>/<native app>/fonts) <(command ls source/<brand>/<native app>/fonts)
 ```
 
 `command ls` lists the names alone, also in a shell that has an alias for `ls`. The commands print the files of a role that one of the two brands sets in the family of another role, and the variable files of a family that has none; every other line is a file under the wrong name, or one that is missing. Fix the names before the build, since the output has the same names.
@@ -187,7 +187,7 @@ The lint opens each font that a stylesheet declares, and fails when the rule nam
 
 Then check the output:
 
-- The web output of the brand has the font names of its source, without the `.ttf` files. Against a committed brand, `diff <(command ls dist/web/<web app>/chassis/fonts) <(command ls dist/web/<web app>/<brand>/fonts)` prints what the comparison of the source printed for `_shared` and the web app, less the `.ttf` files.
+- The web output of the brand has the font names of its source, without the `.ttf` files. Against a committed brand, `diff <(command ls dist/web/<web app>/<existing brand>/fonts) <(command ls dist/web/<web app>/<brand>/fonts)` prints what the comparison of the source printed for `_shared` and the web app, less the `.ttf` files.
 - The stylesheets load their fonts, when the client has a browser. Write a page outside the repository that links `<path to dist>/web/<web app>/<brand>/fonts/fonts.css` and sets text in each family at the weights of the roles and in italic, serve the folder that holds both with `python3 -m http.server --directory <folder>`, and open it: every face of `document.fonts` has the status `loaded`, and no request of a font fails. Nothing is written into `dist/` for it. Without a browser, the summary names the check as not done.
 - The fonts are Git LFS files: `git check-attr filter` on a new `.ttf` and `.woff2` answers `filter: lfs`.
 
