@@ -41,7 +41,7 @@ tests/                        # Vitest: the server in memory, the handler over H
 CHANGELOG.md                  # written by the version step
 ```
 
-This repo is part of a multi-repo ecosystem (`chassis-ui/tokens`, `chassis-ui/website-tokens`, `chassis-ui/css`, `chassis-ui/react`, `chassis-ui/icons`, `chassis-ui/assets`, `chassis-ui/figma`, `chassis-ui/website`). The skills describe `chassis-ui/css` and the Chassis UI Figma library; when a skill and the framework disagree, the framework is right.
+This repo is part of a multi-repo ecosystem (`chassis-ui/tokens`, `chassis-ui/website-tokens`, `chassis-ui/css`, `chassis-ui/react`, `chassis-ui/icons`, `chassis-ui/website-icons`, `chassis-ui/assets`, `chassis-ui/figma`, `chassis-ui/website`). The skills describe `chassis-ui/css` and the Chassis UI Figma library; when a skill and the framework disagree, the framework is right.
 
 Human contributors follow [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md): dev setup, branches, what a pull request needs, and how releases are made.
 
