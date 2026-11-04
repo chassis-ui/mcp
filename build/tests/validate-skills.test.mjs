@@ -4,6 +4,8 @@
 // fixture. Run via `pnpm build:test`.
 
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
 import { afterEach, describe, test } from 'node:test'
 import { createFixture, readFile, removeFixture, root, runScript } from './helpers.mjs'
 
@@ -261,9 +263,19 @@ describe('validate-skills.js, on the class catalog', () => {
 
 describe('validate-skills.js, on the repository', () => {
   test('finds the skills and the prompt valid', async () => {
+    // A skill is a directory of skills/ with a SKILL.md, a prompt a Markdown file of prompts/
+    const skills = fs
+      .readdirSync(path.join(root, 'skills'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .filter((entry) => fs.existsSync(path.join(root, 'skills', entry.name, 'SKILL.md'))).length
+    const prompts = fs
+      .readdirSync(path.join(root, 'prompts'))
+      .filter((name) => name.endsWith('.md')).length
+
     const { status, stdout, stderr } = await runScript(root, SCRIPT)
 
     assert.equal(status, 0, stderr)
-    assert.match(stdout, /2 skills and 1 prompts are valid/)
+    assert.ok(skills > 0 && prompts > 0, 'the repository has skills and prompts')
+    assert.match(stdout, new RegExp(`^${skills} skills and ${prompts} prompts are valid\\.$`, 'm'))
   })
 })
