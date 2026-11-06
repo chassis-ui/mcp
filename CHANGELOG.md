@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- 24c95e1: A third skill, `chassis-add-brand`, adds a brand to a repository of tokens built with `@chassis-ui/tokens` and to a repository of assets built with `@chassis-ui/assets`: the token set of the brand, its option in `$themes.json`, its name in `chassis.build`, and then its fonts, images, web manifest and app icon bundles under `source/<brand>/`. It runs on files and commands, with no Figma tool, and hands the export of the brand to Figma to the designer. The server serves it as the prompt `chassis-add-brand`, the tool `chassis_add_brand` and the resources `chassis-add-brand`, `chassis-add-brand/references/tokens`, `chassis-add-brand/references/fonts` and `chassis-add-brand/references/images`; the plugin adds it as a slash command.
+
+  What an agent now does differently: `chassis-create-design`, `chassis-implement-design` and the `/chassis-ui` prompt send a request to add a brand to `chassis-add-brand`, where they said only that token edits belong in `chassis-ui/website-tokens`.
+
+### Patch Changes
+
+- 63d9ab3: `chassis-add-brand` follows the next `@chassis-ui/tokens`, whose `init` writes the sets of the Chassis token system in place of seven starter sets: the skill names the starter as the layout of `init` 0.15.0 and earlier, and describes a repository fresh from the new `init`, with no `screen` group, option ids that are the names of their sets, and brand sets that declare their switch only. The lint rules it lists are the seven of `lint-source`, and its examples use the brands `acme` and `globex` and the apps `site` and `mobile` of the documentation of both builders, in place of the brands and apps of the Chassis sites.
+
+  What an agent now does differently: it reads `base/brand-base` for the names of the brand tokens before it writes the set, where it read a committed brand set; in a repository fresh from `init` it adds the next brand switch to `base/brand-base`, and gives the option the id `brand-<brand>`; and it compares the new brand with an existing brand of the repository by name, where its commands named `chassis`.
+
+- 004c8ae: `chassis-create-design` and `chassis-implement-design` say that a color role can carry transparency: the faded roles are a color of their context with an `opacity/context/*` token applied, and Figma writes the alpha of a bound color into the opacity of the fill. An agent took that opacity for a hand-set value and bound `opacity/context/fg-subtle` on `fg-subtle` text as well, which faded the text twice. `chassis-create-design` also says how a dark section is made: the same agent put sections on `bg-inverse`, which turns light in dark mode.
+
+  What an agent now does differently: in `chassis-create-design` it leaves a fill below 100% whose color is bound as it is, binds an opacity token only on a layer whose color is an opaque role, or on an image or a group, and never on a layer whose color is already a faded role; it builds a dark section in the `alternate` context, or asks the designer for the `dark` theme mode on the section, keeps `bg-inverse` and `fg-inverse` for elements, and gives faded text in a dark section the `fg-subtle` or `fg-slight` of its context. The quality checklist says layer opacity, and the failure modes have a row for text much fainter than the design and one for a dark section that turns light in dark mode. In `chassis-implement-design`, a fill below 100% bound to a role takes the class of the role alone, with no `*-opacity-*` class, and the color table says that `bg-inverse` is for an element and points a dark section to `context alternate` or `data-cx-theme="dark"`.
+
+  The quality checklist of `chassis-create-design` bound every width of the agent's own frames to `grid/breakpoint/*`, the width of a page. It now sizes the wrapper frame to `grid/breakpoint/*` and a content layer to `grid/container/*`, and `tokens.md` gives the container widths.
+
+- 95641d4: Every tool carries a title and the annotations `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true` and `openWorldHint: false`: a client that shows them sees that a Chassis tool reads what the server holds and nothing else, and the connector directories ask for them. The names, descriptions and input schemas of the tools are unchanged, and an agent does nothing differently.
+
+  The server tells a client its title, a description, its website and its icon in `initialize`, so a connector list shows "Chassis UI" with the Chassis icon instead of the bare name. The page a browser sees names the three skills and links the new `PRIVACY.md`, which says what a request leaves behind (nothing kept, Vercel's function logs). The README gains one-click install links for Cursor and VS Code.
+
+  The repository gains `server.json`, the listing of the server in the MCP registry as `com.chassis-ui/mcp`, with the production URL as its remote. The version step writes its version with the plugin manifests, and CONTRIBUTING.md says how a maintainer publishes it.
+
+- 864de0b: The server runs on `@modelcontextprotocol/sdk` 1.32.2 and `zod` 4.6.7, and on the patched releases of what the SDK pulls in (`body-parser` 2.4.0, `qs` 6.17.1, `fast-uri` 3.1.9, `ip-address` 10.7.5), which close the advisories `pnpm audit` reported: memory exhaustion in `zod` and a denial of service in `body-parser`, among others. The tools, prompts and resources are unchanged.
+- e2aa25c: The server gives instructions when a client connects: what Chassis UI is, and which tool a Chassis task starts with. A client that loads tools on demand shows an agent their names only, while the instructions of the Figma MCP server send every design task to the Figma skills, so an agent with the connector alone built Chassis screens without `chassis_create_design`. The tools, prompts and resources are unchanged.
+
+  What an agent now does differently: before its first `use_figma` call on a screen built with the Chassis UI library, or in a Figma file that uses it, it calls `chassis_create_design` and follows what it returns; before it writes markup from a Chassis design, it calls `chassis_implement_design`, and checks its classes with `chassis_check_classes`; it calls `chassis_add_brand` to add a brand; and it fetches the references the skills send it to with `chassis_get_reference`.
+
+- 29b7b67: The skills name the other Chassis repositories by their GitHub names, as `chassis-ui/css`, instead of by local folder names.
+
+  What an agent now does differently: `chassis-implement-design` looks for the icon names in a checkout of `chassis-ui/website-icons` wherever that checkout is, where it looked for one next to the project.
+
+- c82b39e: `chassis-implement-design` follows the icons of the Chassis sites to `@chassis-ui/website-icons`, since `@chassis-ui/icons` 0.4.0 is the builder of icon sets and holds no icons. The names of a glyph are checked against the symbol ids of `node_modules/@chassis-ui/website-icons/dist/web/chassis-icons.svg`, or `dist/web/` of a build of a checkout of `chassis-ui/website-icons`.
+
+  What an agent now does differently: it takes `@chassis-ui/website-icons` among the dependencies of a project for Chassis Icons, where it took `@chassis-ui/icons`, and still takes `@chassis-ui/icons` before 0.4.0 for Chassis Icons, with its names in `icons/chassis-icons.svg`. A set of the project's own built with `@chassis-ui/icons` 0.4.0 or later is another icon library: a glyph becomes the icon of that set that draws it, checked against `dist/web/<font>.svg` of its package, and it takes the `icon` and `icon-*` classes, since the builder takes no icon drawn with strokes.
+
+- dbd741a: The skills, the prompt and the issue links send token edits and token values to `@chassis-ui/website-tokens` and the `chassis-ui/website-tokens` repository, since `@chassis-ui/tokens` is the token builder from now on and holds no token values.
+
+  What an agent now does differently: `chassis-implement-design` says a project compiles one brand of `@chassis-ui/website-tokens`, and both skills and the `/chassis-ui` prompt point a token edit at `website-tokens` where they pointed at `chassis-tokens`.
+
 ## 0.6.0
 
 ### Minor Changes
