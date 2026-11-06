@@ -102,7 +102,12 @@ describe('POST', () => {
 
     const { id, result } = await message(response)
     expect(id).toBe(1)
-    expect(result?.serverInfo).toEqual({ name: 'chassis-ui', version })
+    expect(result?.serverInfo).toMatchObject({
+      name: 'chassis-ui',
+      version,
+      title: 'Chassis UI',
+      icons: [{ src: 'https://raw.githubusercontent.com/chassis-ui/mcp/main/Chassis-Icon.svg' }]
+    })
     expect(result?.instructions).toBe(INSTRUCTIONS)
     expect(Object.keys(result?.capabilities ?? {}).sort()).toEqual([
       'prompts',
@@ -273,7 +278,10 @@ describe('POST, with the body parsed by the runtime', () => {
     const response = await post(INITIALIZE, HEADERS, parsedUrl)
 
     expect(response.status).toBe(200)
-    expect((await message(response)).result?.serverInfo).toEqual({ name: 'chassis-ui', version })
+    expect((await message(response)).result?.serverInfo).toMatchObject({
+      name: 'chassis-ui',
+      version
+    })
   })
 
   test.each([
@@ -300,6 +308,7 @@ describe('GET', () => {
     expect(page).toContain('https://mcp.chassis-ui.com/mcp')
     expect(page).toContain('https://github.com/chassis-ui/mcp')
     expect(page).toContain('href="/health"')
+    expect(page).toContain('https://github.com/chassis-ui/mcp/blob/main/PRIVACY.md')
     // No external asset: the function carries nothing of Chassis
     expect(page).not.toMatch(/<link|<script/)
   })

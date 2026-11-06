@@ -1,6 +1,6 @@
 // The version step, after `changeset version`. build/sync-version-refs.js runs in
 // `pnpm changeset:version` only. It writes the version of package.json into the three plugin
-// manifests. Run via `pnpm build:test`.
+// manifests and into server.json. Run via `pnpm build:test`.
 
 import assert from 'node:assert/strict'
 import { afterEach, describe, test } from 'node:test'
@@ -11,7 +11,8 @@ const SCRIPT = 'build/sync-version-refs.js'
 const MANIFESTS = [
   '.claude-plugin/plugin.json',
   '.cursor-plugin/plugin.json',
-  '.github/plugin/plugin.json'
+  '.github/plugin/plugin.json',
+  'server.json'
 ]
 
 // A manifest as Prettier leaves it: an array on one line, and a nested "version" that is not
@@ -40,13 +41,13 @@ describe('sync-version-refs.js', () => {
 
   afterEach(() => removeFixture(dir))
 
-  test('writes the version of package.json into the three manifests', async () => {
+  test('writes the version of package.json into the three manifests and server.json', async () => {
     dir = fixture('0.2.0')
 
     const { status, stdout } = await runScript(dir, SCRIPT)
 
     assert.equal(status, 0)
-    assert.match(stdout, /Synced 3 of 3 references/)
+    assert.match(stdout, /Synced 4 of 4 references/)
     for (const file of MANIFESTS) {
       assert.equal(readFile(dir, file), manifest('0.2.0'), file)
     }
@@ -86,16 +87,16 @@ describe('sync-version-refs.js', () => {
 
     const { stdout } = await runScript(dir, SCRIPT)
 
-    assert.match(stdout, /Synced 2 of 3 references/)
+    assert.match(stdout, /Synced 3 of 4 references/)
   })
 
   test('fails when a manifest is missing', async () => {
-    dir = fixture('0.2.0', MANIFESTS.slice(0, 2))
+    dir = fixture('0.2.0', MANIFESTS.slice(0, 3))
 
     const { status, stderr } = await runScript(dir, SCRIPT)
 
     assert.equal(status, 1)
-    assert.match(stderr, /\.github\/plugin\/plugin\.json/)
+    assert.match(stderr, /server\.json/)
   })
 
   test('fails when a manifest has no version field', async () => {
@@ -119,8 +120,8 @@ describe('sync-version-refs.js', () => {
   })
 })
 
-// The manifests of the repository: the script finds the version field of each, and they
-// have the version of package.json
+// The manifests and the server.json of the repository: the script finds the version field of
+// each, and they have the version of package.json
 describe('sync-version-refs.js, on the manifests of the repository', () => {
   let dir
 

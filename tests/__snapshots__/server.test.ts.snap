@@ -131,6 +131,13 @@ exports[`server > lists its resources 1`] = `
 exports[`server > lists its tools 1`] = `
 [
   {
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Chassis create-design skill",
+    },
     "description": "Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -145,6 +152,13 @@ exports[`server > lists its tools 1`] = `
     "name": "chassis_create_design",
   },
   {
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Chassis implement-design skill",
+    },
     "description": "Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -159,6 +173,13 @@ exports[`server > lists its tools 1`] = `
     "name": "chassis_implement_design",
   },
   {
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Chassis add-brand skill",
+    },
     "description": "Load the chassis-add-brand skill: add a brand to a repository of tokens built with @chassis-ui/tokens and a repository of assets built with @chassis-ui/assets, its token set, option and fonts, images and app icon. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -173,6 +194,13 @@ exports[`server > lists its tools 1`] = `
     "name": "chassis_add_brand",
   },
   {
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Chassis skill reference",
+    },
     "description": "Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it, or several sections in one call. The skill tools list the names, what each file holds and its sections.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -215,6 +243,13 @@ exports[`server > lists its tools 1`] = `
     "name": "chassis_get_reference",
   },
   {
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": "Chassis CSS class check",
+    },
     "description": "Check class names against the Chassis CSS class catalog (css-classes.md of chassis-implement-design): returns the classes that do not exist in the given CSS mode, each with why and the catalog section to read, or one line when all exist. Pass class names, class attribute values or markup.",
     "inputSchema": {
       "$schema": "http://json-schema.org/draft-07/schema#",

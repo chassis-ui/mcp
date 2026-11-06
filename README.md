@@ -25,6 +25,8 @@ There are two ways to use Chassis MCP. The **plugin** gives an agent the two ski
 
 The plugin adds the skills as `/chassis-ui:chassis-create-design`, `/chassis-ui:chassis-implement-design` and `/chassis-ui:chassis-add-brand`, and connects two MCP servers: Chassis UI (`https://mcp.chassis-ui.com/mcp`) and Figma (`https://mcp.figma.com/mcp`). Figma asks you to sign in the first time.
 
+The server is also listed in the [MCP registry](https://registry.modelcontextprotocol.io) as `com.chassis-ui/mcp`, for the clients that look a server up there.
+
 ### Cursor
 
 Add the server to `.cursor/mcp.json` in your project, or to `~/.cursor/mcp.json` for every project:
@@ -39,6 +41,8 @@ Add the server to `.cursor/mcp.json` in your project, or to `~/.cursor/mcp.json`
 }
 ```
 
+Or install it with one click: [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=chassis-ui&config=eyJ1cmwiOiJodHRwczovL21jcC5jaGFzc2lzLXVpLmNvbS9tY3AifQ==)
+
 The repository also carries a Cursor plugin manifest (`.cursor-plugin/plugin.json`) with the same skills and servers as the Claude Code plugin.
 
 ### Any MCP client
@@ -50,6 +54,8 @@ In Claude Code, without the plugin:
 ```bash
 claude mcp add --transport http chassis-ui https://mcp.chassis-ui.com/mcp
 ```
+
+In VS Code: [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_server-0098FF?logo=visualstudiocode&logoColor=white)](vscode:mcp/install?%7B%22name%22%3A%22chassis-ui%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.chassis-ui.com%2Fmcp%22%7D)
 
 Or in your project's `.mcp.json`:
 
@@ -77,7 +83,7 @@ A client that only starts local servers over stdio can reach the server through 
 }
 ```
 
-The server is not an npm package: the hosted server is the only one, and it always serves the current skills.
+The server is not an npm package: the hosted server is the only one, and it always serves the current skills. It keeps no data about you; [PRIVACY.md](PRIVACY.md) says what a request leaves behind.
 
 Once connected, the server exposes:
 

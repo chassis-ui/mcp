@@ -28,10 +28,10 @@ const PAGE = `<!doctype html>
   @media (prefers-color-scheme: dark) { body { color: #eee; background: #111; } a { color: #8ab4f8; } h1 small { color: #999; } }
 </style>
 <h1>Chassis UI MCP server <small>v${VERSION}</small></h1>
-<p>The <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server of the <a href="https://www.chassis-ui.com">Chassis UI</a> design system. It serves the skills <code>chassis-create-design</code> and <code>chassis-implement-design</code> and their reference files to an MCP client as tools, prompts and resources. A browser has nothing to read here.</p>
+<p>The <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server of the <a href="https://www.chassis-ui.com">Chassis UI</a> design system. It serves the skills <code>chassis-create-design</code>, <code>chassis-implement-design</code> and <code>chassis-add-brand</code> and their reference files to an MCP client as tools, prompts and resources. A browser has nothing to read here.</p>
 <p>Endpoint: <code>${ENDPOINT}</code> (Streamable HTTP, no authentication)</p>
 <p>In Claude Code: <code>/plugin marketplace add chassis-ui/mcp</code>, then <code>/plugin install chassis-ui@chassis-ui</code>. In another client, add the endpoint as an HTTP server; the <a href="${REPOSITORY}#readme">README</a> has the configuration for Cursor and for <code>.mcp.json</code>.</p>
-<p><a href="${REPOSITORY}">Repository</a> · <a href="/health">Health</a></p>
+<p><a href="${REPOSITORY}">Repository</a> · <a href="${REPOSITORY}/blob/main/PRIVACY.md">Privacy</a> · <a href="/health">Health</a></p>
 `
 
 export interface HandlerOptions {

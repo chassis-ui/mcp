@@ -1,5 +1,6 @@
-// Copies the version of package.json into the plugin manifests. They show the version to the
-// users of the plugin and are not part of a dependency graph, so `changeset version` cannot
+// Copies the version of package.json into the plugin manifests and into server.json, the
+// listing of the server in the MCP registry. They show the version to the users of the plugin
+// and of the registry and are not part of a dependency graph, so `changeset version` cannot
 // update them.
 //
 // Runs as part of `pnpm changeset:version`, after `changeset version` has bumped package.json,
@@ -11,7 +12,8 @@ import path from 'node:path'
 const MANIFESTS = [
   '.claude-plugin/plugin.json',
   '.cursor-plugin/plugin.json',
-  '.github/plugin/plugin.json'
+  '.github/plugin/plugin.json',
+  'server.json'
 ]
 
 const SEMVER_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?$/

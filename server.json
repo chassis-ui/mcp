@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.chassis-ui/mcp",
+  "title": "Chassis UI",
+  "description": "Skills and references for AI agents that design and implement with Chassis UI",
+  "version": "0.6.0",
+  "websiteUrl": "https://github.com/chassis-ui/mcp",
+  "repository": {
+    "url": "https://github.com/chassis-ui/mcp",
+    "source": "github"
+  },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/chassis-ui/mcp/main/Chassis-Icon.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.chassis-ui.com/mcp"
+    }
+  ]
+}

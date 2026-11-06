@@ -27,7 +27,7 @@ api/
 build/
   generate-content.js         # skills/ and prompts/ into server/content.generated.ts, with the registry
   generate-css-classes.js     # @chassis-ui/css into references/css-classes.md and css-classes.json
-  sync-version-refs.js        # the version of package.json into the plugin manifests
+  sync-version-refs.js        # the version of package.json into the plugin manifests and server.json
   release-notes.js            # the CHANGELOG entry of a version, for the GitHub release
   validate-skills.js          # the frontmatter, file names, headings and tables of the skills
   check-links.js              # the links of every Markdown file
@@ -37,6 +37,7 @@ tests/                        # Vitest: the server in memory, the handler over H
 .cursor-plugin/               # plugin.json for Cursor
 .github/plugin/               # a third plugin.json
 .mcp.json                     # the MCP servers the plugin installs
+server.json                   # the listing of the server in the MCP registry
 .changeset/                   # the changesets of the next version
 CHANGELOG.md                  # written by the version step
 ```
@@ -112,12 +113,13 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 ## Server conventions
 
 - The handler is stateless: `api/index.ts` builds a new `McpServer` and a new transport for every request, with no session id. The SDK binds one transport to one server, so do not share either between requests. What they serve is built once, when `server/index.ts` loads.
-- `api/index.ts` answers a `GET` without `text/event-stream` in `Accept` with an HTML page (no external asset, nothing of Chassis), `GET /health` with `{ "ok": true, "version": "<version>" }`, a `GET` that opens the event stream with 405 (the server sends no server-initiated messages, so a stream would only hold a function open), and a failure with a JSON-RPC error `-32603` after a `console.error`. On Vercel it uses the body the runtime parsed into `req.body`; locally it reads the stream. `vercel.json` rewrites `/`, `/health` and `/mcp` to the function, which sees the path the client asked for.
+- `api/index.ts` answers a `GET` without `text/event-stream` in `Accept` with an HTML page (no external asset, nothing of Chassis; it links the repository, `PRIVACY.md` and `/health`), `GET /health` with `{ "ok": true, "version": "<version>" }`, a `GET` that opens the event stream with 405 (the server sends no server-initiated messages, so a stream would only hold a function open), and a failure with a JSON-RPC error `-32603` after a `console.error`. On Vercel it uses the body the runtime parsed into `req.body`; locally it reads the stream. `vercel.json` rewrites `/`, `/health` and `/mcp` to the function, which sees the path the client asked for.
 - Verify a change through the handler (`pnpm dev`, or `tests/handler.test.ts`), not only through `createServer()` in memory: the handler is what Vercel runs.
 - Imports between modules use the `.js` extension (`./resources.js`), which `tsc` and `tsx` resolve to the `.ts` file.
 - `console.log` is a lint error in `server/` and `api/`: stdout belongs to the protocol on a stdio transport. Use `console.error`.
+- `SERVER_INFO` in `server/index.ts` is what the server says of itself in `initialize`: name, version, and the title, description, website and icon a client shows in its list of servers. `server.json` says the same for the registry.
 - `INSTRUCTIONS` in `server/index.ts` is what the server answers `initialize` with, and what a client shows an agent before it loads any tool: a client that loads tools on demand shows their names only. It names every tool (a test fails otherwise) and says which one a Chassis task starts with; a new tool gets a line there.
-- The names, descriptions and input schemas of the tools, prompts and resources are the public API of the server. `tests/__snapshots__/server.test.ts.snap` holds them; a change there is a change for every client.
+- The names, descriptions, input schemas and annotations of the tools, prompts and resources are the public API of the server. Every tool carries a `title` and the hints `readOnlyHint: true` and `destructiveHint: false`, which the connector directories ask for; a tool that wrote something would need other hints and a test fails on it. `tests/__snapshots__/server.test.ts.snap` holds them; a change there is a change for every client.
 - CORS is `*` on purpose: the server is public, read-only, and takes no credentials.
 
 ## The plugin files
@@ -125,6 +127,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 - `.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` are the manifests of the Claude Code and Cursor plugins, with the same content: they point at `./skills/` and `./.mcp.json`. `.claude-plugin/marketplace.json` lists the plugin for `/plugin marketplace add chassis-ui/mcp`, which installs from the default branch, `main`.
 - `.github/plugin/plugin.json` is a third manifest with its own `homepage` and `author`, and without `skills`, `mcpServers` and `logo`. The three are separate files on purpose; only `version` is the same in all of them, and `build/sync-version-refs.js` writes it in the version step.
 - `.mcp.json` is the list of MCP servers the plugin installs for its users. It points at production. Do not point it at localhost; to try a local server, add it to your own client under another name (see CONTRIBUTING.md).
+- `server.json` is the listing of the server in the MCP registry (`registry.modelcontextprotocol.io`): the name `com.chassis-ui/mcp`, a description of at most 100 characters, the production URL as a `streamable-http` remote, and the version, which the version step writes. `tests/server-json.test.ts` checks it. The registry holds metadata only: a maintainer publishes a new version with `mcp-publisher` after the release (see CONTRIBUTING.md), and nothing in CI does.
 
 ## Formatting
 
@@ -144,5 +147,5 @@ Never commit, merge or push without being asked. CI runs on `develop` and on pul
 ## Do not edit
 
 - Generated: `server/content.generated.ts`, `skills/chassis-implement-design/references/css-classes.md` and `css-classes.json` (see [Generated files](#generated-files)).
-- Written by the version step (`pnpm changeset:version`): `CHANGELOG.md`, `version` in `package.json` and in the three plugin manifests. It also removes the changesets it used.
+- Written by the version step (`pnpm changeset:version`): `CHANGELOG.md`, `version` in `package.json`, in the three plugin manifests and in `server.json`. It also removes the changesets it used.
 - Written by Vitest: `tests/__snapshots__/` (`pnpm test -u`).

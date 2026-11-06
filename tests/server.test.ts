@@ -60,8 +60,14 @@ afterAll(async () => {
 })
 
 describe('server', () => {
-  test('reports its name and the version of package.json', () => {
-    expect(client.getServerVersion()).toMatchObject({ name: 'chassis-ui', version })
+  test('reports its name and the version of package.json, with a title and an icon', () => {
+    expect(client.getServerVersion()).toMatchObject({
+      name: 'chassis-ui',
+      version,
+      title: 'Chassis UI',
+      websiteUrl: 'https://github.com/chassis-ui/mcp'
+    })
+    expect(client.getServerVersion()?.icons?.[0]?.src).toMatch(/^https:\/\/.+\.svg$/)
   })
 
   // A client that loads tools on demand shows their names only: the instructions are what
@@ -83,8 +89,24 @@ describe('server', () => {
     const { tools } = await client.listTools()
 
     expect(
-      tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema }))
+      tools.map(({ name, description, inputSchema, annotations }) => ({
+        name,
+        description,
+        inputSchema,
+        annotations
+      }))
     ).toMatchSnapshot()
+  })
+
+  // The directories that list the server ask for a title and a read-only hint on every tool,
+  // and every tool of this server reads what it holds and nothing else
+  test('marks every tool read-only, with a title', async () => {
+    const { tools } = await client.listTools()
+
+    for (const { name, annotations } of tools) {
+      expect(annotations?.title, name).toBeTruthy()
+      expect(annotations, name).toMatchObject({ readOnlyHint: true, destructiveHint: false })
+    }
   })
 
   test('lists its prompts', async () => {

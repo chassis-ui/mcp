@@ -220,14 +220,27 @@ export const INSTRUCTIONS = [
 // A new server for every request: the SDK binds one transport to one server, and the stateless
 // transport refuses a second request, so the handler cannot share either between requests.
 // What the server serves is the module-level content above
-export function createServer(): McpServer {
-  const server = new McpServer(
+// What the server says of itself in `initialize`, beside its name and version: the title and
+// icon a client shows in its list of servers, and where to read more. The icon is the one of
+// the repository, served by GitHub: the function carries no asset. server.json lists the same
+export const SERVER_INFO = {
+  name: 'chassis-ui',
+  version: VERSION,
+  title: 'Chassis UI',
+  description:
+    'Skills and references for AI agents that design and implement with the Chassis UI design system',
+  websiteUrl: 'https://github.com/chassis-ui/mcp',
+  icons: [
     {
-      name: 'chassis-ui',
-      version: VERSION
-    },
-    { instructions: INSTRUCTIONS }
-  )
+      src: 'https://raw.githubusercontent.com/chassis-ui/mcp/main/Chassis-Icon.svg',
+      mimeType: 'image/svg+xml',
+      sizes: ['any']
+    }
+  ]
+}
+
+export function createServer(): McpServer {
+  const server = new McpServer(SERVER_INFO, { instructions: INSTRUCTIONS })
 
   // Resources
   for (const { name, uri, description, path } of RESOURCES) {
@@ -282,6 +295,17 @@ export function createServer(): McpServer {
   )
 
   // Tools. A skill tool returns the instructions and an index of the references; the
+  // Every tool reads what the server holds and nothing else: no tool writes, calls another
+  // service or depends on an earlier call. The annotations say so to a client that shows them,
+  // and the directories that list the server ask for a title and a read-only hint on each tool
+  const annotations = (title: string) => ({
+    title,
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false
+  })
+
   // references come one at a time from chassis_get_reference, whole or by section, or all at
   // once with full: true
   server.registerTool(
@@ -289,6 +313,7 @@ export function createServer(): McpServer {
     {
       description:
         'Load the chassis-create-design skill: build or update Figma screens using the Chassis UI library. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.',
+      annotations: annotations('Chassis create-design skill'),
       inputSchema: FULL
     },
     async ({ full }) => ({
@@ -306,6 +331,7 @@ export function createServer(): McpServer {
     {
       description:
         'Load the chassis-implement-design skill: implement Figma designs into production code using Chassis UI CSS. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.',
+      annotations: annotations('Chassis implement-design skill'),
       inputSchema: FULL
     },
     async ({ full }) => ({
@@ -323,6 +349,7 @@ export function createServer(): McpServer {
     {
       description:
         'Load the chassis-add-brand skill: add a brand to a repository of tokens built with @chassis-ui/tokens and a repository of assets built with @chassis-ui/assets, its token set, option and fonts, images and app icon. Returns the skill instructions and an index of its reference files and their sections, which are fetched on demand with chassis_get_reference.',
+      annotations: annotations('Chassis add-brand skill'),
       inputSchema: FULL
     },
     async ({ full }) => ({
@@ -340,6 +367,7 @@ export function createServer(): McpServer {
     {
       description:
         'Fetch one reference file of a Chassis UI skill by name, without its frontmatter, or one section of it, or several sections in one call. The skill tools list the names, what each file holds and its sections.',
+      annotations: annotations('Chassis skill reference'),
       inputSchema: {
         name: z.enum(REFERENCE_NAMES).describe('Reference file to fetch'),
         section: z
@@ -412,6 +440,7 @@ export function createServer(): McpServer {
     {
       description:
         'Check class names against the Chassis CSS class catalog (css-classes.md of chassis-implement-design): returns the classes that do not exist in the given CSS mode, each with why and the catalog section to read, or one line when all exist. Pass class names, class attribute values or markup.',
+      annotations: annotations('Chassis CSS class check'),
       inputSchema: {
         classes: z
           .array(z.string())

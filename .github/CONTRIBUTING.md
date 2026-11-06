@@ -28,6 +28,7 @@ The repository is one package, not a workspace:
 | [`build/`](../build/)                                                                | The two generators, and their tests in `build/tests/`                                                  |
 | [`tests/`](../tests/)                                                                | The tests of the server and the handler                                                                |
 | `.claude-plugin/`, `.cursor-plugin/`, `.github/plugin/`, [`.mcp.json`](../.mcp.json) | The plugin manifests, and the MCP servers the plugin installs                                          |
+| [`server.json`](../server.json)                                                      | The listing of the server in the MCP registry                                                          |
 
 ## Running the server
 
@@ -209,8 +210,8 @@ on `develop`; pushing the same commit to `main` doesn't run them again.
 
 1. On `develop`, a maintainer runs `pnpm changeset:version`. It removes the changesets, bumps the
    version in `package.json`, writes the entry of [`CHANGELOG.md`](../CHANGELOG.md) and copies the
-   version into the three plugin manifests. The maintainer reviews the result, commits it and
-   pushes `develop`.
+   version into the three plugin manifests and into `server.json`. The maintainer reviews the
+   result, commits it and pushes `develop`.
 2. CI runs on that commit. The Changeset job skips the push, since it changes the version.
 3. When CI has passed, the maintainer pushes the same commit to `main`:
 
@@ -237,6 +238,26 @@ on `develop`; pushing the same commit to `main` doesn't run them again.
 A version without a CHANGELOG entry gets no GitHub release, though Vercel deploys it: don't
 push a version to `main` that `pnpm changeset:version` didn't make. A version with a prerelease
 part (`0.2.0-next.0`) is marked as a prerelease.
+
+### The MCP registry
+
+[`server.json`](../server.json) lists the server in the
+[MCP registry](https://registry.modelcontextprotocol.io) as `com.chassis-ui/mcp`, with the
+production URL as its remote. The registry holds metadata only and nothing deploys from it, so
+a release is complete without it; it is where MCP clients look a server up by name. After a
+release, a maintainer who holds the key of the domain publishes the new version from the
+commit of `main`:
+
+```sh
+mcp-publisher validate
+mcp-publisher login dns --domain chassis-ui.com --private-key <key>
+mcp-publisher publish
+```
+
+The name `com.chassis-ui/mcp` is proven by a DNS TXT record on the apex of `chassis-ui.com`
+(`v=MCPv1; k=ed25519; p=<public key>`), made once with the key the login signs with; the
+[authentication guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/authentication.mdx)
+of the registry says how. `mcp-publisher` installs with `brew install mcp-publisher`.
 
 The job names `Check (Node 22)`, `Check (Node 24)` and `Verify` are the required checks of the
 ruleset of `main`, and they are in the `REQUIRED` list of `release.yml`. Rename a job in
