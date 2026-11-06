@@ -1,0 +1,9 @@
+---
+'@chassis-ui/mcp': patch
+---
+
+`chassis-create-design` and `chassis-implement-design` say that a color role can carry transparency: the faded roles are a color of their context with an `opacity/context/*` token applied, and Figma writes the alpha of a bound color into the opacity of the fill. An agent took that opacity for a hand-set value and bound `opacity/context/fg-subtle` on `fg-subtle` text as well, which faded the text twice. `chassis-create-design` also says how a dark section is made: the same agent put sections on `bg-inverse`, which turns light in dark mode.
+
+What an agent now does differently: in `chassis-create-design` it leaves a fill below 100% whose color is bound as it is, binds an opacity token only on a layer whose color is an opaque role, or on an image or a group, and never on a layer whose color is already a faded role; it builds a dark section in the `alternate` context, or asks the designer for the `dark` theme mode on the section, keeps `bg-inverse` and `fg-inverse` for elements, and gives faded text in a dark section the `fg-subtle` or `fg-slight` of its context. The quality checklist says layer opacity, and the failure modes have a row for text much fainter than the design and one for a dark section that turns light in dark mode. In `chassis-implement-design`, a fill below 100% bound to a role takes the class of the role alone, with no `*-opacity-*` class, and the color table says that `bg-inverse` is for an element and points a dark section to `context alternate` or `data-cx-theme="dark"`.
+
+The quality checklist of `chassis-create-design` bound every width of the agent's own frames to `grid/breakpoint/*`, the width of a page. It now sizes the wrapper frame to `grid/breakpoint/*` and a content layer to `grid/container/*`, and `tokens.md` gives the container widths.

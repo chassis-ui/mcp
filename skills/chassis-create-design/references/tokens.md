@@ -51,6 +51,10 @@ The modes are set by the designer in the Appearance panel of a page, frame or in
 
 Choose the context by meaning, the role by what the element does (text `fg-*`, surface `bg-*`, line `border-*`), the emphasis by hierarchy (`main`, then `subtle`, then `slight`). A glyph binds the `fg-*` role of its text when it is to have the color of that text, and an `icon-*` role when it is to have the icon color. The two are tokens of their own and a brand sets the color of each: choose by the name of the token, never by the color it resolves to in one brand. The other color namespaces are not for surfaces: `color/primitive/*`, `color/base/*` (brand), `color/shadow/*` (the shadow colors, by theme), `color/utility/*`, `color/{component}/*`.
 
+A dark section is the `alternate` context (`alternate/bg-main`, with `alternate/fg-main`, `alternate/fg-subtle` … on it), or a section of another context in the `dark` theme mode, which the designer sets on its frame (rule 9: the agent asks for it). `bg-inverse` and `fg-inverse` are for an element, not for a section: both invert with the theme, so a section on `bg-inverse` turns light in dark mode while white text and the components on it do not. Faded text in a dark section is the `fg-subtle` or `fg-slight` of its context, with no opacity token.
+
+A role can carry transparency. The faded roles are a color of their context with an `opacity/context/*` token applied (`fg-subtle` is `fg-main` with `opacity/context/fg-subtle`), and a context may give other roles an alpha of their own; which roles do depends on the context and the brand. When such a role is bound to a fill, Figma writes its alpha into the fill's opacity: a fill below 100% whose color is bound is the token itself, not a hand-set value, and is left as it is.
+
 ## Spacing
 
 `space/context/{step}`, preferred, with the base values; `space/unit/{n}` for a value outside the scale; `space/{component}/*` belongs to the component.
@@ -81,9 +85,11 @@ Choose the context by meaning, the role by what the element does (text `fg-*`, s
 
 `opacity/context/{role}`, semantic and preferred: `fg-subtle`, `fg-slight`, `fg-a11y`, `border-main`, `border-subtle`, `icon-subtle`, `icon-slight`, `cue-slight`, `dim-main`, `dim-subtle`, `dim-slight`, `transparent-color`. `opacity/level/{level}`, numeric: `zero`, `05`, `10` to `90` in tens, `95`, `solid`.
 
+An opacity token is bound to the `opacity` of a layer whose color is an opaque role, or of an image or a group, in place of a transparent color. It is never bound on a layer whose color is already a faded role: the two multiply, and `fg-subtle` text with `opacity/context/fg-subtle` is the subtle opacity twice.
+
 ## Grid
 
-`grid/breakpoint/{step}` gives the page widths a wrapper frame is sized to: `xsmall` 400, `small` 576, `medium` 768, `large` 1024, `xlarge` 1280, `2xlarge` 1536. `grid/container/*`, `grid/margin/*`, `grid/gutter/*` and `grid/columns/*` are the container widths, page margins, gutters and column counts per breakpoint.
+`grid/breakpoint/{step}` gives the page widths a wrapper frame is sized to: `xsmall` 400, `small` 576, `medium` 768, `large` 1024, `xlarge` 1280, `2xlarge` 1536. `grid/container/{step}` gives the width of a content layer inside it, as a container does in CSS: `xsmall` 360, `small` 540, `medium` 720, `large` 960, `xlarge` 1200, `2xlarge` 1440. `grid/margin/*`, `grid/gutter/*` and `grid/columns/*` are the page margins, gutters and column counts per breakpoint.
 
 ## Text styles
 
