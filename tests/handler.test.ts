@@ -6,6 +6,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { AddressInfo } from 'node:net'
 import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 import handler, { createHandler } from '../api/index.js'
+import { INSTRUCTIONS } from '../server/index.js'
 import { version } from './helpers.js'
 
 const HEADERS = {
@@ -30,6 +31,7 @@ interface Message {
   id: number | null
   result?: {
     serverInfo?: { name: string; version: string }
+    instructions?: string
     capabilities?: Record<string, unknown>
     tools?: { name: string }[]
     content?: { type: string; text: string }[]
@@ -92,7 +94,7 @@ afterAll(async () => {
 })
 
 describe('POST', () => {
-  test('answers initialize with the name and the version of package.json', async () => {
+  test('answers initialize with the name and the version of package.json, and the instructions', async () => {
     const response = await post(INITIALIZE)
 
     expect(response.status).toBe(200)
@@ -101,6 +103,7 @@ describe('POST', () => {
     const { id, result } = await message(response)
     expect(id).toBe(1)
     expect(result?.serverInfo).toEqual({ name: 'chassis-ui', version })
+    expect(result?.instructions).toBe(INSTRUCTIONS)
     expect(Object.keys(result?.capabilities ?? {}).sort()).toEqual([
       'prompts',
       'resources',

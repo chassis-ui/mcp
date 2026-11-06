@@ -116,6 +116,7 @@ To add a reference file: add the Markdown file to `skills/<skill>/references/` w
 - Verify a change through the handler (`pnpm dev`, or `tests/handler.test.ts`), not only through `createServer()` in memory: the handler is what Vercel runs.
 - Imports between modules use the `.js` extension (`./resources.js`), which `tsc` and `tsx` resolve to the `.ts` file.
 - `console.log` is a lint error in `server/` and `api/`: stdout belongs to the protocol on a stdio transport. Use `console.error`.
+- `INSTRUCTIONS` in `server/index.ts` is what the server answers `initialize` with, and what a client shows an agent before it loads any tool: a client that loads tools on demand shows their names only. It names every tool (a test fails otherwise) and says which one a Chassis task starts with; a new tool gets a line there.
 - The names, descriptions and input schemas of the tools, prompts and resources are the public API of the server. `tests/__snapshots__/server.test.ts.snap` holds them; a change there is a change for every client.
 - CORS is `*` on purpose: the server is public, read-only, and takes no credentials.
 

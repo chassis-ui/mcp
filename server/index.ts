@@ -205,14 +205,29 @@ const REFERENCE_NAMES = RESOURCES.filter((r) => r.name.includes('/references/'))
   (r) => r.name
 ) as [string, ...string[]]
 
+// What the client puts in the context of the agent when it connects, before any tool is loaded:
+// a client that loads tools on demand shows their names only, and the instructions of the Figma
+// MCP server send every design task to its own skills. These say when a task is a Chassis task
+// and which tool to call first
+export const INSTRUCTIONS = [
+  'Chassis UI is a design system: a Figma library (components in `cx.components.UI`, variables and styles in `cx.tokens.MAIN`) and the CSS framework `@chassis-ui/css`. This server serves its skills: how Chassis work is done, on top of the Figma MCP server and its skills, not in place of them.',
+  '- Before you build or update a Figma screen, page or view with the Chassis UI library, or in a Figma file that uses it, call `chassis_create_design`, before the first `use_figma` call, and follow what it returns.',
+  '- Before you write markup from a Figma design made with the Chassis UI library, call `chassis_implement_design` and follow what it returns. Check the classes you wrote with `chassis_check_classes`.',
+  '- To add a brand to a Chassis token repository and asset repository, call `chassis_add_brand`.',
+  '- Each of these tools returns the instructions of its skill and an index of its reference files. When the instructions send you to a reference, fetch it, or the section they link, with `chassis_get_reference`.'
+].join('\n')
+
 // A new server for every request: the SDK binds one transport to one server, and the stateless
 // transport refuses a second request, so the handler cannot share either between requests.
 // What the server serves is the module-level content above
 export function createServer(): McpServer {
-  const server = new McpServer({
-    name: 'chassis-ui',
-    version: VERSION
-  })
+  const server = new McpServer(
+    {
+      name: 'chassis-ui',
+      version: VERSION
+    },
+    { instructions: INSTRUCTIONS }
+  )
 
   // Resources
   for (const { name, uri, description, path } of RESOURCES) {

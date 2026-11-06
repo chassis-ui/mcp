@@ -64,6 +64,21 @@ describe('server', () => {
     expect(client.getServerVersion()).toMatchObject({ name: 'chassis-ui', version })
   })
 
+  // A client that loads tools on demand shows their names only: the instructions are what
+  // tells an agent which tool a Chassis task starts with
+  test('gives instructions', () => {
+    expect(client.getInstructions()).toMatchSnapshot()
+  })
+
+  test('names every tool in its instructions, and no other', async () => {
+    const { tools } = await client.listTools()
+    const named = [...(client.getInstructions() ?? '').matchAll(/`(chassis_\w+)`/g)].map(
+      ([, name]) => name
+    )
+
+    expect([...new Set(named)].sort()).toEqual(tools.map(({ name }) => name).sort())
+  })
+
   test('lists its tools', async () => {
     const { tools } = await client.listTools()
 

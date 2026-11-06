@@ -1,5 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`server > gives instructions 1`] = `
+"Chassis UI is a design system: a Figma library (components in \`cx.components.UI\`, variables and styles in \`cx.tokens.MAIN\`) and the CSS framework \`@chassis-ui/css\`. This server serves its skills: how Chassis work is done, on top of the Figma MCP server and its skills, not in place of them.
+- Before you build or update a Figma screen, page or view with the Chassis UI library, or in a Figma file that uses it, call \`chassis_create_design\`, before the first \`use_figma\` call, and follow what it returns.
+- Before you write markup from a Figma design made with the Chassis UI library, call \`chassis_implement_design\` and follow what it returns. Check the classes you wrote with \`chassis_check_classes\`.
+- To add a brand to a Chassis token repository and asset repository, call \`chassis_add_brand\`.
+- Each of these tools returns the instructions of its skill and an index of its reference files. When the instructions send you to a reference, fetch it, or the section they link, with \`chassis_get_reference\`."
+`;
+
 exports[`server > lists its prompts 1`] = `
 [
   {
